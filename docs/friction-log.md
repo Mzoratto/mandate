@@ -252,3 +252,26 @@ Add `.next/` to the root ignore file, remove generated output from the index, an
 
 ### Suggested improvement
 Add framework output directories to the root ignore rules before the first dev server or production build, and inspect `git status --short` for generated directories before committing.
+
+## FL-011
+
+### Task
+Run the Neon schema workflow with pnpm dependency caching.
+
+### Expected
+`actions/setup-node` to configure Node and restore the pnpm cache before Corepack enabled the repository-pinned pnpm binary.
+
+### Actual
+The setup action resolves the requested cache manager immediately and failed with `Unable to locate executable file: pnpm` before the later `corepack enable` step could run.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Remove setup-node's package-manager cache option and enable Corepack before installing dependencies.
+
+### Suggested improvement
+Examples for pnpm caching should either provision pnpm before `setup-node` evaluates `cache: pnpm` or show a cache-free baseline that works with a Corepack-only toolchain.
