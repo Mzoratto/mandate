@@ -54,7 +54,7 @@ jobs:
         run: |
           pnpm --filter @mandate/api build:aws
           cd dist/aws/control-plane
-          zip -q "$GITHUB_WORKSPACE/control-plane.zip" index.mjs
+          zip -q "$GITHUB_WORKSPACE/control-plane.zip" index.js package.json
 
       - name: Upload immutable artifact
         run: |

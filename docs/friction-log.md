@@ -390,3 +390,26 @@ Correct the least-privilege role action and update the bootstrap stack. No broad
 
 ### Suggested improvement
 Validate CLI operation names against IAM service-authorization action names when authoring scoped deployment policies.
+
+## FL-017
+
+### Task
+Cold-start the bundled control plane on the AWS Lambda Node.js 22 runtime.
+
+### Expected
+The esbuild ESM bundle to load the bundled `pg` dependency.
+
+### Actual
+`pg` retains CommonJS dynamic requires for Node built-ins. The ESM bundle failed during Lambda initialization with `Dynamic require of "events" is not supported`, so the Function URL correctly returned `502` before application code ran.
+
+### Severity
+major
+
+### Time lost
+About three minutes.
+
+### Workaround
+Emit the single Lambda bundle as CommonJS `index.js` and add a local import smoke test before redeployment.
+
+### Suggested improvement
+Match bundle module format to transitive dependency behavior and test loading the exact deployment artifact, not only its syntax.
