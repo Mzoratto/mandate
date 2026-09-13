@@ -45,6 +45,12 @@ The first successful Lambda deployment is [workflow run 34787693288](https://git
 
 Every application response carries an opaque `x-request-id`. Lambda writes one bounded JSON record containing only component name, AWS request ID, application request ID, and HTTP status. Commands and bearer credentials are not logged. Lambda platform logs provide duration, memory, cold-start, and error data in the same CloudWatch stream.
 
+## Governed checkout rehearsal
+
+The public [`Mzoratto/checkout-demo`](https://github.com/Mzoratto/checkout-demo) repository preserves a deliberately failing base commit. `apps/api/scripts/run-agentos-rehearsal.mjs` runs one deterministic, zero-model-usage AgentOS action against an isolated worktree. The script still crosses both independent gates: the live control plane must authorize the normalized file effect, then the AgentOS relay waits for the exact checksum-bound human answer. It cannot execute the edit before both decisions, and it settles action-bound trace evidence only after trusted usage is available.
+
+This rehearsal proves the deployed path without implying that arbitrary Codex tool calls are fully intercepted. A general autonomous run remains fail-closed until AgentOS can intercept every effect, including commands the underlying runtime might otherwise classify as trusted.
+
 ## Remaining production work
 
-The HTTP API has a global stage throttle but not per-client quotas or WAF rules. Before broader traffic, add those controls, rotate the temporary administrator bootstrap assignment into a narrower operator role, separate Neon migration and append-only application roles, and connect AgentCore policy enforcement. The dashboard remains explicitly offline until a principal credential and live Mandate are provisioned server-side.
+The HTTP API has a global stage throttle but not per-client quotas or WAF rules. Before broader traffic, add those controls, rotate the temporary administrator bootstrap assignment into a narrower operator role, separate Neon migration and append-only application roles, and connect AgentCore policy enforcement. The dashboard remains explicitly offline until it consumes authenticated server-side records.

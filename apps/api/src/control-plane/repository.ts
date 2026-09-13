@@ -6,6 +6,8 @@ import {
   sha256Digest,
   type ApprovalAssumption,
   type ConformanceDecision,
+  type CriterionResult,
+  type EvidenceRecord,
   type Mandate,
   type MandateEvent,
   type MandateStatus,
@@ -13,6 +15,7 @@ import {
   type ProposedAction,
 } from "@mandate/protocol";
 import { parseMandate } from "@mandate/schemas";
+import { completeMandate, evaluateCompletion } from "@mandate/evidence";
 import {
   appendEvent,
   approveMandate,
@@ -75,6 +78,20 @@ export interface SettleActionInput {
     artifactUri?: string;
     digest?: string;
   };
+}
+
+export interface SubmitVerificationInput {
+  evidence: {
+    id: string;
+    requirementId: string;
+    type: "test-report" | "review" | "artifact" | "trace" | "signature" | "state-check";
+    artifactUri: string;
+    digest: string;
+  };
+  criteria: Array<{
+    criterionId: string;
+    status: "PASS" | "FAIL";
+  }>;
 }
 
 type SqlClient = Pick<Pool | PoolClient, "query">;
@@ -927,6 +944,209 @@ export class ControlPlaneRepository {
         now,
       );
       return { status, evidence };
+    });
+  }
+
+  async submitVerification(
+    identity: AuthenticatedIdentity,
+    executionId: string,
+    input: SubmitVerificationInput,
+    now = new Date().toISOString(),
+  ): Promise<Record<string, unknown>> {
+    if (identity.kind !== "principal" || identity.principalType !== "service") {
+      return fail(403, "VERIFIER_REQUIRED", "A service verifier credential is required");
+    }
+    return this.transaction(async (client) => {
+      const currentResult = await client.query<MandateRow & { execution_finished_at: Timestamp | null }>(
+        `SELECT mandate.*, version.content, version.content_digest,
+                execution.finished_at AS execution_finished_at
+           FROM executions AS execution
+           JOIN mandates AS mandate ON mandate.id = execution.mandate_id
+           JOIN mandate_versions AS version
+             ON version.mandate_id = execution.mandate_id
+            AND version.version = execution.mandate_version
+          WHERE execution.id = $1
+            AND mandate.current_version = execution.mandate_version
+          FOR UPDATE OF execution, mandate`,
+        [executionId],
+      );
+      const row = currentResult.rows[0];
+      if (!row) return fail(404, "EXECUTION_NOT_FOUND", "Execution was not found");
+      const mandate = materializeMandate(row);
+      const requirement = mandate.evidence.requirements.find((item) => item.id === input.evidence.requirementId);
+      if (!requirement || requirement.verifier !== identity.id || requirement.type !== input.evidence.type) {
+        return fail(403, "VERIFIER_MISMATCH", "Verifier is not authorized for this evidence requirement");
+      }
+      const criteria = input.criteria.map(({ criterionId, status }) => {
+        const criterion = mandate.goal.successCriteria.find((item) => item.id === criterionId);
+        if (!criterion || criterion.verifier !== identity.id) {
+          return fail(403, "VERIFIER_MISMATCH", "Verifier is not authorized for a submitted criterion");
+        }
+        return { criterion, status };
+      });
+      const existing = await client.query<QueryResultRow>("SELECT * FROM evidence WHERE id = $1", [input.evidence.id]);
+      const existingEvidence = existing.rows[0];
+      if (mandate.status === "COMPLETED" && !existingEvidence) {
+        return fail(409, "MANDATE_TERMINAL", "Completed Mandates do not accept new evidence");
+      }
+      if (!["ACTIVE", "COMPLETED"].includes(mandate.status)) {
+        return fail(409, "MANDATE_NOT_ACTIVE", "Verification requires an active Mandate");
+      }
+      const evidence: EvidenceRecord = {
+        id: input.evidence.id,
+        mandateId: mandate.id,
+        mandateVersion: mandate.version,
+        requirementId: input.evidence.requirementId,
+        type: input.evidence.type,
+        producer: identity.id,
+        artifactUri: input.evidence.artifactUri,
+        digest: input.evidence.digest,
+        verified: true,
+        verifiedBy: identity.id,
+        createdAt: now,
+      };
+      const results: CriterionResult[] = criteria.map(({ criterion, status }) => ({
+        criterionId: criterion.id,
+        mandateId: mandate.id,
+        mandateVersion: mandate.version,
+        status,
+        verifier: identity.id,
+        evidenceIds: [evidence.id],
+        verifiedAt: now,
+      }));
+
+      if (existingEvidence) {
+        const exactEvidence = existingEvidence.mandate_id === evidence.mandateId
+          && existingEvidence.mandate_version === evidence.mandateVersion
+          && existingEvidence.requirement_id === evidence.requirementId
+          && existingEvidence.type === evidence.type
+          && existingEvidence.producer === evidence.producer
+          && existingEvidence.artifact_uri === evidence.artifactUri
+          && existingEvidence.digest === evidence.digest
+          && existingEvidence.verified === true
+          && existingEvidence.verified_by === evidence.verifiedBy;
+        const existingCriteria = await client.query<QueryResultRow>(
+          "SELECT * FROM criterion_results WHERE id = ANY($1::text[])",
+          [results.map((result) => deterministicId("criterion", { executionId, evidenceId: evidence.id, criterionId: result.criterionId, verifier: identity.id }))],
+        );
+        const byId = new Map(existingCriteria.rows.map((criterion) => [criterion.id, criterion]));
+        const exactCriteria = results.every((result) => {
+          const resultId = deterministicId("criterion", { executionId, evidenceId: evidence.id, criterionId: result.criterionId, verifier: identity.id });
+          const stored = byId.get(resultId);
+          return stored?.status === result.status
+            && stored?.verifier === result.verifier
+            && JSON.stringify(stored?.evidence_ids) === JSON.stringify(result.evidenceIds);
+        });
+        if (!exactEvidence || existingCriteria.rowCount !== results.length || !exactCriteria) {
+          return fail(409, "VERIFICATION_REPLAY", "Verification ID was replayed with different content");
+        }
+      } else {
+        await client.query(
+          `INSERT INTO evidence
+            (id, mandate_id, mandate_version, requirement_id, execution_action_id,
+             type, producer, artifact_uri, digest, verified, verified_by, created_at)
+           VALUES ($1, $2, $3, $4, NULL, $5, $6, $7, $8, true, $9, $10)`,
+          [evidence.id, evidence.mandateId, evidence.mandateVersion, evidence.requirementId,
+            evidence.type, evidence.producer, evidence.artifactUri, evidence.digest, evidence.verifiedBy, evidence.createdAt],
+        );
+        await this.appendLedgerEvent(
+          client,
+          mandate,
+          "EVIDENCE_ADDED",
+          identity.id,
+          { evidenceId: evidence.id, requirementId: evidence.requirementId, verified: true },
+          now,
+        );
+        for (const result of results) {
+          const resultId = deterministicId("criterion", { executionId, evidenceId: evidence.id, criterionId: result.criterionId, verifier: identity.id });
+          await client.query(
+            `INSERT INTO criterion_results
+              (id, mandate_id, mandate_version, criterion_id, status, verifier, evidence_ids, verified_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+            [resultId, result.mandateId, result.mandateVersion, result.criterionId,
+              result.status, result.verifier, jsonb(result.evidenceIds), result.verifiedAt],
+          );
+          await this.appendLedgerEvent(
+            client,
+            mandate,
+            "CRITERION_VERIFIED",
+            identity.id,
+            { criterionId: result.criterionId, status: result.status, evidenceId: evidence.id },
+            now,
+          );
+        }
+      }
+
+      if (mandate.status === "COMPLETED") {
+        return { evidence, criteria: results, completion: { completed: true, reasons: [] } };
+      }
+      const [evidenceRows, criterionRows, assumptions, amendments, unsettled, violations] = await Promise.all([
+        client.query<QueryResultRow>("SELECT * FROM evidence WHERE mandate_id = $1 AND mandate_version = $2", [mandate.id, mandate.version]),
+        client.query<QueryResultRow>("SELECT * FROM criterion_results WHERE mandate_id = $1 AND mandate_version = $2", [mandate.id, mandate.version]),
+        this.currentAssumptions(client, mandate.id),
+        client.query<QueryResultRow>("SELECT id FROM mandate_amendments WHERE mandate_id = $1 AND status = 'PENDING'", [mandate.id]),
+        client.query<QueryResultRow>(
+          `SELECT action.id FROM execution_actions AS action
+            JOIN executions AS execution ON execution.id = action.execution_id
+           WHERE execution.mandate_id = $1 AND execution.mandate_version = $2 AND action.status = 'AUTHORIZED'`,
+          [mandate.id, mandate.version],
+        ),
+        client.query<QueryResultRow>(
+          `SELECT action.id FROM execution_actions AS action
+            JOIN executions AS execution ON execution.id = action.execution_id
+           WHERE execution.mandate_id = $1 AND execution.mandate_version = $2
+             AND action.status IN ('DENY', 'ESCALATE', 'INVALIDATE_APPROVAL')`,
+          [mandate.id, mandate.version],
+        ),
+      ]);
+      const allEvidence: EvidenceRecord[] = evidenceRows.rows.map((stored) => ({
+        id: stored.id,
+        mandateId: stored.mandate_id,
+        mandateVersion: stored.mandate_version,
+        ...(stored.requirement_id ? { requirementId: stored.requirement_id } : {}),
+        type: stored.type,
+        producer: stored.producer,
+        ...(stored.artifact_uri ? { artifactUri: stored.artifact_uri } : {}),
+        ...(stored.digest ? { digest: stored.digest } : {}),
+        verified: stored.verified,
+        ...(stored.verified_by ? { verifiedBy: stored.verified_by } : {}),
+        createdAt: iso(stored.created_at),
+      }));
+      const allCriteria: CriterionResult[] = criterionRows.rows.map((stored) => ({
+        criterionId: stored.criterion_id,
+        mandateId: stored.mandate_id,
+        mandateVersion: stored.mandate_version,
+        status: stored.status,
+        verifier: stored.verifier,
+        evidenceIds: stored.evidence_ids,
+        verifiedAt: iso(stored.verified_at),
+      }));
+      const completion = evaluateCompletion({
+        mandate,
+        currentAssumptions: assumptions,
+        evidence: allEvidence,
+        criterionResults: allCriteria,
+        now,
+        openAmendments: amendments.rows,
+        unsettledActions: unsettled.rows,
+        unresolvedViolations: violations.rows,
+      });
+      if (completion.canComplete) {
+        const completed = completeMandate({
+          mandate,
+          currentAssumptions: assumptions,
+          evidence: allEvidence,
+          criterionResults: allCriteria,
+          now,
+          openAmendments: amendments.rows,
+          unsettledActions: unsettled.rows,
+          unresolvedViolations: violations.rows,
+        });
+        await client.query("UPDATE mandates SET status = 'COMPLETED', completed_at = $2 WHERE id = $1", [mandate.id, now]);
+        await client.query("UPDATE executions SET finished_at = $2 WHERE id = $1", [executionId, now]);
+        await this.appendLedgerEvent(client, completed, "MANDATE_COMPLETED", identity.id, { executionId }, now);
+      }
+      return { evidence, criteria: results, completion: { completed: completion.canComplete, reasons: completion.reasons } };
     });
   }
 

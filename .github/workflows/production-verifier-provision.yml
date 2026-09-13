@@ -1,0 +1,47 @@
+name: Production verifier provision
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type PROVISION_VERIFIERS to rotate the two service-verifier credentials
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mandate-production-verifiers
+  cancel-in-progress: false
+
+jobs:
+  provision:
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'PROVISION_VERIFIERS'
+    environment: Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+      MANDATE_TEST_VERIFIER_TOKEN: ${{ secrets.MANDATE_TEST_VERIFIER_TOKEN }}
+      MANDATE_REVIEW_VERIFIER_TOKEN: ${{ secrets.MANDATE_REVIEW_VERIFIER_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+
+      - name: Resolve the default Neon branch
+        run: |
+          database_url="$(npx --yes neonctl@4.17.3 connection-string \
+            --project-id "$NEON_PROJECT_ID" \
+            --ssl verify-full \
+            --no-color)"
+          echo "::add-mask::$database_url"
+          echo "DATABASE_URL=$database_url" >> "$GITHUB_ENV"
+
+      - name: Provision service verifiers
+        run: pnpm --filter @mandate/api verifiers:provision

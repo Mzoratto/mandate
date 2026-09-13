@@ -26,6 +26,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@mandate/evidence':
+        specifier: workspace:*
+        version: link:../../packages/evidence
       '@mandate/protocol':
         specifier: workspace:*
         version: link:../../packages/protocol

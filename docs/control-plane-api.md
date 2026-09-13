@@ -36,6 +36,7 @@ Identity records must already exist. Neon Auth or an external identity provider 
 | `POST` | `/v1/mandates/:id/executions` | bound agent | Start or idempotently recover an execution |
 | `POST` | `/v1/executions/:id/actions/authorize` | bound agent | Persist the proposal/effects and return a fail-closed conformance decision before execution |
 | `POST` | `/v1/executions/:id/actions/:actionId/settle` | bound agent | Settle one allowed action, trusted usage, and unverified trace evidence |
+| `POST` | `/v1/executions/:id/verifications` | bound service verifier | Submit digest-bound evidence and criterion results; complete only when every required check passes |
 
 The authorization request contains the protocol `ProposedAction`, deterministic `NormalizedEffect[]`, and optional projected token or semantic decisions. Subject identity, active version, current assumptions, accumulated usage, and event history come from authenticated server state—not caller-provided identity fields.
 
@@ -46,7 +47,9 @@ The authorization request contains the protocol `ProposedAction`, deterministic 
 - Action IDs are idempotent only when the execution and canonical request digest match; changed replays return `409`.
 - Settlement is idempotent only when its canonical digest matches; changed replays return `409`.
 - Proposal, effects, decision, status change, usage, evidence, and hash-chained events commit or roll back together.
-- Agent-produced evidence is stored as unverified. Independent verifier endpoints are intentionally not exposed yet.
+- Agent-produced evidence is stored as unverified.
+- A verification credential must resolve to a `service` principal whose ID exactly matches each requirement and criterion verifier. A submission binds one immutable artifact digest to one evidence requirement and one or more verifier-owned criterion results. Exact retries are idempotent; changed replays fail.
+- The final required verification transaction re-evaluates assumptions, open amendments, unsettled actions, violations, verified evidence, and criterion results before atomically completing the Mandate and execution.
 - Unknown routes, invalid identities, stale assumptions, malformed effects, and internal errors fail closed.
 
 ## AgentOS callback client
@@ -67,4 +70,4 @@ The adapter accepts only an HTTPS origin, refuses redirects, applies a bounded t
 
 ## Current boundary
 
-The package does not choose an HTTP host, issue browser sessions, create initial identities, rate-limit public traffic, verify independent completion evidence, or grant database roles. Those are deployment and next-milestone concerns. The branch-isolated integration test exercises the complete authenticated draft-to-authorization path against the real migration schema.
+The package does not choose an HTTP host, issue browser sessions, run verifier tools, host evidence artifacts, or grant database roles. Those are deployment concerns. The branch-isolated integration test exercises authenticated proposal, authorization, settlement, verifier isolation, replay safety, and evidence-gated completion against the real migration schema.

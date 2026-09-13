@@ -171,4 +171,96 @@ integration("authenticated control plane", () => {
       await pool.end();
     }
   }, 30_000);
+
+  it("accepts only bound verifier evidence and completes after all requirements pass", async () => {
+    const suffix = randomUUID().replaceAll("-", "").slice(0, 12);
+    const principalId = `principal-${suffix}`;
+    const agentId = `agent-${suffix}`;
+    const principalToken = `mandate_${randomBytes(32).toString("base64url")}`;
+    const agentToken = `mandate_${randomBytes(32).toString("base64url")}`;
+    const testVerifierToken = `mandate_${randomBytes(32).toString("base64url")}`;
+    const reviewVerifierToken = `mandate_${randomBytes(32).toString("base64url")}`;
+    const pool = new pg.Pool({ connectionString, max: 3 });
+
+    try {
+      await pool.query("INSERT INTO principals (id, type) VALUES ($1, 'human'), ('verifier:test-runner', 'service'), ('verifier:independent-review', 'service') ON CONFLICT (id) DO NOTHING", [principalId]);
+      await pool.query("INSERT INTO agents (id, runtime, instance_id) VALUES ($1, 'agentos', $2)", [agentId, `run-${suffix}`]);
+      for (const [credentialId, token, column, identityId] of [
+        [`credential-principal-${suffix}`, principalToken, "principal_id", principalId],
+        [`credential-agent-${suffix}`, agentToken, "agent_id", agentId],
+        [`credential-test-verifier-${suffix}`, testVerifierToken, "principal_id", "verifier:test-runner"],
+        [`credential-review-verifier-${suffix}`, reviewVerifierToken, "principal_id", "verifier:independent-review"],
+      ] as const) {
+        await pool.query(
+          `INSERT INTO control_plane_credentials (id, token_hash, ${column}) VALUES ($1, $2, $3)`,
+          [credentialId, hashCredential(token), identityId],
+        );
+      }
+      const handler = createControlPlaneHandler(new ControlPlaneRepository(pool), (error) => { throw error; });
+      const call = async (method: string, path: string, token: string, requestBody?: unknown) => {
+        const response = await handler(new Request(`https://control.mandate.test${path}`, {
+          method,
+          headers: {
+            authorization: `Bearer ${token}`,
+            ...(requestBody === undefined ? {} : { "content-type": "application/json" }),
+          },
+          ...(requestBody === undefined ? {} : { body: JSON.stringify(requestBody) }),
+        }));
+        return { response, json: await response.json() as Record<string, any> };
+      };
+      const draft = checkoutDraft(suffix, principalId, agentId);
+      await call("POST", "/v1/mandates", principalToken, draft);
+      await call("POST", `/v1/mandates/${draft.id}/transitions`, principalToken, { to: "PROPOSED" });
+      await call("POST", `/v1/mandates/${draft.id}/transitions`, principalToken, { to: "AWAITING_APPROVAL" });
+      await call("POST", `/v1/mandates/${draft.id}/approvals`, principalToken, { nonce: `nonce-${suffix}` });
+      const executionId = `execution-verification-${suffix}`;
+      await call("POST", `/v1/mandates/${draft.id}/executions`, agentToken, { executionId });
+
+      const testVerification = {
+        evidence: {
+          id: `evidence-test-${suffix}`,
+          requirementId: "test-report",
+          type: "test-report",
+          artifactUri: `s3://verification/${suffix}/tests.txt`,
+          digest: `sha256:${"c".repeat(64)}`,
+        },
+        criteria: [
+          { criterionId: "checkout-tests", status: "PASS" },
+          { criterionId: "regression-tests", status: "PASS" },
+        ],
+      };
+      expect((await call("POST", `/v1/executions/${executionId}/verifications`, reviewVerifierToken, testVerification)).response.status).toBe(403);
+      const tests = await call("POST", `/v1/executions/${executionId}/verifications`, testVerifierToken, testVerification);
+      expect(tests.response.status).toBe(201);
+      expect(tests.json.completion.completed).toBe(false);
+
+      const reviewVerification = {
+        evidence: {
+          id: `evidence-review-${suffix}`,
+          requirementId: "review-report",
+          type: "review",
+          artifactUri: `s3://verification/${suffix}/review.txt`,
+          digest: `sha256:${"d".repeat(64)}`,
+        },
+        criteria: [{ criterionId: "independent-review", status: "PASS" }],
+      };
+      const review = await call("POST", `/v1/executions/${executionId}/verifications`, reviewVerifierToken, reviewVerification);
+      expect(review.response.status).toBe(201);
+      expect(review.json.completion).toEqual({ completed: true, reasons: [] });
+      expect((await call("POST", `/v1/executions/${executionId}/verifications`, reviewVerifierToken, reviewVerification)).json.completion.completed).toBe(true);
+      expect((await call("POST", `/v1/executions/${executionId}/verifications`, reviewVerifierToken, {
+        ...reviewVerification,
+        criteria: [{ criterionId: "independent-review", status: "FAIL" }],
+      })).response.status).toBe(409);
+
+      const context = await call("GET", `/v1/mandates/${draft.id}`, principalToken);
+      expect(context.json.mandate.status).toBe("COMPLETED");
+      expect(context.json.execution.finishedAt).toBeTruthy();
+      expect(context.json.evidence.filter((item: { verified: boolean }) => item.verified)).toHaveLength(2);
+      expect(context.json.events.at(-1).type).toBe("MANDATE_COMPLETED");
+      expect(verifyEventChain(context.json.events)).toBe(true);
+    } finally {
+      await pool.end();
+    }
+  }, 30_000);
 });

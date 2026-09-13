@@ -23,6 +23,23 @@ const authorizationBody = z.object({
   projectedTokens: z.number().int().nonnegative().safe().optional(),
   semanticDecision: z.enum(["ALLOW", "DENY", "ESCALATE"]).optional(),
 }).strict();
+const verificationBody = z.object({
+  evidence: z.object({
+    id,
+    requirementId: id,
+    type: z.enum(["test-report", "review", "artifact", "trace", "signature", "state-check"]),
+    artifactUri: z.string().min(1),
+    digest,
+  }).strict(),
+  criteria: z.array(z.object({
+    criterionId: id,
+    status: z.enum(["PASS", "FAIL"]),
+  }).strict()).min(1).max(16).superRefine((criteria, context) => {
+    if (new Set(criteria.map(({ criterionId }) => criterionId)).size !== criteria.length) {
+      context.addIssue({ code: "custom", message: "Criterion IDs must be unique" });
+    }
+  }),
+}).strict();
 const settlementBody = z.object({
   outcome: z.enum(["SUCCEEDED", "FAILED"]),
   usage: z.object({
@@ -162,6 +179,12 @@ export function createControlPlaneHandler(
           ...(parsed.semanticDecision ? { semanticDecision: parsed.semanticDecision } : {}),
         };
         return json(200, await repository.authorizeAction(identity, segment(match[1]!), input), requestId);
+      }
+
+      match = /^\/v1\/executions\/([^/]+)\/verifications$/.exec(url.pathname);
+      if (request.method === "POST" && match) {
+        const input = verificationBody.parse(await body(request));
+        return json(201, await repository.submitVerification(identity, segment(match[1]!), input), requestId);
       }
 
       match = /^\/v1\/executions\/([^/]+)\/actions\/([^/]+)\/settle$/.exec(url.pathname);

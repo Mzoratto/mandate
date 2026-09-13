@@ -9,9 +9,12 @@
     "db:check": "node scripts/check-schema.mjs",
     "credential:create": "node scripts/create-credential.mjs",
     "demo:provision": "node scripts/provision-demo.mjs",
+    "demo:rehearse-agentos": "node scripts/run-agentos-rehearsal.mjs",
+    "verifiers:provision": "node scripts/provision-verifiers.mjs",
     "build:aws": "node scripts/build-aws.mjs"
   },
   "dependencies": {
+    "@mandate/evidence": "workspace:*",
     "@mandate/protocol": "workspace:*",
     "@mandate/runtime": "workspace:*",
     "@mandate/schemas": "workspace:*",

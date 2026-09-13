@@ -505,3 +505,49 @@ Create the minimal public `Mzoratto/checkout-demo` regression repository, reprod
 
 ### Suggested improvement
 Never promote protocol fixtures directly into live authority records. Live provisioning must require an independently resolved resource identity and reject fixture placeholders.
+
+## FL-022
+
+### Task
+Settle a governed AgentOS action with trusted usage.
+
+### Expected
+The action evidence callback to run after the host receives usage for the bound turn.
+
+### Actual
+AgentOS originally published action evidence on `item/completed`, before the later `thread/tokenUsage/updated` notification. A fail-closed settlement callback therefore could not supply trusted accounting.
+
+### Severity
+major
+
+### Time lost
+About seven minutes plus CI time.
+
+### Workaround
+Delay evidence publication until the turn is complete and usage has been validated. The focused 87-test suite and deterministic CI passed; the fix shipped through AgentOS PR #118.
+
+### Suggested improvement
+Treat usage availability as a prerequisite in the AgentOS evidence lifecycle and preserve this event ordering in integration tests.
+
+## FL-023
+
+### Task
+Run an independent read-only Codex review with custom criteria over an uncommitted repair.
+
+### Expected
+`codex exec review --uncommitted 'custom prompt'` to accept the documented positional prompt.
+
+### Actual
+The CLI rejected `--uncommitted` together with a positional prompt despite showing both in usage output.
+
+### Severity
+minor
+
+### Time lost
+Less than a minute.
+
+### Workaround
+Use `codex exec` with an explicit read-only sandbox, ephemeral session, ignored user configuration, and the verifier prompt.
+
+### Suggested improvement
+Align the review subcommand parser with its usage text or document that custom prompts require a different invocation mode.
