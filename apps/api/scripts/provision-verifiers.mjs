@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import pg from "pg";
-import { hashCredential } from "../src/control-plane/repository.ts";
+
+const hashCredential = (token) => `sha256:${createHash("sha256").update(token, "utf8").digest("hex")}`;
 
 const required = (name) => {
   const value = process.env[name];

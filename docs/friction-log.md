@@ -551,3 +551,49 @@ Use `codex exec` with an explicit read-only sandbox, ephemeral session, ignored 
 
 ### Suggested improvement
 Align the review subcommand parser with its usage text or document that custom prompts require a different invocation mode.
+
+## FL-024
+
+### Task
+Provision production verifier credentials with the same hashing representation as the API.
+
+### Expected
+Node.js to execute a script that imports the TypeScript repository helper.
+
+### Actual
+Local Node.js 24 stripped the imported types successfully, but the workflow's Node.js 22 runtime rejected the repository's constructor parameter properties with `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX` before opening a transaction.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Keep the tiny algorithm-qualified SHA-256 expression inside the JavaScript provisioning boundary and retain API authentication tests for the stored representation.
+
+### Suggested improvement
+Do not rely on Node type stripping for operational scripts until every supported runtime handles the repository's TypeScript syntax, or publish a compiled utility boundary.
+
+## FL-025
+
+### Task
+Deploy the updated Lambda through GitHub OIDC.
+
+### Expected
+The pinned AWS credential action to run without runtime deprecation warnings.
+
+### Actual
+GitHub reported that the pinned action targets deprecated Node.js 20 and forced it onto Node.js 24.
+
+### Severity
+minor
+
+### Time lost
+No deployment time; follow-up required.
+
+### Workaround
+The deployment completed successfully under GitHub's forced Node.js 24 compatibility path.
+
+### Suggested improvement
+Upgrade to a reviewed digest of an AWS credential-action release that declares a supported Node runtime, then rerun the OIDC deployment check.
