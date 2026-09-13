@@ -1,0 +1,28 @@
+{
+  "input": {
+    "parentFixture": "valid-checkout-mandate.json",
+    "childFixture": "valid-child-mandate.json",
+    "replaceChildScope": {
+      "resources": [
+        {
+          "kind": "repository",
+          "resource": "checkout-demo",
+          "include": [
+            "services/catalog/**",
+            "services/checkout/payments/**"
+          ],
+          "exclude": []
+        }
+      ],
+      "environments": [
+        "local",
+        "test"
+      ]
+    }
+  },
+  "expected": {
+    "schemaValid": true,
+    "authoritySubset": false,
+    "violatedRule": "RESOURCE_SCOPE_EXPANSION"
+  }
+}

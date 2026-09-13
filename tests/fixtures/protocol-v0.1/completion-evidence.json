@@ -1,0 +1,83 @@
+{
+  "input": {
+    "mandateFixture": "valid-checkout-mandate.json",
+    "now": "2026-10-01T00:21:00.000Z",
+    "currentAssumptions": [
+      {
+        "key": "repositoryCommit",
+        "valueHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "invalidatesOnChange": true
+      }
+    ],
+    "evidence": [
+      {
+        "id": "evidence-review-001",
+        "mandateId": "M-1047",
+        "mandateVersion": 1,
+        "requirementId": "review-report",
+        "type": "review",
+        "producer": "reviewer-agent-001",
+        "artifactUri": "artifact://reviews/checkout-001.json",
+        "digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "verified": true,
+        "verifiedBy": "verifier:independent-review",
+        "createdAt": "2026-10-01T00:20:00.000Z"
+      },
+      {
+        "id": "evidence-tests-001",
+        "mandateId": "M-1047",
+        "mandateVersion": 1,
+        "requirementId": "test-report",
+        "type": "test-report",
+        "producer": "test-runner-001",
+        "artifactUri": "artifact://tests/checkout-001.json",
+        "digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "verified": true,
+        "verifiedBy": "verifier:test-runner",
+        "createdAt": "2026-10-01T00:19:00.000Z"
+      }
+    ],
+    "criterionResults": [
+      {
+        "criterionId": "checkout-tests",
+        "mandateId": "M-1047",
+        "mandateVersion": 1,
+        "status": "PASS",
+        "verifier": "verifier:test-runner",
+        "evidenceIds": [
+          "evidence-tests-001"
+        ],
+        "verifiedAt": "2026-10-01T00:19:30.000Z"
+      },
+      {
+        "criterionId": "independent-review",
+        "mandateId": "M-1047",
+        "mandateVersion": 1,
+        "status": "PASS",
+        "verifier": "verifier:independent-review",
+        "evidenceIds": [
+          "evidence-review-001"
+        ],
+        "verifiedAt": "2026-10-01T00:20:30.000Z"
+      },
+      {
+        "criterionId": "regression-tests",
+        "mandateId": "M-1047",
+        "mandateVersion": 1,
+        "status": "PASS",
+        "verifier": "verifier:test-runner",
+        "evidenceIds": [
+          "evidence-tests-001"
+        ],
+        "verifiedAt": "2026-10-01T00:19:30.000Z"
+      }
+    ],
+    "openAmendments": [],
+    "unsettledActions": [],
+    "unresolvedViolations": []
+  },
+  "expected": {
+    "canComplete": true,
+    "nextStatus": "COMPLETED"
+  }
+}

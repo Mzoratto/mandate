@@ -1,0 +1,123 @@
+{
+  "input": {
+    "parentFixture": "valid-checkout-mandate.json",
+    "child": {
+      "protocolVersion": "0.1",
+      "id": "M-1047-A",
+      "version": 1,
+      "parent": "M-1047@1",
+      "principal": {
+        "type": "human",
+        "id": "alexa-user-001"
+      },
+      "subject": {
+        "agentId": "agentos-payment-diagnostics",
+        "runtime": "agentos",
+        "instanceId": "run-001-child-a"
+      },
+      "goal": {
+        "statement": "Diagnose the checkout payment adapter regression.",
+        "successCriteria": [
+          {
+            "id": "diagnosis",
+            "type": "state",
+            "description": "Produce a diagnosis tied to inspected checkout payment code.",
+            "verifier": "verifier:parent-agent",
+            "required": true
+          }
+        ]
+      },
+      "scope": {
+        "resources": [
+          {
+            "kind": "repository",
+            "resource": "checkout-demo",
+            "include": [
+              "services/checkout/payments/**",
+              "tests/checkout/payments/**"
+            ],
+            "exclude": []
+          }
+        ],
+        "environments": [
+          "local",
+          "test"
+        ]
+      },
+      "authority": {
+        "allowedEffects": [
+          {
+            "type": "CODE_READ"
+          },
+          {
+            "type": "LOCAL_COMMAND_EXECUTION",
+            "environments": [
+              "local",
+              "test"
+            ]
+          }
+        ],
+        "forbiddenEffects": [
+          {
+            "type": "DATABASE_SCHEMA_MUTATION"
+          },
+          {
+            "type": "PRODUCTION_DEPLOYMENT"
+          },
+          {
+            "type": "SECRET_WRITE"
+          }
+        ],
+        "approvalRequiredEffects": []
+      },
+      "limits": {
+        "monetaryBudgetUsd": 1
+      },
+      "delegation": {
+        "allowed": false,
+        "maxDepth": 0,
+        "requireExplicitChildScope": true
+      },
+      "escalation": {
+        "conditions": [
+          {
+            "type": "SCOPE_EXPANSION"
+          },
+          {
+            "type": "UNCERTAIN_CLASSIFICATION"
+          }
+        ],
+        "defaultAction": "BLOCK"
+      },
+      "evidence": {
+        "requirements": [
+          {
+            "id": "diagnosis-artifact",
+            "type": "artifact",
+            "required": true,
+            "verifier": "verifier:parent-agent"
+          }
+        ]
+      },
+      "validity": {
+        "notBefore": "2026-10-01T00:01:00.000Z",
+        "expiresAt": "2026-10-23T18:00:00.000Z"
+      },
+      "assumptions": [
+        {
+          "key": "repositoryCommit",
+          "valueHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "invalidatesOnChange": true
+        }
+      ],
+      "status": "ACTIVE",
+      "createdAt": "2026-10-01T00:02:00.000Z",
+      "approvedAt": "2026-10-01T00:02:00.000Z"
+    }
+  },
+  "expected": {
+    "schemaValid": true,
+    "authoritySubset": true,
+    "strictSubset": true
+  }
+}

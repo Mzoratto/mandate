@@ -1,0 +1,11 @@
+{
+  "name": "@mandate/testing",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@mandate/evidence": "workspace:*",
+    "@mandate/protocol": "workspace:*",
+    "@mandate/runtime": "workspace:*"
+  }
+}

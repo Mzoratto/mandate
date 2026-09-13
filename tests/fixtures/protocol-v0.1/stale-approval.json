@@ -1,0 +1,37 @@
+{
+  "input": {
+    "mandateFixture": "valid-checkout-mandate.json",
+    "now": "2026-10-01T00:10:00.000Z",
+    "currentAssumptions": [
+      {
+        "key": "repositoryCommit",
+        "valueHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "invalidatesOnChange": true
+      }
+    ],
+    "proposedAction": {
+      "actionId": "action-001",
+      "tool": "filesystem",
+      "operation": "writeFile",
+      "inputs": {
+        "path": "services/checkout/validation.ts"
+      }
+    },
+    "normalizedEffects": [
+      {
+        "type": "CODE_MODIFICATION",
+        "resources": [
+          "repository://checkout-demo/services/checkout/validation.ts"
+        ],
+        "environment": "local",
+        "reversible": true,
+        "confidence": 1
+      }
+    ]
+  },
+  "expected": {
+    "decision": "INVALIDATE_APPROVAL",
+    "mandateStatus": "SUSPENDED",
+    "reason": "ASSUMPTION_CHANGED"
+  }
+}

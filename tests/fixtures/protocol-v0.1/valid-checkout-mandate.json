@@ -1,0 +1,158 @@
+{
+  "input": {
+    "protocolVersion": "0.1",
+    "id": "M-1047",
+    "version": 1,
+    "principal": {
+      "type": "human",
+      "id": "alexa-user-001"
+    },
+    "subject": {
+      "agentId": "agentos-checkout",
+      "runtime": "agentos",
+      "instanceId": "run-001"
+    },
+    "goal": {
+      "statement": "Restore the checkout test suite and repair the checkout regression.",
+      "successCriteria": [
+        {
+          "id": "checkout-tests",
+          "type": "test",
+          "description": "The checkout test suite passes.",
+          "verifier": "verifier:test-runner",
+          "required": true
+        },
+        {
+          "id": "independent-review",
+          "type": "review",
+          "description": "An independent review passes.",
+          "verifier": "verifier:independent-review",
+          "required": true
+        },
+        {
+          "id": "regression-tests",
+          "type": "test",
+          "description": "The regression test suite passes.",
+          "verifier": "verifier:test-runner",
+          "required": true
+        }
+      ]
+    },
+    "scope": {
+      "resources": [
+        {
+          "kind": "repository",
+          "resource": "checkout-demo",
+          "include": [
+            "services/checkout/**",
+            "tests/checkout/**"
+          ],
+          "exclude": []
+        }
+      ],
+      "environments": [
+        "local",
+        "test"
+      ]
+    },
+    "authority": {
+      "allowedEffects": [
+        {
+          "type": "BRANCH_CREATION"
+        },
+        {
+          "type": "CODE_MODIFICATION"
+        },
+        {
+          "type": "CODE_READ"
+        },
+        {
+          "type": "LOCAL_COMMAND_EXECUTION",
+          "environments": [
+            "local",
+            "test"
+          ]
+        },
+        {
+          "type": "TEST_MODIFICATION"
+        }
+      ],
+      "forbiddenEffects": [
+        {
+          "type": "DATABASE_SCHEMA_MUTATION"
+        },
+        {
+          "type": "PRODUCTION_DEPLOYMENT"
+        },
+        {
+          "type": "SECRET_WRITE"
+        }
+      ],
+      "approvalRequiredEffects": []
+    },
+    "limits": {
+      "monetaryBudgetUsd": 5
+    },
+    "delegation": {
+      "allowed": true,
+      "maxDepth": 1,
+      "requireExplicitChildScope": true
+    },
+    "escalation": {
+      "conditions": [
+        {
+          "type": "ASSUMPTION_INVALIDATED"
+        },
+        {
+          "type": "BUDGET_INCREASE"
+        },
+        {
+          "type": "EVIDENCE_FAILURE"
+        },
+        {
+          "type": "FORBIDDEN_EFFECT_REQUIRED"
+        },
+        {
+          "type": "SCOPE_EXPANSION"
+        },
+        {
+          "type": "UNCERTAIN_CLASSIFICATION"
+        }
+      ],
+      "defaultAction": "BLOCK"
+    },
+    "evidence": {
+      "requirements": [
+        {
+          "id": "review-report",
+          "type": "review",
+          "required": true,
+          "verifier": "verifier:independent-review"
+        },
+        {
+          "id": "test-report",
+          "type": "test-report",
+          "required": true,
+          "verifier": "verifier:test-runner"
+        }
+      ]
+    },
+    "validity": {
+      "notBefore": "2026-10-01T00:00:00.000Z",
+      "expiresAt": "2026-10-23T19:00:00.000Z"
+    },
+    "assumptions": [
+      {
+        "key": "repositoryCommit",
+        "valueHash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "invalidatesOnChange": true
+      }
+    ],
+    "status": "ACTIVE",
+    "createdAt": "2026-10-01T00:00:00.000Z",
+    "approvedAt": "2026-10-01T00:01:00.000Z"
+  },
+  "expected": {
+    "schemaValid": true
+  }
+}

@@ -1,0 +1,113 @@
+{
+  "input": {
+    "baseFixture": "valid-checkout-mandate.json",
+    "amendment": {
+      "id": "A-1047-001",
+      "mandateId": "M-1047",
+      "baseVersion": 1,
+      "baseVersionDigest": "sha256:f5c6ff202ed7c04f4b745d90daadabbdbb015dfea3531503b5cd752ebb6b8f24",
+      "requestedChanges": [
+        {
+          "op": "replace",
+          "path": "/authority",
+          "value": {
+            "allowedEffects": [
+              {
+                "type": "BRANCH_CREATION"
+              },
+              {
+                "type": "CODE_MODIFICATION"
+              },
+              {
+                "type": "CODE_READ"
+              },
+              {
+                "type": "DATABASE_SCHEMA_MUTATION",
+                "environments": [
+                  "test"
+                ]
+              },
+              {
+                "type": "LOCAL_COMMAND_EXECUTION",
+                "environments": [
+                  "local",
+                  "test"
+                ]
+              },
+              {
+                "type": "TEST_MODIFICATION"
+              }
+            ],
+            "forbiddenEffects": [
+              {
+                "type": "PRODUCTION_DEPLOYMENT"
+              },
+              {
+                "type": "SECRET_WRITE"
+              }
+            ],
+            "approvalRequiredEffects": []
+          }
+        },
+        {
+          "op": "replace",
+          "path": "/scope",
+          "value": {
+            "resources": [
+              {
+                "kind": "database",
+                "resource": "checkout-db"
+              },
+              {
+                "kind": "repository",
+                "resource": "checkout-demo",
+                "include": [
+                  "services/checkout/**",
+                  "tests/checkout/**"
+                ],
+                "exclude": []
+              }
+            ],
+            "environments": [
+              "local",
+              "test"
+            ]
+          }
+        }
+      ],
+      "reason": "The proposed implementation stores a persistent Stripe idempotency key in a new database column.",
+      "discoveryEvidence": [
+        {
+          "id": "evidence-db-design-001",
+          "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+        }
+      ],
+      "alternatives": [
+        {
+          "description": "Use the existing metadata field.",
+          "authorityChangeRequired": false,
+          "reversible": true
+        },
+        {
+          "description": "Add a database column through a migration.",
+          "authorityChangeRequired": true,
+          "reversible": false
+        }
+      ],
+      "riskDelta": {
+        "from": "MEDIUM",
+        "to": "HIGH",
+        "reasons": [
+          "Adds database schema mutation authority."
+        ]
+      },
+      "rollback": "Drop the added test schema column and restore the prior schema snapshot.",
+      "status": "PENDING"
+    }
+  },
+  "expected": {
+    "schemaValid": true,
+    "authorityExpansion": true,
+    "principalApprovalRequired": true
+  }
+}

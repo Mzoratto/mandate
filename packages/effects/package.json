@@ -1,0 +1,9 @@
+{
+  "name": "@mandate/effects",
+  "version": "0.1.0",
+  "type": "module",
+  "exports": "./src/index.ts",
+  "dependencies": {
+    "@mandate/protocol": "workspace:*"
+  }
+}
