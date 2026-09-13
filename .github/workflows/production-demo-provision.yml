@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: Type PROVISION to rotate credentials and ensure the live checkout demo
+        description: Type PROVISION to rotate credentials and stage the checkout Mandate for human approval
         required: true
 
 permissions:
@@ -44,5 +44,5 @@ jobs:
           echo "::add-mask::$database_url"
           echo "DATABASE_URL=$database_url" >> "$GITHUB_ENV"
 
-      - name: Provision identities and active Mandate
+      - name: Provision identities and stage Mandate
         run: pnpm --filter @mandate/api demo:provision

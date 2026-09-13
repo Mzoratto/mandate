@@ -14,8 +14,7 @@ const principalToken = required("MANDATE_DEMO_PRINCIPAL_TOKEN");
 const agentToken = required("MANDATE_DEMO_AGENT_TOKEN");
 const principalId = "mandate-demo-principal";
 const agentId = "agentos-checkout";
-const mandateId = "M-checkout-live-001";
-const executionId = "execution-checkout-live-001";
+const mandateId = "M-checkout-live-002";
 const hash = (token) => `sha256:${createHash("sha256").update(token, "utf8").digest("hex")}`;
 const client = new pg.Client({ connectionString: databaseUrl });
 
@@ -122,24 +121,15 @@ for (const transition of ["PROPOSED", "AWAITING_APPROVAL"]) {
     status = changed.result.mandate.status;
   }
 }
-if (status === "AWAITING_APPROVAL") {
-  const approved = await api("POST", `/v1/mandates/${mandateId}/approvals`, principalToken, {
-    nonce: "checkout-live-v1-approval",
-  });
-  if (approved.response.status !== 201) throw new Error(`Demo approval failed (${approved.response.status})`);
-  status = approved.result.mandate.status;
+if (status !== "AWAITING_APPROVAL") {
+  throw new Error(`Demo Mandate must await explicit human approval (${status})`);
 }
-if (status !== "ACTIVE") throw new Error(`Demo Mandate is not active (${status})`);
-
-const execution = await api("POST", `/v1/mandates/${mandateId}/executions`, agentToken, { executionId });
-if (execution.response.status !== 201) throw new Error(`Demo execution start failed (${execution.response.status})`);
 context = await api("GET", `/v1/mandates/${mandateId}`, principalToken);
-if (!context.response.ok || context.result.execution?.id !== executionId) {
-  throw new Error("Demo execution was not durably visible");
+if (!context.response.ok || context.result.mandate?.status !== "AWAITING_APPROVAL") {
+  throw new Error("Demo Mandate was not durably visible for human review");
 }
 console.log(JSON.stringify({
   mandateId,
-  executionId,
   status: context.result.mandate.status,
   versionDigest: context.result.versionDigest,
 }));

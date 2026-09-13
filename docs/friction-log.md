@@ -459,3 +459,26 @@ Use the same algorithm-qualified storage representation and rerun the idempotent
 
 ### Suggested improvement
 Export credential hashing through an executable package boundary or assert the persisted format in provisioning tests instead of duplicating its representation.
+
+## FL-020
+
+### Task
+Stage a production checkout Mandate for a live AgentOS exercise.
+
+### Expected
+Automation to create the draft and stop at `AWAITING_APPROVAL` for a separate human decision.
+
+### Actual
+The first provisioning workflow also called the principal approval endpoint and started an execution. Although the credential was identity-bound, workflow possession of it did not constitute a distinct human review. No AgentOS action was executed and no completion evidence was published.
+
+### Severity
+critical
+
+### Time lost
+About five minutes.
+
+### Workaround
+Change the protected repository assumption, force the next authorization check to emit `APPROVAL_INVALIDATED`, and confirm the mistakenly activated Mandate moved to `SUSPENDED`. Stage a new Mandate that stops at `AWAITING_APPROVAL`; require the user to approve its disclosed digest before execution starts.
+
+### Suggested improvement
+Keep credential provisioning, proposal staging, principal approval, and agent execution as separate authority ceremonies. Automation must never translate possession of a principal credential into approval.
