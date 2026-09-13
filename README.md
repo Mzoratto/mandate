@@ -8,7 +8,7 @@ Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md
 
 ## Current status
 
-The protocol/runtime path is implemented and adversarially tested. The reference dashboard is implemented, and Neon schema migrations are exercised on ephemeral database branches in CI. Live AgentOS, Alexa+, AWS enforcement, and the authenticated control plane remain fail-closed until their external identities and integration boundaries are configured.
+The protocol/runtime path is implemented and adversarially tested. The reference dashboard is implemented, and the initial control-plane schema is active on the configured Neon project after branch-isolated verification. Live AgentOS, Alexa+, AWS enforcement, and the authenticated control plane remain fail-closed until their external identities and integration boundaries are configured.
 
 ## Development
 

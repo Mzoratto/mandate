@@ -51,6 +51,8 @@ Semantic classification may add effects, deny, or escalate. It cannot remove det
 
 Application connections may use a pooled `DATABASE_URL`; schema migrations use a direct `DATABASE_URL`. `.github/workflows/neon-schema-check.yml` creates an expiring branch from the configured Neon project, runs every migration twice to prove idempotency, verifies the expected tables, and deletes the branch. Production migration is an explicit manual workflow from `main` through the `Production` GitHub environment.
 
+The initial schema was verified on an ephemeral branch by [workflow run 34761092644](https://github.com/Mzoratto/mandate/actions/runs/34761092644), then applied to the default Neon branch and verified as 15 tables by [workflow run 34761126817](https://github.com/Mzoratto/mandate/actions/runs/34761126817).
+
 ## AgentOS boundary
 
 Mandate core imports no AgentOS types. A host bridge must prove all four capabilities before live execution:
