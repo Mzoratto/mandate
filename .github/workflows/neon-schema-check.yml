@@ -1,0 +1,66 @@
+name: Neon schema check
+
+on:
+  pull_request:
+    paths:
+      - "apps/api/migrations/**"
+      - "apps/api/scripts/**"
+      - "apps/api/src/db/**"
+      - "apps/api/package.json"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/neon-schema-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-schema-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+      BRANCH_NAME: mandate-ci-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+
+      - name: Create ephemeral Neon branch
+        id: neon-branch
+        run: |
+          expires_at="$(date -u -d '+2 hours' +'%Y-%m-%dT%H:%M:%SZ')"
+          npx --yes neonctl@4.17.3 branches create \
+            --project-id "$NEON_PROJECT_ID" \
+            --name "$BRANCH_NAME" \
+            --expires-at "$expires_at" \
+            --no-secrets \
+            --no-color
+          database_url="$(npx --yes neonctl@4.17.3 connection-string "$BRANCH_NAME" \
+            --project-id "$NEON_PROJECT_ID" \
+            --ssl require \
+            --no-color)"
+          echo "::add-mask::$database_url"
+          echo "DATABASE_URL=$database_url" >> "$GITHUB_ENV"
+
+      - name: Apply and verify migrations
+        run: |
+          pnpm --filter @mandate/api db:migrate
+          pnpm --filter @mandate/api db:migrate
+          pnpm --filter @mandate/api db:check
+
+      - name: Delete ephemeral Neon branch
+        if: always() && steps.neon-branch.outcome == 'success'
+        run: |
+          npx --yes neonctl@4.17.3 branches delete "$BRANCH_NAME" \
+            --project-id "$NEON_PROJECT_ID" \
+            --no-color || true

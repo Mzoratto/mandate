@@ -41,16 +41,17 @@ The normative rules are in [`protocol-v0.1.md`](protocol-v0.1.md). This page des
 
 A production execution host must prove isolated worktrees, before-action interception, stop on denial, and evidence callbacks. Missing capability blocks startup. Dry-run mapping does not count as governed execution evidence.
 
-Database approval nonces require a unique constraint. Version, approval, authorization-decision, and event records must be append-only to the application identity. Those database permissions and migrations are not active until a Lakebase Postgres branch is provisioned.
+Database approval nonces have a unique replay-guard index. Migration files are digest-pinned after application and serialized with a Postgres advisory lock. Version, approval, authorization-decision, and event records must still be made append-only to the eventual application identity; the migration owner necessarily retains schema privileges.
 
 Verifier and assumption identities must come from authenticated server context. A string supplied by an agent is not a verifier or trusted assumption source.
 
 ## Current security gaps
 
 - no authenticated API exists;
-- no database transaction path has been exercised;
+- schema migrations are CI-verified, but no durable transactional repository operations exist yet;
+- database roles have not yet separated migration ownership from append-only application access;
 - no IAM or network boundary prevents direct tool use;
-- the local AgentOS checkout lacks the required live bridge;
+- the AgentOS interception seam is implemented but not yet injected by an authenticated control plane;
 - Alexa+, AgentCore, and CloudWatch are not connected;
 - generic shell interpretation is intentionally incomplete and escalates;
 - local frozen objects do not substitute for database immutability.

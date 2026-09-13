@@ -137,3 +137,118 @@ Keep the runtime Drizzle schema and remove Drizzle Kit from the unattended insta
 
 ### Suggested improvement
 Migration-tool setup guides should document pnpm's dependency build-script approval step and identify which exact transitive packages require lifecycle execution.
+
+## FL-006
+
+### Task
+Initialize shadcn/ui non-interactively in the pnpm workspace.
+
+### Expected
+The shadcn CLI to use the project-pinned package manager through Corepack.
+
+### Actual
+The CLI detected pnpm from the lockfile but spawned the literal `pnpm` binary, which was not on `PATH`; `corepack pnpm` being available was insufficient. Initialization stopped after writing `components.json` and before dependencies were installed.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Enable Corepack's pnpm shim, verify the pinned version, and rerun the idempotent initialization command.
+
+### Suggested improvement
+The shadcn CLI should invoke Corepack when a repository pins pnpm but no global pnpm binary exists, or document the shim prerequisite in its preflight error.
+
+## FL-007
+
+### Task
+Persist the dashboard surface brief after updating Impeccable.
+
+### Expected
+The `surface-brief.mjs` command referenced by the loaded workflow to remain available for the current session.
+
+### Actual
+The authorized update replaced the Node `.mjs` command set with the v4.3.1 `impeccable` launcher, so the previously loaded command path no longer existed.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Reload the updated skill instructions and invoke the equivalent `impeccable surface-brief` command through the new launcher.
+
+### Suggested improvement
+The updater should retain compatibility shims for command paths used by active sessions or warn that in-progress workflows must switch launchers immediately.
+
+## FL-008
+
+### Task
+Run the production dashboard on a non-default port for final browser verification.
+
+### Expected
+Passing `-- -p 3002` through the pnpm script to configure Next.js.
+
+### Actual
+The extra separator was forwarded literally, so Next.js interpreted `-p` as a project directory; the next available port was also occupied by an unrelated unresponsive process.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Set `PORT` in the command environment and choose a verified free port before starting the server.
+
+### Suggested improvement
+Document `PORT=<port> pnpm start` as the portable production-server invocation and check the target port before launch.
+
+## FL-009
+
+### Task
+Run the complete AgentOS regression suite after adding the Mandate interception seam.
+
+### Expected
+The full suite to provide one clean integration signal after the new targeted tests passed.
+
+### Actual
+The suite reported one stale dashboard-copy assertion unrelated to the touched bridge files, and one immutable-launcher test failed only under the concurrent full run before passing 10/10 in isolation. The dashboard assertion remained reproducible in isolation against the pre-existing warm-workspace render.
+
+### Severity
+minor
+
+### Time lost
+About four minutes.
+
+### Workaround
+Run the bridge and human-runner tests directly, rerun the immutable-launcher suite in isolation, and preserve the unrelated dashboard mismatch for its existing owner instead of rewriting that surface during this integration.
+
+### Suggested improvement
+Keep dashboard copy assertions synchronized with approved visual refreshes, and isolate process-heavy immutable-launcher tests from unrelated concurrent suites when resource contention can cause false negatives.
+
+## FL-010
+
+### Task
+Commit the new Next.js dashboard without generated build output.
+
+### Expected
+The repository ignore rules to exclude framework output beneath the new workspace.
+
+### Actual
+The root ignore file covered `dist/` but not `.next/`, so the first commit staged generated development and production artifacts before the oversized status output exposed the mistake.
+
+### Severity
+major
+
+### Time lost
+About three minutes.
+
+### Workaround
+Add `.next/` to the root ignore file, remove generated output from the index, and rewrite only the two just-pushed local commits into one clean commit with `--force-with-lease`.
+
+### Suggested improvement
+Add framework output directories to the root ignore rules before the first dev server or production build, and inspect `git status --short` for generated directories before committing.

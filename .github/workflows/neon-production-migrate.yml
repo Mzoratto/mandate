@@ -1,0 +1,43 @@
+name: Neon production migration
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-production-schema
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: github.ref == 'refs/heads/main'
+    environment: Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+
+      - name: Resolve the default-branch connection
+        run: |
+          database_url="$(npx --yes neonctl@4.17.3 connection-string \
+            --project-id "$NEON_PROJECT_ID" \
+            --ssl require \
+            --no-color)"
+          echo "::add-mask::$database_url"
+          echo "DATABASE_URL=$database_url" >> "$GITHUB_ENV"
+
+      - name: Apply and verify migrations
+        run: |
+          pnpm --filter @mandate/api db:migrate
+          pnpm --filter @mandate/api db:check

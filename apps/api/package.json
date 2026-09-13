@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "db:migrate": "node scripts/migrate.mjs",
+    "db:check": "node scripts/check-schema.mjs"
+  },
   "dependencies": {
     "@mandate/protocol": "workspace:*",
     "drizzle-orm": "latest",

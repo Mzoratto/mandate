@@ -27,7 +27,8 @@ Packages remain runtime-neutral:
 | `@mandate/evidence` | Evidence ingestion, verifier binding, completion guard |
 | `@mandate/testing` | In-memory end-to-end governance harness; not production enforcement |
 | `@mandate/adapter-agentos` | Runtime-neutral bridge contract and fail-closed AgentOS capability gate |
-| `@mandate/api` | Lakebase Postgres Drizzle schema and connection factory |
+| `@mandate/api` | Lakebase Postgres schema, migration runner, schema verifier, and connection factory |
+| `@mandate/dashboard` | Responsive illustrative authority console and amendment-review flow |
 
 ## Enforcement path
 
@@ -46,9 +47,9 @@ Semantic classification may add effects, deny, or escalate. It cannot remove det
 
 ## Persistence
 
-`apps/api/src/db/schema.ts` defines the durable control-plane records for principals, agents, immutable Mandate versions, approvals, amendments, executions, actions, effects, authorization decisions, delegations, evidence, criterion results, and events.
+`apps/api/src/db/schema.ts` defines the durable control-plane records for principals, agents, immutable Mandate versions, approvals, amendments, executions, actions, effects, authorization decisions, delegations, evidence, criterion results, and events. Ordered SQL migrations live in `apps/api/migrations`; the runner records immutable SHA-256 digests under an advisory lock and rejects modified applied migrations.
 
-The application uses a pooled `DATABASE_URL`. Migration tooling must use a direct `DATABASE_URL_UNPOOLED`. No Neon project or schema has been provisioned yet.
+Application connections may use a pooled `DATABASE_URL`; schema migrations use a direct `DATABASE_URL`. `.github/workflows/neon-schema-check.yml` creates an expiring branch from the configured Neon project, runs every migration twice to prove idempotency, verifies the expected tables, and deletes the branch. Production migration is an explicit manual workflow from `main` through the `Production` GitHub environment.
 
 ## AgentOS boundary
 
@@ -59,13 +60,13 @@ Mandate core imports no AgentOS types. A host bridge must prove all four capabil
 3. stop-on-denial behavior;
 4. evidence callbacks.
 
-The available local AgentOS Lite checkout does not currently expose that complete bridge. The adapter therefore permits mapping and dry-run integration but fails closed for live governed execution.
+The companion AgentOS Lite checkout now exposes an opt-in interceptor on its app-server human-approval path. Bound command and file-change requests are normalized and sent to Mandate before the existing human gate; denial stops the phase, and allowed items must publish completion evidence. The default AgentOS supervisor does not activate this hook, so live execution remains fail-closed until the authenticated Mandate control plane injects the callbacks.
 
 ## Not yet implemented
 
 - authenticated HTTP control plane;
 - durable transactional repository operations;
-- dashboard and amendment UI;
+- dashboard-backed authenticated data flows;
 - Alexa+ MCP server and MCP App;
 - AgentCore Gateway/Policy enforcement;
 - CloudWatch correlation;

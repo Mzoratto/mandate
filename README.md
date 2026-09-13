@@ -8,7 +8,7 @@ Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md
 
 ## Current status
 
-The local protocol/runtime path is implemented and adversarially tested. Live AgentOS, Neon, Alexa+, and AWS enforcement remain fail-closed until their external identities and integration boundaries are approved and configured.
+The protocol/runtime path is implemented and adversarially tested. The reference dashboard is implemented, and Neon schema migrations are exercised on ephemeral database branches in CI. Live AgentOS, Alexa+, AWS enforcement, and the authenticated control plane remain fail-closed until their external identities and integration boundaries are configured.
 
 ## Development
 
@@ -16,7 +16,17 @@ The local protocol/runtime path is implemented and adversarially tested. Live Ag
 corepack pnpm install
 corepack pnpm test
 corepack pnpm typecheck
+corepack pnpm --filter @mandate/dashboard build
 ```
+
+Run the dashboard with `corepack pnpm --filter @mandate/dashboard dev`. Database migrations require a direct `DATABASE_URL`:
+
+```bash
+DATABASE_URL='postgresql://…' corepack pnpm --filter @mandate/api db:migrate
+DATABASE_URL='postgresql://…' corepack pnpm --filter @mandate/api db:check
+```
+
+GitHub Actions uses the repository secret `NEON_API_KEY` and variable `NEON_PROJECT_ID`. Pull requests test migrations on an expiring Neon branch; the production migration workflow is manual and restricted to `main`.
 
 ## License
 
