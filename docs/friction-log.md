@@ -298,3 +298,26 @@ Use the already-resolved `next@16.3.5` and compatible `@react-three/fiber@9.7.0`
 
 ### Suggested improvement
 Keep frontend runtime versions exact in the dashboard package and prefer versions already validated by the workspace's supply-chain and package caches when no protocol behavior depends on an older patch.
+
+## FL-013
+
+### Task
+Exercise the authenticated control-plane approval flow against an ephemeral Neon branch.
+
+### Expected
+Node-postgres to encode all JavaScript values passed to `jsonb` columns as JSON.
+
+### Actual
+Node-postgres encoded JavaScript arrays as PostgreSQL array literals rather than JSON. The first integration run failed while inserting approval assumption hashes with `invalid input syntax for type json`; the same latent defect affected effect resources and decision reason arrays.
+
+### Severity
+major
+
+### Time lost
+About four minutes.
+
+### Workaround
+Serialize every object or array bound to a `jsonb` parameter explicitly with `JSON.stringify`, then rerun the real-database integration test.
+
+### Suggested improvement
+Treat explicit JSON serialization as part of the repository boundary and retain the Neon integration flow as the regression test; static TypeScript checks cannot distinguish PostgreSQL array encoding from JSON encoding.

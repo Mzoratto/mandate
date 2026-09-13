@@ -125,6 +125,10 @@ function fail(status: number, code: string, message: string): never {
   throw new ControlPlaneError(status, code, message);
 }
 
+function jsonb(value: unknown): string {
+  return JSON.stringify(value);
+}
+
 function iso(value: Timestamp): string {
   return typeof value === "string" ? new Date(value).toISOString() : value.toISOString();
 }
@@ -388,7 +392,7 @@ export class ControlPlaneRepository {
         sequence.toString(),
         event.type,
         event.actor,
-        event.payload,
+        jsonb(event.payload),
         event.timestamp,
         event.previousEventHash ?? null,
         event.eventHash,
@@ -435,7 +439,7 @@ export class ControlPlaneRepository {
         `INSERT INTO mandate_versions
           (mandate_id, version, content, content_digest, created_at)
          VALUES ($1, $2, $3, $4, $5)`,
-        [mandate.id, mandate.version, mandate, digest, mandate.createdAt],
+        [mandate.id, mandate.version, jsonb(mandate), digest, mandate.createdAt],
       );
       for (const assumption of mandate.assumptions) {
         await client.query(
@@ -504,7 +508,7 @@ export class ControlPlaneRepository {
           approved.approval.mandateVersion,
           approved.approval.mandateVersionDigest,
           identity.id,
-          approved.approval.assumptionHashes,
+          jsonb(approved.approval.assumptionHashes),
           approved.approval.nonce,
           approved.approval.approvedAt,
           approved.approval.supersedesApprovalId ?? null,
@@ -703,7 +707,7 @@ export class ControlPlaneRepository {
           executionId,
           input.proposedAction.tool,
           input.proposedAction.operation,
-          input.proposedAction.inputs,
+          jsonb(input.proposedAction.inputs),
           requestDigest,
           status,
           now,
@@ -718,7 +722,7 @@ export class ControlPlaneRepository {
             deterministicId("effect", { actionId: input.proposedAction.actionId, index, effect }),
             input.proposedAction.actionId,
             effect.type,
-            effect.resources,
+            jsonb(effect.resources),
             effect.environment ?? null,
             effect.reversible,
             effect.confidence.toFixed(3),
@@ -739,8 +743,8 @@ export class ControlPlaneRepository {
           authorizationId,
           input.proposedAction.actionId,
           result.decision,
-          result.reasons,
-          result.violatedRules,
+          jsonb(result.reasons),
+          jsonb(result.violatedRules),
           result.amendmentSuggested ?? false,
           current.versionDigest,
           now,
