@@ -436,3 +436,26 @@ Remove the unneeded metadata field, keep the existing minimal credential schema,
 
 ### Suggested improvement
 Use the checked-in schema as the only persistence contract for operational scripts, and make certificate verification explicit rather than relying on driver compatibility aliases.
+
+## FL-019
+
+### Task
+Authenticate the newly provisioned demo principal through the live API.
+
+### Expected
+The provisioning script's SHA-256 output to match the repository authentication helper.
+
+### Actual
+The script stored the raw hexadecimal digest while `hashCredential` intentionally stores the algorithm-qualified form `sha256:<hex>`. Identity and credential rows committed, but the API returned `401`; no Mandate was created.
+
+### Severity
+major
+
+### Time lost
+About two minutes.
+
+### Workaround
+Use the same algorithm-qualified storage representation and rerun the idempotent credential rotation.
+
+### Suggested improvement
+Export credential hashing through an executable package boundary or assert the persisted format in provisioning tests instead of duplicating its representation.

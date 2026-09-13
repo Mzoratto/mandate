@@ -16,7 +16,7 @@ const principalId = "mandate-demo-principal";
 const agentId = "agentos-checkout";
 const mandateId = "M-checkout-live-001";
 const executionId = "execution-checkout-live-001";
-const hash = (token) => createHash("sha256").update(token, "utf8").digest("hex");
+const hash = (token) => `sha256:${createHash("sha256").update(token, "utf8").digest("hex")}`;
 const client = new pg.Client({ connectionString: databaseUrl });
 
 await client.connect();
