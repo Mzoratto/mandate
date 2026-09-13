@@ -91,3 +91,49 @@ Require an approved assumption amendment and a new Mandate version whenever a pr
 
 ### Suggested improvement
 State explicitly in approval-system guidance whether approval assumptions belong to immutable authorization content or to a separate mutable approval record; do not place them in both without precedence rules.
+
+## FL-004
+
+### Task
+Connect Mandate to the local AgentOS reference runtime.
+
+### Expected
+A stable runtime SDK or interception hook that can submit every consequential action to Mandate before execution and publish evidence afterward.
+
+### Actual
+The available `/Users/marco/AgentOS` checkout is a private CLI-oriented AgentOS Lite. Its own execution-governor documentation says production model execution remains fail-closed and key adapters are intentionally inactive. It exposes no stable package API for Mandate action interception.
+
+### Severity
+blocking
+
+### Time lost
+About fifteen minutes of repository and governance-boundary inspection.
+
+### Workaround
+Implement a narrow, runtime-neutral AgentOS bridge contract and fail closed unless a host proves isolated worktrees, pre-action interception, stop-on-denial, and evidence callbacks. Dry-run task mapping can proceed without claiming governed execution.
+
+### Suggested improvement
+AgentOS should expose a versioned adapter interface for task creation, pre-effect authorization, cumulative accounting, cancellation, and evidence publication independently of its CLI and private governor activation process.
+
+## FL-005
+
+### Task
+Install Drizzle schema tooling for the Lakebase Postgres persistence layer.
+
+### Expected
+The workspace install to complete without executing unreviewed lifecycle code.
+
+### Actual
+pnpm blocked build scripts from three transitive `esbuild` versions and exited with `ERR_PNPM_IGNORED_BUILDS`, requiring an explicit `pnpm approve-builds` decision.
+
+### Severity
+major
+
+### Time lost
+About five minutes.
+
+### Workaround
+Keep the runtime Drizzle schema and remove Drizzle Kit from the unattended install. Generate migrations only after the exact build scripts are reviewed and explicitly approved.
+
+### Suggested improvement
+Migration-tool setup guides should document pnpm's dependency build-script approval step and identify which exact transitive packages require lifecycle execution.

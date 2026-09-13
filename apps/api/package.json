@@ -1,0 +1,14 @@
+{
+  "name": "@mandate/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@mandate/protocol": "workspace:*",
+    "drizzle-orm": "latest",
+    "pg": "latest"
+  },
+  "devDependencies": {
+    "@types/pg": "latest"
+  }
+}
