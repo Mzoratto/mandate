@@ -63,6 +63,10 @@ Resources:
                 Effect: Allow
                 Action: lambda:*
                 Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:mandate-control-plane
+              - Sid: HttpApi
+                Effect: Allow
+                Action: apigateway:*
+                Resource: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}::/apis*
               - Sid: LambdaRole
                 Effect: Allow
                 Action:
