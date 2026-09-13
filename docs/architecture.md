@@ -55,6 +55,10 @@ Application connections may use a pooled `DATABASE_URL`; schema migrations use a
 
 Migration 0002 and its authenticated action flow passed [workflow run 34780277350](https://github.com/Mzoratto/mandate/actions/runs/34780277350), then applied and verified on the default Neon branch in [workflow run 34780329367](https://github.com/Mzoratto/mandate/actions/runs/34780329367).
 
+## AWS boundary
+
+The Web handler is bundled as a Node.js 22 Lambda behind an API Gateway HTTP API with a global stage throttle. A GitHub OIDC role bound to immutable repository IDs and the protected `Production` environment may update only the named artifact bucket, CloudFormation stack, Lambda, execution role, and log group. The deployment workflow injects the Neon URL without printing it, then proves public health and unauthenticated `401` behavior. CloudWatch correlates the AWS request ID with Mandate's opaque request ID without retaining action inputs. See [`aws-deployment.md`](aws-deployment.md) and successful hardened deployment [run 34787920994](https://github.com/Mzoratto/mandate/actions/runs/34787920994).
+
 ## AgentOS boundary
 
 Mandate core imports no AgentOS types. A host bridge must prove all four capabilities before live execution:
@@ -68,9 +72,9 @@ The companion AgentOS repository exposes an opt-in interceptor, merged through [
 
 ## Not yet implemented
 
-- deployed HTTP adapter, rate limiting, and federated principal sessions for the control plane;
+- per-client quotas/WAF and federated principal sessions for the control plane;
 - dashboard-backed authenticated data flows;
 - Alexa+ MCP server and MCP App;
 - AgentCore Gateway/Policy enforcement;
-- CloudWatch correlation;
+- cross-service CloudWatch/AgentCore correlation beyond the Lambda request boundary;
 - live AgentOS orchestration and trusted usage metering.

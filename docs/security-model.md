@@ -53,11 +53,11 @@ Verifier and assumption identities must come from authenticated server context. 
 
 ## Current security gaps
 
-- the authenticated handler is not deployed and has no public-edge rate limiter or federated human session provider;
+- the authenticated handler is deployed behind a globally throttled API Gateway HTTP API but has no per-client quotas/WAF or federated human session provider;
 - database roles have not yet separated migration ownership from append-only application access;
-- no IAM or network boundary prevents direct tool use;
+- a scoped GitHub OIDC role protects deployment, but no IAM or network boundary yet prevents an executing agent from bypassing Mandate for direct tool use;
 - the AgentOS interception seam and authenticated callback client are implemented, but live host injection and trusted per-action cost/token metering are not configured;
-- Alexa+, AgentCore, and CloudWatch are not connected;
+- Lambda request IDs are correlated in CloudWatch, but Alexa+, AgentCore policy, and cross-service traces are not connected;
 - generic shell interpretation is intentionally incomplete and escalates;
 - local frozen objects do not substitute for database immutability.
 
