@@ -262,7 +262,7 @@ Run the Neon schema workflow with pnpm dependency caching.
 `actions/setup-node` to configure Node and restore the pnpm cache before Corepack enabled the repository-pinned pnpm binary.
 
 ### Actual
-The setup action resolves the requested cache manager immediately and failed with `Unable to locate executable file: pnpm` before the later `corepack enable` step could run.
+The setup action resolves the package manager before the later `corepack enable` step and failed with `Unable to locate executable file: pnpm`. Removing the explicit cache setting fixed v4, but v5 enables `package-manager-cache` by default when `packageManager` declares pnpm, reproducing the failure until explicitly disabled.
 
 ### Severity
 minor
@@ -271,7 +271,7 @@ minor
 About two minutes.
 
 ### Workaround
-Remove setup-node's package-manager cache option and enable Corepack before installing dependencies.
+Set setup-node's `package-manager-cache: false`, then enable Corepack before installing dependencies.
 
 ### Suggested improvement
-Examples for pnpm caching should either provision pnpm before `setup-node` evaluates `cache: pnpm` or show a cache-free baseline that works with a Corepack-only toolchain.
+Examples for pnpm caching should either provision pnpm before setup-node evaluates cache metadata or show the explicit `package-manager-cache: false` baseline for a Corepack-only toolchain.
