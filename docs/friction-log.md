@@ -321,3 +321,26 @@ Serialize every object or array bound to a `jsonb` parameter explicitly with `JS
 
 ### Suggested improvement
 Treat explicit JSON serialization as part of the repository boundary and retain the Neon integration flow as the regression test; static TypeScript checks cannot distinguish PostgreSQL array encoding from JSON encoding.
+
+## FL-014
+
+### Task
+Move the verified control-plane handler from branch-tested code to the live AWS integration boundary.
+
+### Expected
+An authenticated AWS CLI context to be available for inspecting the target account and choosing the smallest deployable adapter from real account constraints.
+
+### Actual
+No `aws` executable or authenticated AWS context is available in the development environment. Creating speculative infrastructure without an account, region, identity boundary, or deployment target would weaken the fail-closed design.
+
+### Severity
+blocker
+
+### Time lost
+None; the preflight stopped before infrastructure changes.
+
+### Workaround
+Obtain an AWS account/role and region, install and authenticate the AWS CLI, then inspect available AgentCore and API hosting capabilities before adding deployment configuration.
+
+### Suggested improvement
+Add a documented AWS bootstrap preflight that checks caller identity, region, least-privilege deployment role, and required service availability without printing account credentials.
