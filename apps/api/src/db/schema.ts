@@ -38,6 +38,16 @@ export const agents = pgTable("agents", {
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
 });
 
+export const controlPlaneCredentials = pgTable("control_plane_credentials", {
+  id: text().primaryKey(),
+  tokenHash: text("token_hash").notNull().unique(),
+  principalId: text("principal_id").references(() => principals.id),
+  agentId: text("agent_id").references(() => agents.id),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true, mode: "string" }),
+  revokedAt: timestamp("revoked_at", { withTimezone: true, mode: "string" }),
+});
+
 export const mandates = pgTable("mandates", {
   id: text().primaryKey(),
   principalId: text("principal_id").notNull().references(() => principals.id),
@@ -61,6 +71,15 @@ export const mandateVersions = pgTable("mandate_versions", {
   primaryKey({ columns: [table.mandateId, table.version] }),
   uniqueIndex("mandate_versions_digest_idx").on(table.mandateId, table.contentDigest),
 ]);
+
+export const mandateAssumptionState = pgTable("mandate_assumption_state", {
+  mandateId: text("mandate_id").notNull().references(() => mandates.id),
+  key: text().notNull(),
+  valueHash: text("value_hash").notNull(),
+  invalidatesOnChange: boolean("invalidates_on_change").notNull(),
+  source: text().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).notNull(),
+}, (table) => [primaryKey({ columns: [table.mandateId, table.key] })]);
 
 export const approvals = pgTable("mandate_approvals", {
   id: text().primaryKey(),
@@ -119,6 +138,8 @@ export const executionActions = pgTable("execution_actions", {
   tool: text().notNull(),
   operation: text().notNull(),
   inputs: jsonb().notNull(),
+  requestDigest: text("request_digest").notNull(),
+  settlementDigest: text("settlement_digest"),
   status: text().notNull(),
   proposedAt: timestamp("proposed_at", { withTimezone: true, mode: "string" }).notNull(),
   executedAt: timestamp("executed_at", { withTimezone: true, mode: "string" }),
@@ -141,6 +162,7 @@ export const authorizationDecisions = pgTable("authorization_decisions", {
   decision: conformanceDecision().notNull(),
   reasons: jsonb().notNull(),
   violatedRules: jsonb("violated_rules").notNull(),
+  amendmentSuggested: boolean("amendment_suggested").notNull().default(false),
   mandateVersionDigest: text("mandate_version_digest").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
 }, (table) => [uniqueIndex("authorization_decisions_action_idx").on(table.actionId)]);
@@ -158,6 +180,7 @@ export const evidence = pgTable("evidence", {
   mandateId: text("mandate_id").notNull(),
   mandateVersion: integer("mandate_version").notNull(),
   requirementId: text("requirement_id"),
+  executionActionId: text("execution_action_id").references(() => executionActions.id),
   type: text().notNull(),
   producer: text().notNull(),
   artifactUri: text("artifact_uri"),
@@ -194,10 +217,14 @@ export const mandateEvents = pgTable("mandate_events", {
   id: text().primaryKey(),
   mandateId: text("mandate_id").notNull().references(() => mandates.id),
   mandateVersion: integer("mandate_version").notNull(),
+  sequence: bigint({ mode: "bigint" }).notNull(),
   type: text().notNull(),
   actor: text().notNull(),
   payload: jsonb().notNull(),
   timestamp: timestamp({ withTimezone: true, mode: "string" }).notNull(),
   previousEventHash: text("previous_event_hash"),
   eventHash: text("event_hash").notNull().unique(),
-}, (table) => [index("mandate_events_timeline_idx").on(table.mandateId, table.timestamp)]);
+}, (table) => [
+  index("mandate_events_timeline_idx").on(table.mandateId, table.timestamp),
+  uniqueIndex("mandate_events_sequence_idx").on(table.mandateId, table.sequence),
+]);

@@ -4,11 +4,11 @@
 
 Mandate lets a human delegate an outcome to an agent inside a machine-readable authority envelope. The agent may change its plan, but it may not expand its authority without explicit approval.
 
-Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md). The current architecture and explicit security gaps are documented in [`docs/architecture.md`](docs/architecture.md) and [`docs/security-model.md`](docs/security-model.md).
+Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md). The current architecture and explicit security gaps are documented in [`docs/architecture.md`](docs/architecture.md) and [`docs/security-model.md`](docs/security-model.md); authenticated API routes and replay guarantees are in [`docs/control-plane-api.md`](docs/control-plane-api.md).
 
 ## Current status
 
-The protocol/runtime path is implemented and adversarially tested. The reference dashboard is implemented, and the initial control-plane schema is active on the configured Neon project after branch-isolated verification. Live AgentOS, Alexa+, AWS enforcement, and the authenticated control plane remain fail-closed until their external identities and integration boundaries are configured.
+The protocol/runtime path is implemented and adversarially tested. The reference dashboard and authenticated transactional control-plane API are implemented, and the schema is verified on isolated Neon branches before production migration. Live AgentOS, Alexa+, and AWS enforcement remain fail-closed until their external identities and integration boundaries are configured.
 
 ## Development
 

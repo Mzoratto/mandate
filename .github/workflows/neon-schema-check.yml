@@ -5,7 +5,11 @@ on:
     paths:
       - "apps/api/migrations/**"
       - "apps/api/scripts/**"
-      - "apps/api/src/db/**"
+      - "apps/api/src/**"
+      - "tests/api/**"
+      - "packages/protocol/src/**"
+      - "packages/runtime/src/**"
+      - "packages/schemas/src/**"
       - "apps/api/package.json"
       - "pnpm-lock.yaml"
       - ".github/workflows/neon-schema-check.yml"
@@ -51,12 +55,16 @@ jobs:
             --no-color)"
           echo "::add-mask::$database_url"
           echo "DATABASE_URL=$database_url" >> "$GITHUB_ENV"
+          echo "MANDATE_INTEGRATION_DATABASE_URL=$database_url" >> "$GITHUB_ENV"
 
       - name: Apply and verify migrations
         run: |
           pnpm --filter @mandate/api db:migrate
           pnpm --filter @mandate/api db:migrate
           pnpm --filter @mandate/api db:check
+
+      - name: Exercise authenticated control plane
+        run: pnpm exec vitest run tests/api/control-plane.test.ts
 
       - name: Delete ephemeral Neon branch
         if: always() && steps.neon-branch.outcome == 'success'

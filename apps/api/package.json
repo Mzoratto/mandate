@@ -3,14 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "exports": "./src/index.ts",
   "scripts": {
     "db:migrate": "node scripts/migrate.mjs",
-    "db:check": "node scripts/check-schema.mjs"
+    "db:check": "node scripts/check-schema.mjs",
+    "credential:create": "node scripts/create-credential.mjs"
   },
   "dependencies": {
     "@mandate/protocol": "workspace:*",
+    "@mandate/runtime": "workspace:*",
+    "@mandate/schemas": "workspace:*",
     "drizzle-orm": "latest",
-    "pg": "latest"
+    "pg": "latest",
+    "zod": "latest"
   },
   "devDependencies": {
     "@types/pg": "latest"
