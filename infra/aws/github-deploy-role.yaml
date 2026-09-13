@@ -1,0 +1,96 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Scoped GitHub Actions OIDC role for Mandate control-plane deployment
+
+Parameters:
+  GitHubOwner:
+    Type: String
+    Default: Mzoratto
+    AllowedPattern: "^[A-Za-z0-9-]+$"
+  GitHubRepository:
+    Type: String
+    Default: mandate
+    AllowedPattern: "^[A-Za-z0-9._-]+$"
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: mandate-github-control-plane-deploy
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !Ref GitHubOidcProvider
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOwner}/${GitHubRepository}:environment:Production
+      Policies:
+        - PolicyName: mandate-control-plane-deploy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: DeploymentArtifacts
+                Effect: Allow
+                Action:
+                  - s3:CreateBucket
+                  - s3:GetBucketLocation
+                  - s3:GetEncryptionConfiguration
+                  - s3:GetBucketPublicAccessBlock
+                  - s3:ListBucket
+                  - s3:PutBucketEncryption
+                  - s3:PutBucketPublicAccessBlock
+                Resource: arn:aws:s3:::mandate-deploy-*-us-east-1
+              - Sid: DeploymentArtifactObjects
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: arn:aws:s3:::mandate-deploy-*-us-east-1/control-plane/*
+              - Sid: ControlPlaneStack
+                Effect: Allow
+                Action: cloudformation:*
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/mandate-control-plane/*
+              - Sid: LambdaFunction
+                Effect: Allow
+                Action: lambda:*
+                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:mandate-control-plane
+              - Sid: LambdaRole
+                Effect: Allow
+                Action:
+                  - iam:AttachRolePolicy
+                  - iam:CreateRole
+                  - iam:DeleteRole
+                  - iam:DetachRolePolicy
+                  - iam:GetRole
+                  - iam:ListAttachedRolePolicies
+                  - iam:ListRolePolicies
+                  - iam:PassRole
+                  - iam:TagRole
+                  - iam:UntagRole
+                  - iam:UpdateAssumeRolePolicy
+                Resource: !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/mandate-control-plane-lambda-us-east-1
+              - Sid: LogGroup
+                Effect: Allow
+                Action: logs:*
+                Resource: !Sub arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/mandate-control-plane:*
+              - Sid: CallerIdentity
+                Effect: Allow
+                Action: sts:GetCallerIdentity
+                Resource: "*"
+
+Outputs:
+  DeployRoleArn:
+    Value: !GetAtt DeployRole.Arn

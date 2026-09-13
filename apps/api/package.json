@@ -7,7 +7,8 @@
   "scripts": {
     "db:migrate": "node scripts/migrate.mjs",
     "db:check": "node scripts/check-schema.mjs",
-    "credential:create": "node scripts/create-credential.mjs"
+    "credential:create": "node scripts/create-credential.mjs",
+    "build:aws": "node scripts/build-aws.mjs"
   },
   "dependencies": {
     "@mandate/protocol": "workspace:*",
@@ -18,6 +19,7 @@
     "zod": "latest"
   },
   "devDependencies": {
-    "@types/pg": "latest"
+    "@types/pg": "latest",
+    "esbuild": "latest"
   }
 }
