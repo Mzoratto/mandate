@@ -14,8 +14,8 @@ The protocol/runtime path is implemented and adversarially tested. The reference
 
 - Control-plane endpoint: `https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/`
 - Public failing fixture: [`Mzoratto/checkout-demo`](https://github.com/Mzoratto/checkout-demo) at `888784f`
-- Isolated Neon completion test: [run 34790580972](https://github.com/Mzoratto/mandate/actions/runs/34790580972)
-- AWS deployment verification: [run 34790981908](https://github.com/Mzoratto/mandate/actions/runs/34790981908)
+- Isolated Neon completion test: [run 34791128902](https://github.com/Mzoratto/mandate/actions/runs/34791128902)
+- AWS deployment verification: [run 34791192125](https://github.com/Mzoratto/mandate/actions/runs/34791192125)
 - AgentOS accounting-order fix: [PR #118](https://github.com/Mzoratto/AgentOS/pull/118)
 
 The public endpoint grants no authority without an identity-bound credential. Verification artifacts remain private, encrypted, versioned, and object-locked in AWS.

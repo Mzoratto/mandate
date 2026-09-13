@@ -39,7 +39,7 @@ gh workflow run aws-control-plane-deploy.yml --ref main -f confirm=DEPLOY
 
 It resolves the default Neon branch from the existing protected `NEON_API_KEY`, builds a single CommonJS Lambda artifact, uploads it to the private encrypted artifact bucket under the Git commit SHA, deploys CloudFormation, and verifies both public health and unauthenticated rejection.
 
-The first successful Lambda deployment is [workflow run 34787693288](https://github.com/Mzoratto/mandate/actions/runs/34787693288). The direct Function URL was then removed and the rate-limited HTTP API verified in [workflow run 34787920994](https://github.com/Mzoratto/mandate/actions/runs/34787920994). Authenticated verifier completion passed on an isolated Neon branch in [run 34790580972](https://github.com/Mzoratto/mandate/actions/runs/34790580972) and the corresponding Lambda plus Node.js 24 OIDC action was verified in [run 34790981908](https://github.com/Mzoratto/mandate/actions/runs/34790981908).
+The first successful Lambda deployment is [workflow run 34787693288](https://github.com/Mzoratto/mandate/actions/runs/34787693288). The direct Function URL was then removed and the rate-limited HTTP API verified in [workflow run 34787920994](https://github.com/Mzoratto/mandate/actions/runs/34787920994). Authenticated verifier completion passed on an isolated Neon branch in [run 34791128902](https://github.com/Mzoratto/mandate/actions/runs/34791128902) and the corresponding Lambda plus Node.js 24 OIDC action was verified in [run 34791192125](https://github.com/Mzoratto/mandate/actions/runs/34791192125).
 
 ## Verification artifacts
 
