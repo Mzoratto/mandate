@@ -597,3 +597,29 @@ The deployment completed successfully under GitHub's forced Node.js 24 compatibi
 
 ### Suggested improvement
 Upgrade to a reviewed digest of an AWS credential-action release that declares a supported Node runtime, then rerun the OIDC deployment check.
+
+### Resolution
+Pinned `aws-actions/configure-aws-credentials` v6.2.4 by commit digest; it declares Node.js 24. Production deployment run 34790981908 passed without the deprecation warning.
+
+## FL-026
+
+### Task
+Independently re-run event-chain verification over the authenticated production context from a bare Node command.
+
+### Expected
+Node.js 24 type stripping to load the workspace TypeScript entry point.
+
+### Actual
+The entry point's source imports use emitted `.js` specifiers, so bare Node could not resolve the sibling `.ts` files. The authenticated API read still verified the chain server-side and returned all 16 events; isolated Neon tests also exercised `verifyEventChain` directly.
+
+### Severity
+minor
+
+### Time lost
+Less than a minute.
+
+### Workaround
+Use the compiled application/test boundary rather than importing source TypeScript with bare Node.
+
+### Suggested improvement
+Provide a standard build artifact or project-local TypeScript runner for operational verification commands.

@@ -8,7 +8,17 @@ Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md
 
 ## Current status
 
-The protocol/runtime path is implemented and adversarially tested. The reference dashboard and authenticated transactional control-plane API are implemented. Migration 0002 is active on Neon, and the fail-closed API is live on AWS Lambda with CloudWatch request correlation. Live AgentOS, Alexa+, and AgentCore enforcement remain fail-closed until their external identities and integration boundaries are configured.
+The protocol/runtime path is implemented and adversarially tested. The reference dashboard and authenticated transactional control-plane API are implemented. Migration 0002 is active on Neon, and the fail-closed API is live on AWS Lambda with CloudWatch request correlation. A checksum-approved AgentOS checkout rehearsal completed through the deployed control plane with action-bound trace evidence, independently authenticated test/review evidence, and an intact 16-event ledger. General autonomous AgentOS, Alexa+, and AgentCore enforcement remain fail-closed until their broader interception and identity boundaries are configured.
+
+## Live proof
+
+- Control-plane endpoint: `https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/`
+- Public failing fixture: [`Mzoratto/checkout-demo`](https://github.com/Mzoratto/checkout-demo) at `888784f`
+- Isolated Neon completion test: [run 34790580972](https://github.com/Mzoratto/mandate/actions/runs/34790580972)
+- AWS deployment verification: [run 34790981908](https://github.com/Mzoratto/mandate/actions/runs/34790981908)
+- AgentOS accounting-order fix: [PR #118](https://github.com/Mzoratto/AgentOS/pull/118)
+
+The public endpoint grants no authority without an identity-bound credential. Verification artifacts remain private, encrypted, versioned, and object-locked in AWS.
 
 ## Development
 
