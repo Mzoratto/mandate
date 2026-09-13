@@ -1,0 +1,48 @@
+name: Production demo provision
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type PROVISION to rotate credentials and ensure the live checkout demo
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mandate-production-demo
+  cancel-in-progress: false
+
+jobs:
+  provision:
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'PROVISION'
+    environment: Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+      MANDATE_CONTROL_PLANE_URL: ${{ vars.MANDATE_CONTROL_PLANE_URL }}
+      MANDATE_DEMO_PRINCIPAL_TOKEN: ${{ secrets.MANDATE_DEMO_PRINCIPAL_TOKEN }}
+      MANDATE_DEMO_AGENT_TOKEN: ${{ secrets.MANDATE_DEMO_AGENT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+
+      - name: Resolve the default Neon branch
+        run: |
+          database_url="$(npx --yes neonctl@4.17.3 connection-string \
+            --project-id "$NEON_PROJECT_ID" \
+            --ssl require \
+            --no-color)"
+          echo "::add-mask::$database_url"
+          echo "DATABASE_URL=$database_url" >> "$GITHUB_ENV"
+
+      - name: Provision identities and active Mandate
+        run: pnpm --filter @mandate/api demo:provision
