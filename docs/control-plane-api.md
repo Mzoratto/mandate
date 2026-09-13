@@ -49,6 +49,22 @@ The authorization request contains the protocol `ProposedAction`, deterministic 
 - Agent-produced evidence is stored as unverified. Independent verifier endpoints are intentionally not exposed yet.
 - Unknown routes, invalid identities, stale assumptions, malformed effects, and internal errors fail closed.
 
+## AgentOS callback client
+
+`@mandate/adapter-agentos` exports `createAgentOsControlPlaneHandlers`. It converts the AgentOS interceptor's `beforeAction` and action-bound `publishEvidence` callbacks into authenticated authorization and settlement requests:
+
+```ts
+const handlers = createAgentOsControlPlaneHandlers({
+  baseUrl: "https://mandate.example",
+  credential: process.env.MANDATE_AGENT_CREDENTIAL!,
+  executionId,
+  mandateVersionDigest,
+  settlement: async (evidence) => trustedMeter.settlementFor(evidence.executionActionId),
+});
+```
+
+The adapter accepts only an HTTPS origin, refuses redirects, applies a bounded timeout, binds authorization responses to the expected immutable version digest, validates settlement identity, and requires an `executionActionId` on evidence. The settlement callback is mandatory because cost, token usage, and success must come from the trusted execution host. A deployment must fail closed rather than substitute guessed or zero usage when a governed limit depends on unavailable metering.
+
 ## Current boundary
 
 The package does not choose an HTTP host, issue browser sessions, create initial identities, rate-limit public traffic, verify independent completion evidence, or grant database roles. Those are deployment and next-milestone concerns. The branch-isolated integration test exercises the complete authenticated draft-to-authorization path against the real migration schema.

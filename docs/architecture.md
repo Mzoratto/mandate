@@ -51,9 +51,9 @@ Semantic classification may add effects, deny, or escalate. It cannot remove det
 
 `apps/api/src/control-plane` exposes a Web `Request`/`Response` handler over a PostgreSQL repository. Every protected route resolves an opaque bearer token to one server-side principal or agent identity. Lifecycle changes, action reservation, deterministic effects, conformance decisions, usage settlement, evidence, and hash-chained events are written under Mandate/execution row locks. Reusing an action or settlement ID with changed canonical content fails with `409`; database corruption, stale assumptions, and unknown internal failures fail closed. See [`control-plane-api.md`](control-plane-api.md).
 
-Application connections may use a pooled `DATABASE_URL`; schema migrations use a direct `DATABASE_URL`. `.github/workflows/neon-schema-check.yml` creates an expiring branch from the configured Neon project, runs every migration twice to prove idempotency, verifies the expected tables, and deletes the branch. Production migration is an explicit manual workflow from `main` through the `Production` GitHub environment.
+Application connections may use a pooled `DATABASE_URL`; schema migrations use a direct `DATABASE_URL`. `.github/workflows/neon-schema-check.yml` creates an expiring branch from the configured Neon project, runs every migration twice to prove idempotency, verifies required tables and columns, exercises the authenticated lifecycle, and deletes the branch. Production migration is an explicit manual workflow from `main` through the `Production` GitHub environment.
 
-The initial schema was verified on an ephemeral branch by [workflow run 34761092644](https://github.com/Mzoratto/mandate/actions/runs/34761092644), then applied to the default Neon branch and verified as 15 tables by [workflow run 34761126817](https://github.com/Mzoratto/mandate/actions/runs/34761126817).
+Migration 0002 and its authenticated action flow passed [workflow run 34780277350](https://github.com/Mzoratto/mandate/actions/runs/34780277350), then applied and verified on the default Neon branch in [workflow run 34780329367](https://github.com/Mzoratto/mandate/actions/runs/34780329367).
 
 ## AgentOS boundary
 
@@ -64,7 +64,7 @@ Mandate core imports no AgentOS types. A host bridge must prove all four capabil
 3. stop-on-denial behavior;
 4. evidence callbacks.
 
-The companion AgentOS Lite checkout now exposes an opt-in interceptor on its app-server human-approval path. Bound command and file-change requests are normalized and sent to Mandate before the existing human gate; denial stops the phase, and allowed items must publish completion evidence. The default AgentOS supervisor does not activate this hook, so live execution remains fail-closed until the authenticated Mandate control plane injects the callbacks.
+The companion AgentOS repository exposes an opt-in interceptor, merged through [AgentOS PR 117](https://github.com/Mzoratto/AgentOS/pull/117), on its app-server human-approval path. Bound command and file-change requests are normalized and sent to Mandate before the existing human gate; denial stops the phase, and allowed items must publish action-bound completion evidence. `@mandate/adapter-agentos` provides the authenticated HTTPS callback client, but the default AgentOS supervisor does not activate it. Live execution remains fail-closed until a trusted host injects the callbacks and provides real per-action cost/token settlement.
 
 ## Not yet implemented
 
@@ -73,4 +73,4 @@ The companion AgentOS Lite checkout now exposes an opt-in interceptor on its app
 - Alexa+ MCP server and MCP App;
 - AgentCore Gateway/Policy enforcement;
 - CloudWatch correlation;
-- live AgentOS bridge.
+- live AgentOS orchestration and trusted usage metering.
