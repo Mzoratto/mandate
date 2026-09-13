@@ -2,14 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 Description: Scoped GitHub Actions OIDC role for Mandate control-plane deployment
 
 Parameters:
-  GitHubOwner:
+  GitHubSubject:
     Type: String
-    Default: Mzoratto
-    AllowedPattern: "^[A-Za-z0-9-]+$"
-  GitHubRepository:
-    Type: String
-    Default: mandate
-    AllowedPattern: "^[A-Za-z0-9._-]+$"
+    Default: repo:Mzoratto@149188019/mandate@1368354563:environment:Production
+    AllowedPattern: "^repo:[A-Za-z0-9-]+@[0-9]+/[A-Za-z0-9._-]+@[0-9]+:environment:[A-Za-z0-9._-]+$"
 
 Resources:
   GitHubOidcProvider:
@@ -36,7 +32,7 @@ Resources:
             Condition:
               StringEquals:
                 token.actions.githubusercontent.com:aud: sts.amazonaws.com
-                token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOwner}/${GitHubRepository}:environment:Production
+                token.actions.githubusercontent.com:sub: !Ref GitHubSubject
       Policies:
         - PolicyName: mandate-control-plane-deploy
           PolicyDocument:

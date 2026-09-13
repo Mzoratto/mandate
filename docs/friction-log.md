@@ -344,3 +344,26 @@ Obtain an AWS account/role and region, install and authenticate the AWS CLI, the
 
 ### Suggested improvement
 Add a documented AWS bootstrap preflight that checks caller identity, region, least-privilege deployment role, and required service availability without printing account credentials.
+
+## FL-015
+
+### Task
+Assume the scoped AWS deployment role from GitHub Actions using OIDC.
+
+### Expected
+The conventional GitHub subject `repo:Mzoratto/mandate:environment:Production` to match the workflow identity.
+
+### Actual
+The 2026 GitHub OIDC token uses immutable owner and repository IDs in its subject: `repo:Mzoratto@149188019/mandate@1368354563:environment:Production`. AWS CloudTrail exposed the mismatch without exposing the token, and STS correctly denied every attempt.
+
+### Severity
+major
+
+### Time lost
+About five minutes.
+
+### Workaround
+Bind the role trust policy to the exact ID-bearing subject observed in CloudTrail, retain the audience check, and redeploy the bootstrap stack.
+
+### Suggested improvement
+Derive and record current OIDC claims before creating a trust policy instead of relying on historical GitHub subject examples.
