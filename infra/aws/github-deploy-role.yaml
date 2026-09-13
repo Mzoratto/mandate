@@ -46,8 +46,8 @@ Resources:
                   - s3:GetEncryptionConfiguration
                   - s3:GetBucketPublicAccessBlock
                   - s3:ListBucket
-                  - s3:PutBucketEncryption
                   - s3:PutBucketPublicAccessBlock
+                  - s3:PutEncryptionConfiguration
                 Resource: arn:aws:s3:::mandate-deploy-*-us-east-1
               - Sid: DeploymentArtifactObjects
                 Effect: Allow

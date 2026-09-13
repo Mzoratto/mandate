@@ -367,3 +367,26 @@ Bind the role trust policy to the exact ID-bearing subject observed in CloudTrai
 
 ### Suggested improvement
 Derive and record current OIDC claims before creating a trust policy instead of relying on historical GitHub subject examples.
+
+## FL-016
+
+### Task
+Encrypt the private S3 deployment bucket from the scoped GitHub role.
+
+### Expected
+The policy action `s3:PutBucketEncryption` to authorize the `put-bucket-encryption` CLI operation.
+
+### Actual
+The IAM action is named `s3:PutEncryptionConfiguration`; AWS created the already-private bucket but denied its explicit encryption configuration.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Correct the least-privilege role action and update the bootstrap stack. No broad permission was added.
+
+### Suggested improvement
+Validate CLI operation names against IAM service-authorization action names when authoring scoped deployment policies.
