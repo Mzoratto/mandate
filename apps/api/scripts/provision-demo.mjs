@@ -12,9 +12,11 @@ const databaseUrl = required("DATABASE_URL");
 const controlPlaneUrl = new URL(required("MANDATE_CONTROL_PLANE_URL"));
 const principalToken = required("MANDATE_DEMO_PRINCIPAL_TOKEN");
 const agentToken = required("MANDATE_DEMO_AGENT_TOKEN");
+const repositoryCommitHash = required("MANDATE_DEMO_REPOSITORY_COMMIT_HASH");
+if (!/^sha256:[a-f0-9]{64}$/.test(repositoryCommitHash)) throw new Error("Repository commit hash is invalid");
 const principalId = "mandate-demo-principal";
 const agentId = "agentos-checkout";
-const mandateId = "M-checkout-live-002";
+const mandateId = "M-checkout-live-003";
 const hash = (token) => `sha256:${createHash("sha256").update(token, "utf8").digest("hex")}`;
 const client = new pg.Client({ connectionString: databaseUrl });
 
@@ -103,14 +105,21 @@ if (context.response.status === 404) {
   fixture.validity.notBefore = new Date(now - 60_000).toISOString();
   fixture.validity.expiresAt = new Date(now + 180 * 24 * 60 * 60 * 1_000).toISOString();
   fixture.status = "DRAFT";
+  const repositoryCommit = fixture.assumptions.find(({ key }) => key === "repositoryCommit");
+  if (!repositoryCommit) throw new Error("Demo fixture has no repositoryCommit assumption");
+  repositoryCommit.valueHash = repositoryCommitHash;
   delete fixture.approvedAt;
   const created = await api("POST", "/v1/mandates", principalToken, fixture);
   if (created.response.status !== 201) throw new Error(`Demo Mandate creation failed (${created.response.status})`);
   context = await api("GET", `/v1/mandates/${mandateId}`, principalToken);
 }
 if (!context.response.ok) throw new Error(`Demo Mandate lookup failed (${context.response.status})`);
-if (context.result.mandate?.principal?.id !== principalId || context.result.mandate?.subject?.agentId !== agentId) {
-  throw new Error("Existing demo Mandate has a different identity binding");
+if (
+  context.result.mandate?.principal?.id !== principalId
+  || context.result.mandate?.subject?.agentId !== agentId
+  || context.result.mandate?.assumptions?.find(({ key }) => key === "repositoryCommit")?.valueHash !== repositoryCommitHash
+) {
+  throw new Error("Existing demo Mandate has a different identity or repository binding");
 }
 
 let status = context.result.mandate.status;

@@ -482,3 +482,26 @@ Change the protected repository assumption, force the next authorization check t
 
 ### Suggested improvement
 Keep credential provisioning, proposal staging, principal approval, and agent execution as separate authority ceremonies. Automation must never translate possession of a principal credential into approval.
+
+## FL-021
+
+### Task
+Present the staged checkout Mandate for informed human approval.
+
+### Expected
+Its protected `repositoryCommit` assumption to identify the exact repository state AgentOS would receive.
+
+### Actual
+The canonical protocol fixture intentionally uses a placeholder `sha256:aaaa…` value and no checkout repository existed. The mismatch was found before requesting approval; the staged Mandate remained unapproved.
+
+### Severity
+major
+
+### Time lost
+About four minutes.
+
+### Workaround
+Create the minimal public `Mzoratto/checkout-demo` regression repository, reproduce its failing test, hash the exact initial Git commit object, and stage a new Mandate bound to that digest.
+
+### Suggested improvement
+Never promote protocol fixtures directly into live authority records. Live provisioning must require an independently resolved resource identity and reject fixture placeholders.
