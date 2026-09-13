@@ -623,3 +623,26 @@ Use the compiled application/test boundary rather than importing source TypeScri
 
 ### Suggested improvement
 Provide a standard build artifact or project-local TypeScript runner for operational verification commands.
+
+## FL-027
+
+### Task
+Inspect CloudWatch correlation for the production verifier requests.
+
+### Expected
+Only bounded request records and Lambda platform metrics.
+
+### Actual
+The first verification request emitted a node-postgres deprecation warning: multiple `client.query()` calls were started concurrently on one transaction client. The request committed successfully, but pg 9 will remove that implicit queueing behavior.
+
+### Severity
+major
+
+### Time lost
+About two minutes.
+
+### Workaround
+Execute all completion-state reads serially on the locked transaction client. Queries that use the pool outside a transaction may remain parallel.
+
+### Suggested improvement
+Treat one `PoolClient` as a serial resource and reserve `Promise.all` for independent pool acquisitions.

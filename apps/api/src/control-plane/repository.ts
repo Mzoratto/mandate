@@ -1080,25 +1080,33 @@ export class ControlPlaneRepository {
       if (mandate.status === "COMPLETED") {
         return { evidence, criteria: results, completion: { completed: true, reasons: [] } };
       }
-      const [evidenceRows, criterionRows, assumptions, amendments, unsettled, violations] = await Promise.all([
-        client.query<QueryResultRow>("SELECT * FROM evidence WHERE mandate_id = $1 AND mandate_version = $2", [mandate.id, mandate.version]),
-        client.query<QueryResultRow>("SELECT * FROM criterion_results WHERE mandate_id = $1 AND mandate_version = $2", [mandate.id, mandate.version]),
-        this.currentAssumptions(client, mandate.id),
-        client.query<QueryResultRow>("SELECT id FROM mandate_amendments WHERE mandate_id = $1 AND status = 'PENDING'", [mandate.id]),
-        client.query<QueryResultRow>(
-          `SELECT action.id FROM execution_actions AS action
-            JOIN executions AS execution ON execution.id = action.execution_id
-           WHERE execution.mandate_id = $1 AND execution.mandate_version = $2 AND action.status = 'AUTHORIZED'`,
-          [mandate.id, mandate.version],
-        ),
-        client.query<QueryResultRow>(
-          `SELECT action.id FROM execution_actions AS action
-            JOIN executions AS execution ON execution.id = action.execution_id
-           WHERE execution.mandate_id = $1 AND execution.mandate_version = $2
-             AND action.status IN ('DENY', 'ESCALATE', 'INVALIDATE_APPROVAL')`,
-          [mandate.id, mandate.version],
-        ),
-      ]);
+      // node-postgres clients execute one query at a time; keep this transaction serial.
+      const evidenceRows = await client.query<QueryResultRow>(
+        "SELECT * FROM evidence WHERE mandate_id = $1 AND mandate_version = $2",
+        [mandate.id, mandate.version],
+      );
+      const criterionRows = await client.query<QueryResultRow>(
+        "SELECT * FROM criterion_results WHERE mandate_id = $1 AND mandate_version = $2",
+        [mandate.id, mandate.version],
+      );
+      const assumptions = await this.currentAssumptions(client, mandate.id);
+      const amendments = await client.query<QueryResultRow>(
+        "SELECT id FROM mandate_amendments WHERE mandate_id = $1 AND status = 'PENDING'",
+        [mandate.id],
+      );
+      const unsettled = await client.query<QueryResultRow>(
+        `SELECT action.id FROM execution_actions AS action
+          JOIN executions AS execution ON execution.id = action.execution_id
+         WHERE execution.mandate_id = $1 AND execution.mandate_version = $2 AND action.status = 'AUTHORIZED'`,
+        [mandate.id, mandate.version],
+      );
+      const violations = await client.query<QueryResultRow>(
+        `SELECT action.id FROM execution_actions AS action
+          JOIN executions AS execution ON execution.id = action.execution_id
+         WHERE execution.mandate_id = $1 AND execution.mandate_version = $2
+           AND action.status IN ('DENY', 'ESCALATE', 'INVALIDATE_APPROVAL')`,
+        [mandate.id, mandate.version],
+      );
       const allEvidence: EvidenceRecord[] = evidenceRows.rows.map((stored) => ({
         id: stored.id,
         mandateId: stored.mandate_id,
