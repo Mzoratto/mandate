@@ -45,7 +45,7 @@ jobs:
         run: |
           database_url="$(npx --yes neonctl@4.17.3 connection-string \
             --project-id "$NEON_PROJECT_ID" \
-            --ssl require \
+            --ssl verify-full \
             --no-color)"
           echo "::add-mask::$database_url"
           echo "DATABASE_URL=$database_url" >> "$GITHUB_ENV"

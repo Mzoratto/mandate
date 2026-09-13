@@ -413,3 +413,26 @@ Emit the single Lambda bundle as CommonJS `index.js` and add a local import smok
 
 ### Suggested improvement
 Match bundle module format to transitive dependency behavior and test loading the exact deployment artifact, not only its syntax.
+
+## FL-018
+
+### Task
+Provision durable demo identities and rotate their production credentials.
+
+### Expected
+The provisioning insert to match migration 0002 exactly.
+
+### Actual
+The first script revision attempted to write a speculative `metadata` column that does not exist in `control_plane_credentials`. PostgreSQL rejected the transaction before any identity or credential persisted. The same run surfaced pg's announced future weakening of `sslmode=require` semantics.
+
+### Severity
+major
+
+### Time lost
+About three minutes.
+
+### Workaround
+Remove the unneeded metadata field, keep the existing minimal credential schema, and request `sslmode=verify-full` from Neon in every workflow.
+
+### Suggested improvement
+Use the checked-in schema as the only persistence contract for operational scripts, and make certificate verification explicit rather than relying on driver compatibility aliases.

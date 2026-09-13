@@ -49,20 +49,18 @@ try {
   ]) {
     const saved = await client.query(
       `INSERT INTO control_plane_credentials
-        (id, token_hash, principal_id, agent_id, metadata)
-       VALUES ($1, $2, $3, $4, $5)
+        (id, token_hash, principal_id, agent_id)
+       VALUES ($1, $2, $3, $4)
        ON CONFLICT (id) DO UPDATE
          SET token_hash = EXCLUDED.token_hash,
              revoked_at = NULL,
-             expires_at = NULL,
-             metadata = EXCLUDED.metadata
+             expires_at = NULL
        RETURNING principal_id, agent_id`,
       [
         credential.id,
         hash(credential.token),
         credential.principal,
         credential.agent,
-        JSON.stringify({ purpose: "checkout-live-demo", managedBy: "production-provision-workflow" }),
       ],
     );
     const binding = saved.rows[0];
