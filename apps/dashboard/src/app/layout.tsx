@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import type { ReactNode } from "react";
+import "@fontsource-variable/inter";
 import "./globals.css";
-
-const geistSans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
-
 export const metadata: Metadata = {
-  title: "Mandate — Outcome-bound authority",
-  description: "Delegate outcomes, not tool calls.",
+  title: "Mandate — Mission Control",
+  description:
+    "An illustrative mission-control dashboard for outcome-bound agent authority.",
 };
-
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en">
       <body>{children}</body>
     </html>
   );

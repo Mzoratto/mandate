@@ -275,3 +275,26 @@ Set setup-node's `package-manager-cache: false`, then enable Corepack before ins
 
 ### Suggested improvement
 Examples for pnpm caching should either provision pnpm before setup-node evaluates cache metadata or show the explicit `package-manager-cache: false` baseline for a Corepack-only toolchain.
+
+## FL-012
+
+### Task
+Install the dashboard's pinned Next.js and React Three Fiber dependencies in the pnpm workspace.
+
+### Expected
+The lockfile update and install to reuse or download the selected package versions normally.
+
+### Actual
+The registry downloads for `next@16.1.6` and its Darwin SWC binary repeatedly aborted with pnpm error code 23, including one command timeout and one failed retry cycle.
+
+### Severity
+minor
+
+### Time lost
+About seven minutes.
+
+### Workaround
+Use the already-resolved `next@16.3.5` and compatible `@react-three/fiber@9.7.0`, while pinning React below the peer dependency's `19.3` upper bound.
+
+### Suggested improvement
+Keep frontend runtime versions exact in the dashboard package and prefer versions already validated by the workspace's supply-chain and package caches when no protocol behavior depends on an older patch.

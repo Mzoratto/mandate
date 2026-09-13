@@ -1,0 +1,19 @@
+Portrait source: the Mandate visual reference supplied by the user.
+The image is included unchanged as portrait-reference.png.
+The browser samples only the portrait region into colored points.
+Its labels and frame are excluded from the sampled region.
+Frontal detail is fitted to an anatomical volume; unseen geometry is approximate.
+No copyright ownership or third-party license is asserted for the supplied reference.
+
+
+Anatomical volume: MakeHuman community base mesh, CC0 1.0.
+https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/3dobjs/base.obj
+Source credits: Data Collection AB, Joel Palmius, Jonas Hauquier.
+Asset license included as MakeHuman_License.md.
+Adaptations: cropped bust, two subdivisions, normalized scale, landmark fitting,
+tapered shoulders, added procedural eye spheres, and particle sampling.
+MakeHuman application code is not included.
+
+Noise: Stefan Gustavson / Ashima Arts, webgl-noise, MIT license.
+https://github.com/stegu/webgl-noise
+License included alongside this file as NOISE-LICENSE.txt.

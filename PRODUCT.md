@@ -52,6 +52,7 @@ Unlike plan-bound intent authorization, Mandate permits execution-strategy chang
 - Tagline: “Delegate outcomes, not tool calls.”
 - Core line: “The agent was free to change its plan. It was never free to change its authority.”
 - Voice is direct, precise, calm, and explicit about authority changes. It avoids generic warnings and hidden scope expansion.
+- The approved dashboard world is a dark mission-control instrument centered on a procedural authority portrait; `DESIGN.md` owns its durable visual rules.
 
 ## Evidence on Hand
 
@@ -74,4 +75,4 @@ Authority decisions must work beyond voice alone. Material amendments require a 
 
 ## Open Decisions
 
-The first dashboard visual system has not been approved. The blueprint establishes required information and workflows but not a binding aesthetic direction.
+The authenticated control-plane data contract and final Alexa+ interaction surface remain open. The dashboard visual system is approved; fixture states must remain explicitly illustrative until those integrations exist.

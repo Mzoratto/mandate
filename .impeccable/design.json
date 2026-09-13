@@ -1,191 +1,191 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-13T13:28:31Z",
+  "generatedAt": "2026-09-13T19:45:33Z",
   "title": "Design System: Mandate",
   "extensions": {
     "colorMeta": {
+      "void": {
+        "role": "neutral",
+        "displayName": "Void",
+        "canonical": "#05090c",
+        "tonalRamp": ["#020405", "#05090c", "#192126", "#354047", "#59636a", "#818a90", "#b2b8bc", "#eef0f1"]
+      },
       "authority-ink": {
         "role": "neutral",
         "displayName": "Authority Ink",
-        "canonical": "#111820",
-        "tonalRamp": ["#080c10", "#111820", "#2e353c", "#51575d", "#777c81", "#a1a5a8", "#ced0d2", "#f3f4f4"]
+        "canonical": "#f2f5f7",
+        "tonalRamp": ["#17191a", "#343738", "#55585a", "#787b7d", "#9da0a2", "#c1c4c6", "#dfe2e4", "#f2f5f7"]
       },
-      "workspace": {
+      "muted-ink": {
         "role": "neutral",
-        "displayName": "Cool Workspace",
-        "canonical": "#f4f7f9",
-        "tonalRamp": ["#172027", "#33414b", "#53636e", "#76858f", "#9ba7af", "#c0c9ce", "#e0e6e9", "#f4f7f9"]
+        "displayName": "Muted Ink",
+        "canonical": "#8a949e",
+        "tonalRamp": ["#15191c", "#2f363c", "#4a555f", "#687681", "#8a949e", "#abb3ba", "#cdd2d6", "#eef0f2"]
       },
-      "surface": {
+      "dim-ink": {
         "role": "neutral",
-        "displayName": "Raised Surface",
-        "canonical": "#ffffff",
-        "tonalRamp": ["#191919", "#3a3a3a", "#5c5c5c", "#808080", "#a5a5a5", "#c9c9c9", "#e8e8e8", "#ffffff"]
+        "displayName": "Dim Ink",
+        "canonical": "#64717d",
+        "tonalRamp": ["#12171b", "#293138", "#414d57", "#5c6a76", "#798792", "#9ca6ae", "#c3c9ce", "#edf0f2"]
       },
-      "rail": {
+      "panel": {
         "role": "neutral",
-        "displayName": "Graphite Rail",
-        "canonical": "#121a24",
-        "tonalRamp": ["#090d12", "#121a24", "#303844", "#535b65", "#787f87", "#a2a7ad", "#cfd2d5", "#f3f4f5"]
+        "displayName": "Instrument Panel",
+        "canonical": "#0b1115",
+        "tonalRamp": ["#05080a", "#0b1115", "#202a30", "#3c484f", "#5e6a71", "#858e94", "#b4babd", "#eef0f1"]
       },
-      "rail-raised": {
+      "panel-deep": {
         "role": "neutral",
-        "displayName": "Raised Graphite",
-        "canonical": "#202b38",
-        "tonalRamp": ["#0d1218", "#202b38", "#3e4854", "#606872", "#838991", "#a8acb1", "#d0d2d5", "#f3f4f5"]
+        "displayName": "Deep Panel",
+        "canonical": "#080d13",
+        "tonalRamp": ["#030609", "#080d13", "#1d2630", "#39444e", "#5a6670", "#818b93", "#b1b7bc", "#edf0f2"]
       },
-      "secondary-ink": {
-        "role": "neutral",
-        "displayName": "Secondary Ink",
-        "canonical": "#596778",
-        "tonalRamp": ["#151a20", "#2c3642", "#465464", "#627183", "#8190a0", "#a3aeba", "#cbd1d7", "#f1f3f5"]
-      },
-      "border": {
+      "quiet-border": {
         "role": "neutral",
         "displayName": "Quiet Border",
-        "canonical": "#d9e1e8",
-        "tonalRamp": ["#1c2227", "#39434b", "#5b6872", "#7f8d98", "#a3afb8", "#c5cdd4", "#e1e6ea", "#f5f7f8"]
+        "canonical": "rgba(255, 255, 255, 0.085)",
+        "tonalRamp": ["#141719", "#2b3034", "#474e53", "#666d72", "#888e92", "#abb0b3", "#d0d3d5", "#f1f2f3"]
       },
-      "soft-field": {
+      "divider": {
         "role": "neutral",
-        "displayName": "Soft Field",
-        "canonical": "#eef3f6",
-        "tonalRamp": ["#192126", "#354249", "#56656d", "#798890", "#9eabb2", "#c1cbd0", "#dfe6e9", "#eef3f6"]
+        "displayName": "Divider",
+        "canonical": "rgba(255, 255, 255, 0.065)",
+        "tonalRamp": ["#111416", "#282d30", "#444a4e", "#63696d", "#858a8e", "#a9adaf", "#ced1d3", "#f0f1f2"]
       },
-      "attention": {
+      "in-scope": {
         "role": "primary",
-        "displayName": "Attention Amber",
-        "canonical": "#9a6100",
-        "tonalRamp": ["#2d1c00", "#553500", "#7b4d00", "#9a6100", "#bd7c16", "#db9c42", "#efc783", "#fff2d5"]
+        "displayName": "In-Scope Cyan",
+        "canonical": "#6fefff",
+        "tonalRamp": ["#003038", "#005662", "#007d8d", "#00a6ba", "#22cadc", "#6fefff", "#adf7ff", "#e4fcff"]
       },
-      "attention-field": {
+      "in-scope-deep": {
         "role": "primary",
-        "displayName": "Attention Field",
-        "canonical": "#fff2d5",
-        "tonalRamp": ["#302500", "#5b490e", "#856f2e", "#ad9654", "#d0bc7d", "#ead9aa", "#f8e9c7", "#fff2d5"]
+        "displayName": "Deep Cyan",
+        "canonical": "#2aaec0",
+        "tonalRamp": ["#082c32", "#0b4f59", "#11727f", "#1995a5", "#2aaec0", "#64c9d5", "#a1e1e7", "#def5f7"]
       },
-      "verified": {
+      "review": {
         "role": "secondary",
-        "displayName": "Verified Cyan",
-        "canonical": "#079bc1",
-        "tonalRamp": ["#002b38", "#004e64", "#006f8c", "#079bc1", "#3ab6d6", "#72cee5", "#ace4f0", "#dff8ff"]
+        "displayName": "Review Amber",
+        "canonical": "#f3b34d",
+        "tonalRamp": ["#382300", "#654100", "#93620b", "#bd8426", "#dca443", "#f3b34d", "#f8d49a", "#fff1d8"]
       },
-      "verified-field": {
+      "blocked": {
         "role": "secondary",
-        "displayName": "Verified Field",
-        "canonical": "#dff8ff",
-        "tonalRamp": ["#08282f", "#174b56", "#35717d", "#5e99a5", "#8bc0c9", "#b7e0e7", "#d3f0f5", "#dff8ff"]
+        "displayName": "Blocked Red",
+        "canonical": "#ff5b57",
+        "tonalRamp": ["#3a1010", "#6b1d1d", "#9e2d2b", "#cd403d", "#ef5752", "#ff8a86", "#ffbab7", "#ffe7e5"]
       },
       "success": {
         "role": "secondary",
-        "displayName": "Success Green",
-        "canonical": "#21865d",
-        "tonalRamp": ["#09271c", "#124a34", "#1a6b4b", "#21865d", "#4ca27d", "#79bea0", "#acdac5", "#e1f4ea"]
-      },
-      "destructive": {
-        "role": "secondary",
-        "displayName": "Destructive Red",
-        "canonical": "#b53b3b",
-        "tonalRamp": ["#351010", "#641d1d", "#912c2c", "#b53b3b", "#cf6464", "#e49393", "#f1bebe", "#fbeaea"]
+        "displayName": "Evidence Green",
+        "canonical": "#35df9b",
+        "tonalRamp": ["#073325", "#0b5b41", "#10845e", "#1bac7b", "#35cf94", "#6de8b4", "#a8f3d3", "#e0faef"]
       }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Mandate titles only." },
-      "headline": { "displayName": "Decision Headline", "purpose": "The current consequential decision." },
-      "title": { "displayName": "Section Title", "purpose": "Major supporting sections." },
-      "body": { "displayName": "Body", "purpose": "Explanations and conversational prompts." },
-      "label": { "displayName": "Interface Label", "purpose": "Navigation, metadata, and controls." },
-      "evidence": { "displayName": "Evidence", "purpose": "Versions, hashes, timestamps, identifiers, and machine evidence." }
+      "display": { "displayName": "Outcome Display", "purpose": "The delegated outcome in the hero only." },
+      "headline": { "displayName": "Panel Headline", "purpose": "Execution, attention, evidence, and state headings." },
+      "body": { "displayName": "Operational Body", "purpose": "Mandate descriptions and governance explanations." },
+      "label": { "displayName": "Operational Label", "purpose": "Real fields and channels, never decorative kickers." },
+      "evidence": { "displayName": "Machine Evidence", "purpose": "Identifiers, timestamps, counters, and exact values." }
     },
     "shadows": [
-      { "name": "decision-ambient", "value": "0 10px 30px rgba(17, 24, 32, 0.05)", "purpose": "Identifies the active decision surface." },
-      { "name": "control-anchor", "value": "0 14px 34px rgba(18, 26, 36, 0.15)", "purpose": "Anchors the dark Alexa control band." }
+      { "name": "modal-focus", "value": "0 30px 100px rgba(0, 0, 0, 0.73)", "purpose": "Creates protected focus around a native modal dialog." },
+      { "name": "particle-emission", "value": "state-colored WebGL bloom, strength 0.32", "purpose": "Supplies emitted depth inside the portrait only." }
     ],
     "motion": [
-      { "name": "authority-pulse", "value": "1.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s 1 both", "purpose": "One-time expansion of the verified ring when attention first appears; disabled for reduced motion." }
+      { "name": "portrait-assembly", "value": "3.8s bounded shader assembly", "purpose": "Introduces the living authority field once; disabled for reduced motion." },
+      { "name": "evidence-arrival", "value": "1.5s cubic-bezier(0.25, 0.1, 0.25, 1)", "purpose": "Carries one particle from the assembled portrait to each completed evidence step." },
+      { "name": "state-damping", "value": "exponential damping at 3/s", "purpose": "Transitions portrait color, dispersion, jitter, and pulse without abrupt visual jumps." }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "640px" },
-      { "name": "lg", "value": "1024px" },
-      { "name": "xl", "value": "1280px" }
+      { "name": "mobile", "value": "600px" },
+      { "name": "stacked", "value": "1000px" },
+      { "name": "compact-desktop", "value": "1250px" },
+      { "name": "wide", "value": "1550px" },
+      { "name": "ultrawide", "value": "1900px" }
     ]
   },
   "components": [
     {
-      "name": "Primary Button",
+      "name": "Control Button",
       "kind": "button",
-      "refersTo": "button-primary",
-      "description": "The decisive action on an authority surface.",
-      "html": "<button class=\"ds-btn-primary\">Find another solution</button>",
-      "css": ".ds-btn-primary { height: 48px; padding: 0 24px; border: 1px solid transparent; border-radius: 10px; background: var(--primary, #151d27); color: var(--primary-foreground, #fff); font: 500 16px/1.25 Geist, ui-sans-serif, system-ui, sans-serif; transition: background-color 150ms, transform 150ms; } .ds-btn-primary:hover { background: color-mix(in srgb, var(--primary, #151d27) 80%, transparent); } .ds-btn-primary:focus-visible { outline: 3px solid color-mix(in srgb, var(--ring, #18a9ce) 45%, transparent); outline-offset: 2px; } .ds-btn-primary:active { transform: translateY(1px); }"
-    },
-    {
-      "name": "Secondary Button",
-      "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "A bounded alternative beside the decisive action.",
-      "html": "<button class=\"ds-btn-secondary\">Review amendment</button>",
-      "css": ".ds-btn-secondary { height: 48px; padding: 0 24px; border: 1px solid var(--border, #d9e1e8); border-radius: 10px; background: var(--background, #f4f7f9); color: var(--foreground, #111820); font: 500 16px/1.25 Geist, ui-sans-serif, system-ui, sans-serif; transition: background-color 150ms, transform 150ms; } .ds-btn-secondary:hover { background: var(--muted, #eef3f6); } .ds-btn-secondary:focus-visible { outline: 3px solid color-mix(in srgb, var(--ring, #18a9ce) 45%, transparent); outline-offset: 2px; } .ds-btn-secondary:active { transform: translateY(1px); }"
-    },
-    {
-      "name": "Attention Chip",
-      "kind": "chip",
-      "refersTo": "chip-attention",
-      "description": "Signals that execution needs a human decision.",
-      "html": "<span class=\"ds-chip-attention\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"7\" y=\"5\" width=\"3\" height=\"14\" rx=\"1\"/><rect x=\"14\" y=\"5\" width=\"3\" height=\"14\" rx=\"1\"/></svg>Needs you</span>",
-      "css": ".ds-chip-attention { display: inline-flex; height: 44px; align-items: center; gap: 8px; padding: 0 16px; border-radius: 999px; background: var(--attention-field, #fff2d5); color: var(--attention, #9a6100); font: 600 14px/1 Geist, ui-sans-serif, system-ui, sans-serif; } .ds-chip-attention svg { width: 16px; height: 16px; fill: currentColor; }"
-    },
-    {
-      "name": "Decision Card",
-      "kind": "card",
-      "refersTo": "card-decision",
-      "description": "The single lifted surface for the active authority decision.",
-      "html": "<section class=\"ds-decision-card\"><div class=\"ds-decision-state\">AgentOS is paused</div><h2>A database change is outside your mandate.</h2><p>The agent stopped before making the change.</p></section>",
-      "css": ".ds-decision-card { max-width: 760px; padding: 32px; border: 1px solid var(--border, #d9e1e8); border-radius: 14px; background: var(--card, #fff); color: var(--foreground, #111820); box-shadow: 0 10px 30px rgba(17, 24, 32, 0.05); font-family: Geist, ui-sans-serif, system-ui, sans-serif; } .ds-decision-card h2 { margin: 20px 0 8px; font-size: 30px; line-height: 1.25; letter-spacing: -0.025em; } .ds-decision-card p { margin: 0; color: var(--muted-foreground, #596778); font-size: 18px; } .ds-decision-state { color: var(--attention, #9a6100); font-size: 14px; font-weight: 600; }"
+      "refersTo": "button-control",
+      "description": "A compact neutral action for audits and modal decisions.",
+      "html": "<button class=\"ds-control-button\">View audit</button>",
+      "css": ".ds-control-button { height: 33px; padding: 0 14px; border: 1px solid rgba(255,255,255,.085); border-radius: 9px; background: transparent; color: #f2f5f7; font: 400 14px/1 Inter, Arial, sans-serif; transition: background .4s, border-color .4s; } .ds-control-button:hover { background: rgba(255,255,255,.045); } .ds-control-button:focus-visible { outline: 2px solid #6fefff; outline-offset: 5px; } .ds-control-button:active { background: rgba(255,255,255,.08); }"
     },
     {
       "name": "Selected Navigation Item",
       "kind": "nav",
-      "description": "The current destination in the graphite rail.",
-      "html": "<a class=\"ds-nav-selected\" href=\"#\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 3h10a2 2 0 0 1 2 2v14H8a2 2 0 0 1-2-2V3Zm3 5h6M9 12h6M8 19a2 2 0 0 1 0-4h10\"/></svg>Mandates</a>",
-      "css": ".ds-nav-selected { display: flex; min-height: 48px; align-items: center; gap: 16px; padding: 0 16px; border-radius: 10px; background: var(--sidebar-accent, #202b38); color: #fff; text-decoration: none; font: 400 14px/1 Geist, ui-sans-serif, system-ui, sans-serif; } .ds-nav-selected svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; } .ds-nav-selected:focus-visible { outline: 3px solid color-mix(in srgb, var(--ring, #18a9ce) 55%, transparent); outline-offset: 2px; }"
+      "refersTo": "nav-selected",
+      "description": "The current location in the matte mission rail.",
+      "html": "<a class=\"ds-nav-selected\" href=\"#\"><i></i>Control</a>",
+      "css": ".ds-nav-selected { display: flex; width: 168px; height: 40px; align-items: center; gap: 11px; padding: 0 12px; border-radius: 10px; background: rgba(255,255,255,.045); color: #f2f5f7; text-decoration: none; font: 400 16px/1 Inter, Arial, sans-serif; } .ds-nav-selected i { width: 4px; height: 4px; border-radius: 50%; background: #6fefff; box-shadow: 0 0 8px #54dfff; } .ds-nav-selected:focus-visible { outline: 2px solid #6fefff; outline-offset: 5px; }"
     },
     {
-      "name": "Alexa Control Band",
+      "name": "Demo Approval Chip",
+      "kind": "chip",
+      "refersTo": "approval-chip",
+      "description": "An explicitly illustrative Alexa+ authority source.",
+      "html": "<span class=\"ds-approval\"><i></i>Demo approval via Alexa+</span>",
+      "css": ".ds-approval { display: inline-flex; height: 28px; align-items: center; gap: 8px; padding: 0 10px; border: 1px solid rgba(100,154,255,.25); border-radius: 999px; background: rgba(50,95,150,.05); color: #aecbff; font: 400 10px/1 Inter, Arial, sans-serif; } .ds-approval i { width: 13px; height: 13px; border: 1px solid #6ca7e9; border-radius: 50%; }"
+    },
+    {
+      "name": "Instrument Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "A broad tonal region for execution, attention, or evidence.",
+      "html": "<section class=\"ds-panel\"><h2>Plan adapts. Authority does not.</h2><p>Execution remains inside the approved envelope.</p></section>",
+      "css": ".ds-panel { width: 420px; padding: 17px 23px; overflow: hidden; border: 1px solid rgba(255,255,255,.085); border-radius: 16px; background: linear-gradient(130deg, rgba(11,17,21,.66), rgba(8,13,19,.66)); color: #f2f5f7; font-family: Inter, Arial, sans-serif; } .ds-panel h2 { margin: 0; font-size: 18px; font-weight: 500; line-height: 1.16; letter-spacing: -.035em; } .ds-panel p { margin: 9px 0 0; color: #8a949e; font-size: 11px; line-height: 1.5; }"
+    },
+    {
+      "name": "Authority Meter",
       "kind": "custom",
-      "description": "A high-contrast voice-control prompt with verified identity.",
-      "html": "<section class=\"ds-alexa-band\"><span class=\"ds-alexa-ring\"></span><div><strong>Alexa+</strong><p>Should I ask the agent to find another way?</p></div></section>",
-      "css": ".ds-alexa-band { display: flex; align-items: center; gap: 20px; padding: 24px 32px; border-radius: 14px; background: var(--sidebar, #121a24); color: var(--sidebar-foreground, #e8eef4); box-shadow: 0 14px 34px rgba(18, 26, 36, 0.15); font-family: Geist, ui-sans-serif, system-ui, sans-serif; } .ds-alexa-band p { margin: 8px 0 0; font-size: 20px; } .ds-alexa-ring { width: 48px; height: 48px; flex: none; border: 5px solid var(--verified, #079bc1); border-radius: 999px; }"
+      "description": "A thin measured line ending at an immutable boundary mark.",
+      "html": "<div class=\"ds-authority\"><strong>Within approved boundary</strong><span><i></i><b></b></span><em>62% utilized</em></div>",
+      "css": ".ds-authority { display: grid; grid-template-columns: 170px minmax(0,1fr) 70px; align-items: center; gap: 22px; color: #f2f5f7; font: 400 11px/1 Inter, Arial, sans-serif; } .ds-authority > span { position: relative; height: 1px; background: rgba(255,255,255,.16); } .ds-authority i { display: block; width: 62%; height: 1px; background: #6fefff; box-shadow: 0 0 3px rgba(111,239,255,.3); } .ds-authority b { position: absolute; right: 0; top: -5px; width: 1px; height: 10px; background: rgba(255,255,255,.33); } .ds-authority em { color: #8a949e; font-size: 9px; font-style: normal; text-align: right; }"
+    },
+    {
+      "name": "Boundary Action",
+      "kind": "button",
+      "description": "A fail-closed amendment review action with a restrained blocked-state border.",
+      "html": "<button class=\"ds-boundary-action\">Review amendment →</button>",
+      "css": ".ds-boundary-action { padding: 8px 16px; border: 1px solid rgba(255,91,87,.19); border-radius: 9px; background: transparent; color: #f2f5f7; font: 400 11px/1 Inter, Arial, sans-serif; transition: background .4s, border-color .4s; } .ds-boundary-action:hover { background: rgba(255,255,255,.045); border-color: rgba(255,91,87,.32); } .ds-boundary-action:focus-visible { outline: 2px solid #6fefff; outline-offset: 5px; }"
     }
   ],
   "narrative": {
-    "northStar": "The Authority Console",
-    "overview": "Mandate is an operational control surface for understanding delegated authority and acting on exceptions. It pairs a dark graphite navigation rail with a cool, quiet workspace so the interface feels exact and durable without becoming a developer console.\n\nThe hierarchy gives authority deltas, boundaries, alternatives, and evidence more visual weight than product chrome. It is calm rather than alarming and administrative rather than futuristic; color is sparse enough that attention and verified identity remain unmistakable.",
+    "northStar": "The Living Authority Field",
+    "overview": "Mandate is a dark operational instrument for supervising autonomy under explicit limits. Its focal object is a procedurally assembled agent portrait whose color, coherence, and surrounding field change with authority state. The interface should feel observed and exact rather than theatrical: near-black space, quiet hairlines, compact data labels, and one luminous mechanism doing real work.\n\nThe visual world is optimized for a principal checking a consequential run under dim, focused working conditions. It is futuristic because the product mechanism is visible, not because generic neon chrome has been applied to ordinary cards.",
     "keyCharacteristics": [
-      "Dark persistent rail beside a cool reading field",
-      "One dominant decision surface, followed by evidence and immutable scope",
-      "Amber for blocked expansion; cyan for Alexa-backed identity",
-      "Crisp borders, restrained ambient depth, and explicit plain-language actions"
+      "A near-black mission-control field with sparse, hairline structure",
+      "One dominant procedural particle portrait paired with the authority envelope",
+      "Cyan for in-scope execution, amber for review, and red only for a blocked expansion",
+      "Compact operational labels, plain-language decisions, and locally rendered evidence",
+      "A single assembly-to-evidence motion sequence rather than scattered entrance effects"
     ],
     "rules": [
-      { "name": "The Semantic Scarcity Rule", "body": "Amber never decorates; cyan never acts as a generic link color; status always includes language or iconography in addition to color.", "section": "colors" },
-      { "name": "The Evidence Type Rule", "body": "Use monospace only when the underlying value is machine-shaped and benefits from character-level inspection.", "section": "typography" },
-      { "name": "The Decision-First Rule", "body": "A consequential state and its available choices appear before history, evidence, or scope detail.", "section": "layout" },
-      { "name": "The One-Lift Rule", "body": "Elevation identifies the active decision; routine rows and nested fields remain flat.", "section": "elevation" }
+      { "name": "The State-Light Rule", "body": "Color belongs to execution state. Neutral content does not borrow cyan, amber, red, or green for decoration.", "section": "colors" },
+      { "name": "The Fail-Closed Red Rule", "body": "Red means an attempted authority expansion was stopped before execution; routine review uses amber, and status always includes language.", "section": "colors" },
+      { "name": "The Operational-Label Rule", "body": "Small uppercase type names a real field or channel. Do not add an eyebrow merely to decorate a heading.", "section": "typography" },
+      { "name": "The Mechanism-First Rule", "body": "The mandate and living authority field share the first viewport; generic metrics never lead the page.", "section": "layout" },
+      { "name": "The Contained-Light Rule", "body": "Emitted light stays inside the portrait, a status point, or the active authority line. Broad surfaces remain matte.", "section": "elevation" }
     ],
     "dos": [
-      "Do put the current authority boundary next to the decision it governs.",
-      "Do name the exact authority delta and a compliant alternative before asking for approval.",
-      "Do keep interaction targets at least 44px and retain visible keyboard focus.",
-      "Do use native landmarks, headings, buttons, links, and `aria-current` for active navigation.",
-      "Do keep approved scope visually stable while an amendment is reviewed or rejected."
+      "Do make the authority boundary and current execution state readable without interpreting the portrait color.",
+      "Do preserve the portrait's ±4° interaction limit and reduced-motion behavior.",
+      "Do keep every live-service claim explicitly offline or illustrative until authenticated evidence exists.",
+      "Do use local assets with attribution and embedded provenance.",
+      "Do let one state transition carry the motion story, then keep the console quiet."
     ],
     "donts": [
-      "Don't use generic warning banners without a next action.",
-      "Don't use gradients, glass effects, neon glows, or decorative charts.",
-      "Don't create equal-weight dashboard card grids or nest cards inside cards.",
-      "Don't use red for routine blocked authority expansion.",
-      "Don't hide authority changes behind ambiguous confirmation language or narrow viewports."
+      "Don't use state colors for generic links, borders, or decorative emphasis.",
+      "Don't turn supporting information into an equal-weight metric grid.",
+      "Don't replace the procedural portrait with a static generic AI avatar or remote runtime asset.",
+      "Don't use red for review, warning, or urgency when no authority expansion was actually blocked.",
+      "Don't add promotional eyebrows; compact uppercase labels must identify a real operational field.",
+      "Don't present fixture timestamps, approvals, evidence, or AgentOS/Alexa+ status as live."
     ]
   }
 }

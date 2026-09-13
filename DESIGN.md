@@ -1,216 +1,214 @@
 ---
 name: Mandate
-description: A calm authority console for governing consequential agent work.
+description: A dark mission-control instrument for outcome-bound agent authority.
 colors:
-  authority-ink: "#111820"
-  workspace: "#f4f7f9"
-  surface: "#ffffff"
-  rail: "#121a24"
-  rail-raised: "#202b38"
-  secondary-ink: "#596778"
-  border: "#d9e1e8"
-  soft-field: "#eef3f6"
-  attention: "#9a6100"
-  attention-field: "#fff2d5"
-  verified: "#079bc1"
-  verified-field: "#dff8ff"
-  success: "#21865d"
-  destructive: "#b53b3b"
+  void: "#05090c"
+  authority-ink: "#f2f5f7"
+  muted-ink: "#8a949e"
+  dim-ink: "#64717d"
+  panel: "#0b1115"
+  panel-deep: "#080d13"
+  quiet-border: "rgba(255, 255, 255, 0.085)"
+  divider: "rgba(255, 255, 255, 0.065)"
+  in-scope: "#6fefff"
+  in-scope-deep: "#2aaec0"
+  review: "#f3b34d"
+  blocked: "#ff5b57"
+  success: "#35df9b"
 typography:
   display:
-    fontFamily: "Geist, Geist Fallback, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(1.875rem, 3vw, 2.25rem)"
-    fontWeight: 600
-    lineHeight: 1.2
-    letterSpacing: "-0.035em"
+    fontFamily: "Inter Variable, Arial, Helvetica, sans-serif"
+    fontSize: "clamp(2.375rem, 3.7vw, 3.625rem)"
+    fontWeight: 500
+    lineHeight: 1.005
+    letterSpacing: "-0.048em"
   headline:
-    fontFamily: "Geist, Geist Fallback, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(1.5rem, 2.5vw, 1.875rem)"
-    fontWeight: 600
-    lineHeight: 1.25
-    letterSpacing: "-0.025em"
-  title:
-    fontFamily: "Geist, Geist Fallback, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1.25rem"
-    fontWeight: 600
-    lineHeight: 1.4
+    fontFamily: "Inter Variable, Arial, Helvetica, sans-serif"
+    fontSize: "1.125rem"
+    fontWeight: 500
+    lineHeight: 1.16
+    letterSpacing: "-0.035em"
   body:
-    fontFamily: "Geist, Geist Fallback, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "1rem"
+    fontFamily: "Inter Variable, Arial, Helvetica, sans-serif"
+    fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.5
   label:
-    fontFamily: "Geist, Geist Fallback, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 500
-    lineHeight: 1.4
+    fontFamily: "Inter Variable, Arial, Helvetica, sans-serif"
+    fontSize: "0.5625rem"
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: "0.17em"
   evidence:
-    fontFamily: "Geist Mono, Geist Mono Fallback, ui-monospace, monospace"
-    fontSize: "0.75rem"
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace"
+    fontSize: "0.5625rem"
     fontWeight: 400
     lineHeight: 1.4
 rounded:
-  sm: "6px"
-  md: "8px"
-  lg: "10px"
-  xl: "14px"
+  detail: "6px"
+  control: "9px"
+  group: "11px"
+  panel: "16px"
+  hero: "18px"
   pill: "999px"
 spacing:
+  hairline: "4px"
   xs: "8px"
   sm: "12px"
   md: "16px"
   lg: "20px"
-  xl: "24px"
+  xl: "26px"
   2xl: "32px"
-  3xl: "40px"
-  4xl: "48px"
 components:
-  button-primary:
-    backgroundColor: "{colors.rail}"
-    textColor: "{colors.surface}"
-    rounded: "{rounded.lg}"
-    padding: "0 24px"
-    height: "48px"
-  button-secondary:
-    backgroundColor: "{colors.workspace}"
+  button-control:
+    backgroundColor: "transparent"
     textColor: "{colors.authority-ink}"
-    rounded: "{rounded.lg}"
-    padding: "0 24px"
-    height: "48px"
-  card-decision:
-    backgroundColor: "{colors.surface}"
+    rounded: "{rounded.control}"
+    padding: "0 14px"
+    height: "33px"
+  panel:
+    backgroundColor: "{colors.panel}"
     textColor: "{colors.authority-ink}"
-    rounded: "{rounded.xl}"
-    padding: "32px"
-  chip-attention:
-    backgroundColor: "{colors.attention-field}"
-    textColor: "{colors.attention}"
+    rounded: "{rounded.panel}"
+    padding: "17px 23px"
+  approval-chip:
+    backgroundColor: "rgba(50, 95, 150, 0.05)"
+    textColor: "#aecbff"
     rounded: "{rounded.pill}"
-    padding: "0 16px"
-    height: "44px"
+    padding: "0 10px"
+    height: "28px"
+  nav-selected:
+    backgroundColor: "rgba(255, 255, 255, 0.045)"
+    textColor: "{colors.authority-ink}"
+    rounded: "10px"
+    padding: "0 12px"
+    height: "40px"
 ---
 
 # Design System: Mandate
 
 ## Overview
 
-**Creative North Star: "The Authority Console"**
+**Creative North Star: "The Living Authority Field"**
 
-Mandate is an operational control surface for understanding delegated authority and acting on exceptions. It pairs a dark graphite navigation rail with a cool, quiet workspace so the interface feels exact and durable without becoming a developer console.
+Mandate is a dark operational instrument for supervising autonomy under explicit limits. Its focal object is a procedurally assembled agent portrait whose color, coherence, and surrounding field change with authority state. The interface should feel observed and exact rather than theatrical: near-black space, quiet hairlines, compact data labels, and one luminous mechanism doing real work.
 
-The hierarchy gives authority deltas, boundaries, alternatives, and evidence more visual weight than product chrome. It is calm rather than alarming and administrative rather than futuristic; color is sparse enough that attention and verified identity remain unmistakable.
+The visual world is optimized for a principal checking a consequential run under dim, focused working conditions. It is futuristic because the product mechanism is visible, not because generic neon chrome has been applied to ordinary cards.
 
 **Key Characteristics:**
-- Dark persistent rail beside a cool reading field
-- One dominant decision surface, followed by evidence and immutable scope
-- Amber for blocked expansion; cyan for Alexa-backed identity
-- Crisp borders, restrained ambient depth, and explicit plain-language actions
+- A near-black mission-control field with sparse, hairline structure
+- One dominant procedural particle portrait paired with the authority envelope
+- Cyan for in-scope execution, amber for review, and red only for a blocked expansion
+- Compact operational labels, plain-language decisions, and locally rendered evidence
+- A single assembly-to-evidence motion sequence rather than scattered entrance effects
 
 ## Colors
 
-The palette uses cool neutrals for sustained reading, a near-black rail for orientation, and two scarce semantic accents.
+The palette is restrained graphite with state colors used as emitted light. Most of the interface remains neutral so a change in authority is immediately legible.
 
 ### Primary
-- **Authority Ink:** Primary text, decisive controls, and high-contrast command surfaces.
-- **Attention Amber:** Human attention, paused execution, and requested authority expansion only.
+- **In-Scope Cyan:** The active particle field, current execution markers, focus outlines, and measured authority usage.
+- **Deep Cyan:** Low-emphasis rings, borders, and ambient particle depth supporting the primary cyan.
 
 ### Secondary
-- **Verified Cyan:** Authenticated Alexa identity and verified control-plane presence only.
-- **Success Green:** In-scope execution and successful evidence states.
-- **Destructive Red:** Destructive or irreversible outcomes, not routine blocked expansion.
+- **Review Amber:** Human-attention review and the authority orbit around a blocked request.
+- **Blocked Red:** Denied expansion, paused execution, and the dispersed boundary portrait only.
+- **Evidence Green:** Completed steps and healthy in-scope execution.
 
 ### Neutral
-- **Cool Workspace:** The persistent page field.
-- **Raised Surface:** Decision cards and structured scope cells.
-- **Graphite Rail:** Navigation and the Alexa control band.
-- **Raised Graphite:** Selected or hovered navigation states.
-- **Secondary Ink:** Supporting copy and metadata.
-- **Quiet Border:** Dividers, outlines, and table-like joins.
-- **Soft Field:** Boundary summaries and low-emphasis grouping.
+- **Void:** The page and fixed rail ground.
+- **Authority Ink:** Primary text and decisive control labels.
+- **Muted Ink:** Body explanations and secondary navigation.
+- **Dim Ink:** Evidence metadata and inactive states.
+- **Panel / Panel Deep:** Tonal layers inside broad operational surfaces.
+- **Quiet Border / Divider:** One-pixel structure between regions and records.
 
-**The Semantic Scarcity Rule.** Amber never decorates; cyan never acts as a generic link color; status always includes language or iconography in addition to color.
+**The State-Light Rule.** Color belongs to execution state. Neutral content does not borrow cyan, amber, red, or green for decoration.
+
+**The Fail-Closed Red Rule.** Red means an attempted authority expansion was stopped before execution; routine review uses amber, and status always includes language.
 
 ## Typography
 
-- **Display Font:** Geist (with UI sans-serif fallbacks)
-- **Body Font:** Geist (with UI sans-serif fallbacks)
-- **Label/Mono Font:** Geist Mono (with UI monospace fallbacks)
+**Display Font:** Inter Variable (with Arial and Helvetica fallbacks)
 
-**Character:** Compact, neutral interface typography keeps dense authority information legible. Monospace is reserved for machine-shaped evidence rather than used as a technical costume.
+**Body Font:** Inter Variable (with Arial and Helvetica fallbacks)
+
+**Evidence Font:** The platform UI monospace stack
+
+**Character:** Inter is deliberately quiet and compact so the animated authority mechanism remains the identity. Weight contrast is restrained; size, density, and spacing establish hierarchy.
 
 ### Hierarchy
-- **Display** (600, responsive 30–36px, 1.2): Mandate titles only.
-- **Headline** (600, responsive 24–30px, 1.25): The current consequential decision.
-- **Title** (600, 20px, 1.4): Section headings and major supporting labels.
-- **Body** (400, 16px, 1.5): Explanations and conversational prompts; prose stays near 72 characters where practical.
-- **Label** (500, 14px, 1.4): Navigation, metadata, and controls.
-- **Evidence** (400, 12px, 1.4): Versions, hashes, timestamps, identifiers, and machine evidence.
+- **Display** (500, responsive 38–58px, 1.005): The delegated outcome in the hero only.
+- **Headline** (500, 18px, 1.16): Execution, attention, evidence, and demo-state headings.
+- **Body** (400, 14px, 1.5): Mandate descriptions and governance explanations; keep long lines near 65–75 characters.
+- **Operational label** (600, 9px, 0.17em tracking, uppercase): Actual fields such as authority, current step, and evidence category—not generic promotional kickers.
+- **Evidence** (400, 9px, monospace): Timestamps, mandate identifiers, counters, and machine-shaped values.
 
-**The Evidence Type Rule.** Use monospace only when the underlying value is machine-shaped and benefits from character-level inspection.
+**The Operational-Label Rule.** Small uppercase type names a real field or channel. Do not add an eyebrow merely to decorate a heading.
 
 ## Layout
 
-Desktop uses a fixed 272px navigation rail, a 64px top bar, and a fluid main workspace capped at 1480px. The mandate title and tabs establish the reading order; the decision surface leads a two-column area with a 290px immutable summary, followed by a full-width Alexa band, event row, and approved scope.
+Desktop uses a fixed 210px rail and a fluid main canvas with 26–32px outer padding. The first surface is a two-column 480px hero: authority statement on the left, procedural portrait on the right. Execution and attention form the next row; evidence and demo controls close the dashboard.
 
-The spacing rhythm is based on 8px with frequent 16px, 24px, 32px, and 40px intervals. Below 1280px, the immutable summary moves beneath the decision. Below 1024px, the rail becomes a compact dark header. Below 640px, actions stack, tabs remain horizontally available, and structured pairs become vertical. No authority information disappears at narrow widths.
+At 1000px the hero becomes one column and the portrait receives its own 440px stage. At 600px the rail becomes a 112px fixed header, the page starts below it, authority details reflow to two columns, and every operational panel stacks without dropping information. The layout uses a dense 4/8/12/16/20/26/32px rhythm; generous space is reserved for the portrait and outcome statement rather than distributed evenly across cards.
 
-**The Decision-First Rule.** A consequential state and its available choices appear before history, evidence, or scope detail.
+**The Mechanism-First Rule.** The mandate and living authority field share the first viewport; generic metrics never lead the page.
 
 ## Elevation & Depth
 
-The system is flat by default and uses tonal layering and quiet borders for structure. Only the primary decision card receives a faint ambient shadow (`0 10px 30px rgba(17, 24, 32, 0.05)`), while the dark Alexa band receives a slightly stronger anchor shadow (`0 14px 34px rgba(18, 26, 36, 0.15)`). There are no colored glows.
+The system uses tonal depth, transparency, and one-pixel boundaries rather than stacked shadows. Panels shift from the Void into two close graphite values. Bloom belongs inside the particle render, and the modal alone receives a broad black shadow because it creates protected focus. State glows remain small and attached to particles or status points; they are not card decoration.
 
-**The One-Lift Rule.** Elevation identifies the active decision; routine rows and nested fields remain flat.
+**The Contained-Light Rule.** Emitted light stays inside the portrait, a status point, or the active authority line. Broad surfaces remain matte.
 
 ## Shapes
 
-Surfaces use gently rounded geometry: 10px for controls, 14px for primary containers, and 999px only for compact status chips and identity rings. Borders remain one pixel and low contrast. Information inside a primary surface is grouped with tonal fields, separators, and shared-border cells rather than nested cards.
-
-The open cyan ring is the recurring identity geometry for Alexa-backed approval and control. It is paired with text whenever its meaning matters.
+Broad panels use 16px corners, the hero uses 18px, controls use 9px, and small evidence cells use 6px. Full pills are reserved for compact status or identity channels. Circular geometry belongs to the portrait HUD, status points, the Alexa+ outline, and bounded meters. Borders are always one pixel and low contrast; dashed borders identify a quiet health field, not a warning.
 
 ## Components
 
 ### Buttons
-- **Shape:** Direct rounded rectangles (10px) with a 48px action height on decision surfaces.
-- **Primary:** Graphite fill, white text, and 24px horizontal padding.
-- **Secondary:** Workspace fill, quiet border, and authority-ink text.
-- **Hover / Focus:** Tonal darkening on hover; a visible cyan focus ring; a one-pixel press translation on active controls.
+- **Shape:** Compact rounded rectangles (9px) with a one-pixel quiet border.
+- **Default:** Transparent over the current surface with Authority Ink.
+- **Hover / Focus:** A faint neutral fill on hover and a two-pixel In-Scope Cyan outline on keyboard focus.
+- **Boundary action:** Keeps the same geometry and uses a low-opacity Blocked Red border; the action text names the authority consequence.
 
-### Chips
-- **Style:** Compact semantic field with a full pill radius; attention chips use amber field and ink.
-- **State:** Always pair icon and short text so color does not carry status alone.
+### Status Channels
+- **Approval chip:** A 28px pill with a thin cool-blue outline and explicit “Demo” language until identity is authenticated.
+- **Running badge:** A compact neutral pill pairing a state dot with text.
+- **Authority meter:** A one-pixel track with a luminous active segment and a fixed terminal boundary mark; the adjacent label repeats the state in words.
 
-### Cards / Containers
-- **Corner Style:** Gently rounded primary containers (14px) and structured inner fields (10px).
-- **Background:** White on the cool workspace; graphite for the Alexa control band.
-- **Shadow Strategy:** One lifted decision card; supporting structures stay flat.
-- **Border:** Quiet one-pixel border.
-- **Internal Padding:** 20px on mobile and 32px from small screens upward.
+### Panels
+- **Corner style:** Broad 16px regions; 18px for the first-viewport hero.
+- **Background:** A subtle two-tone graphite field over the Void.
+- **Border:** One-pixel Quiet Border; nested information uses Divider rules instead of nested cards.
+- **Padding:** 17–23px for operational panels and 47px around the desktop mandate statement.
 
 ### Navigation
-- **Style:** Low-chrome text links with Lucide line icons. Selected rail items use a raised graphite field; selected tabs use a two-pixel ink underline.
-- **Responsive treatment:** The full rail is replaced by a compact branded header below 1024px rather than squeezed into the viewport.
+- **Desktop:** A fixed matte rail with text destinations, tiny circular markers, and one tonal selected field.
+- **Mobile:** A fixed compact brand row above a horizontal destination row; connection truth remains visible.
+- **State:** Selection is communicated by fill, text contrast, a cyan point, and `aria-current`.
 
-### Attention Surface
-- **Content:** Pause state, plain-language boundary explanation, current envelope, and two explicit choices.
-- **Behavior:** Reviewing an amendment expands exact effect and risk deltas in place; choosing a compliant alternative never changes approved scope.
+### Particle Portrait
 
-### Alexa Control Band
-- **Style:** High-contrast graphite band, verified cyan ring, explicit Alexa+ name, and a visible illustrative/live qualifier.
-- **Motion:** The ring may pulse once when attention first appears; reduced-motion users receive no pulse and all information remains visible.
+The signature component combines a bundled reference image, a CC0 anatomical mesh, custom vertex and fragment shaders, and post-processing bloom. It assembles once, accepts pointer and keyboard yaw within ±4°, shifts state without changing authority, and falls back to explanatory text when WebGL is unavailable. Reduced-motion mode disables assembly, drift, evidence trails, and decorative state animation while preserving the final portrait and all status language.
+
+### Dialogs
+
+Native modal dialogs hold the execution trace and authority delta. They use Panel Deep, a broad black focus shadow, Escape/backdrop dismissal, a named close control, and plain-language evidence. Demonstration status remains visible in the content.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** put the current authority boundary next to the decision it governs.
-- **Do** name the exact authority delta and a compliant alternative before asking for approval.
-- **Do** keep interaction targets at least 44px and retain visible keyboard focus.
-- **Do** use native landmarks, headings, buttons, links, and `aria-current` for active navigation.
-- **Do** keep approved scope visually stable while an amendment is reviewed or rejected.
+- **Do** make the authority boundary and current execution state readable without interpreting the portrait color.
+- **Do** preserve the portrait's ±4° interaction limit and reduced-motion behavior.
+- **Do** keep every live-service claim explicitly offline or illustrative until authenticated evidence exists.
+- **Do** use local assets with attribution and embedded provenance.
+- **Do** let one state transition carry the motion story, then keep the console quiet.
 
 ### Don't:
-- **Don't** use generic warning banners without a next action.
-- **Don't** use gradients, glass effects, neon glows, or decorative charts.
-- **Don't** create equal-weight dashboard card grids or nest cards inside cards.
-- **Don't** use red for routine blocked authority expansion.
-- **Don't** hide authority changes behind ambiguous confirmation language or narrow viewports.
+- **Don't** use state colors for generic links, borders, or decorative emphasis.
+- **Don't** turn supporting information into an equal-weight metric grid.
+- **Don't** replace the procedural portrait with a static generic AI avatar or remote runtime asset.
+- **Don't** use red for review, warning, or urgency when no authority expansion was actually blocked.
+- **Don't** add promotional eyebrows; compact uppercase labels must identify a real operational field.
+- **Don't** present fixture timestamps, approvals, evidence, or AgentOS/Alexa+ status as live.

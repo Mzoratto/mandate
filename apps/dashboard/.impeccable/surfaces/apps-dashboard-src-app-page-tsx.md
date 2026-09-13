@@ -2,39 +2,40 @@
 version: 1
 slug: "apps-dashboard-src-app-page-tsx"
 primary_target: "apps/dashboard/src/app/page.tsx"
-related_targets: ["apps/dashboard/src/app/globals.css","apps/dashboard/src/app/layout.tsx"]
+related_targets: ["apps/dashboard/src/app/globals.css","apps/dashboard/src/app/layout.tsx","apps/dashboard/src/components/mandate/MandateShell.tsx","apps/dashboard/src/components/agent/ParticlePortrait.tsx"]
 ---
 
-# Mandate detail dashboard
+# Mandate mission control
 
 ## Scope and mode
 
 - Target: `apps/dashboard/src/app/page.tsx`
+- Related targets: the dashboard app shell, mandate components, particle portrait, and locally bundled model/shader assets
 - Mode: Operate
-- Audience: a principal reviewing an autonomous agent that needs attention
-- Job: understand why execution paused, inspect the existing envelope, and choose rejection/compliant replanning or amendment review
-- Primary action: ask the agent to find another solution without expanding authority
-- Proof: current Mandate version, approval source, boundary summary, latest denied effect, and evidence status
-- Constraint: all displayed records are clearly labeled illustrative until backed by the live control plane
+- Audience: a principal supervising bounded autonomous work and an evaluator inspecting the protocol demonstration
+- Job: see execution state, authority utilization, evidence, and a boundary exception without reading protocol internals
+- Primary action: inspect the audit or review an authority amendment when the demo reaches its boundary
+- Proof: the illustrative Mandate, execution timeline, local evidence trail, and fail-closed boundary state
+- Constraint: the control plane is not connected; every status and record must remain explicitly identifiable as an illustrative demo
 
 ## Direction contract
 
-**THESIS:** Make the authority boundary the dominant working object, not another dashboard metric grid. The page refuses generic danger banners and asks one precise governance question.
+**THESIS:** Make bounded autonomy visible as a living operational system: a procedurally assembled agent portrait stays inside a measured authority field until a boundary visibly interrupts it. The page refuses the ordinary light administrative console and static card-grid dashboard.
 
-**OWN-WORLD:** Follow the supplied reference: dark graphite navigation rail, cool-white workspace, ink typography, thin steel borders, amber attention, and cyan only for Alexa-backed identity. Surfaces are broad, quiet, and lightly raised.
+**OWN-WORLD:** Use the user-supplied dashboard at `/Users/marco/Documents/ChatGPT/mandate dashbaord` as the binding visual implementation: near-black mission-control field, hairline steel dividers, compact Inter typography, cyan in-scope energy, amber review, and red only for a blocked expansion. The particle portrait, quiet HUD rings, sparse panels, and restrained technical labels belong to one dark instrument-panel language.
 
-**STORY:** The principal sees that AgentOS stopped safely, understands the database effect was outside the approved envelope, and can preserve that envelope or inspect a structured amendment.
+**STORY:** The principal first understands the delegated outcome and current authority, then watches AgentOS progress through a bounded plan, inspects evidence, and switches the illustrative state to see attention and fail-closed boundary behavior. Audit and amendment dialogs expose the underlying record without pretending that Alexa+, AgentOS, or Neon is live.
 
-**FIRST VIEWPORT:** A persistent rail and compact breadcrumb frame a large mandate title. The pause decision occupies the main column, immutable mandate facts sit beside it, and a dark Alexa control band plus latest event close the viewport. The compliant-replan action leads.
+**FIRST VIEWPORT:** A fixed narrow rail and compact mission header frame a two-part hero: the mandate statement and authority meter occupy the left half while a full-height procedural particle portrait occupies the right. The portrait assembles once, turns no more than four degrees, and sends a single evidence-trail flourish into the execution timeline. Execution and human-attention panels sit immediately below.
 
-**FORM:** User-pinned operational reference, first and final structural direction. Seed key: `user-reference-2026-09-13`.
+**FORM:** User-pinned operational reference, transplanted from source commit `519c316`; first and final direction. Seed key: `user-pinned-dashboard-519c316`.
 
 **FINISH:** unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 ## Memorable moment
 
-A restrained cyan Alexa ring and amber pause marker make it immediately clear that identity is verified while authority expansion remains blocked.
+The local particle portrait assembles from the approved reference, remains calm in scope, warms for review, and disperses against an authority orbit when the demonstration reaches a forbidden action.
 
 ## Unresolved decisions
 
-Live Alexa deep-link behavior and authenticated account identity remain unavailable; their controls must be labeled illustrative or disabled rather than simulated as connected.
+Authenticated control-plane identity, live AgentOS callbacks, Alexa+ status, and real evidence are unavailable. Integration must replace the illustrative state source without weakening interception or evidence boundaries.
