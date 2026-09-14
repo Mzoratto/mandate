@@ -945,3 +945,26 @@ Verify a product-specific marker and `200` at `/`, then independently require `4
 
 ### Suggested improvement
 Keep deployment probes tied to explicit route contracts rather than assuming that one authentication policy covers an entire application.
+
+## FL-041
+
+### Task
+Promote the follow-up dashboard image after its mandatory ECR basic scan.
+
+### Expected
+The existing three-minute explicit scan poll to reach `COMPLETE`.
+
+### Actual
+The scan remained pending beyond all 36 five-second attempts, so promotion stopped before Lambda update. A rerun found the same immutable image already scanned and safely promoted it without rebuilding.
+
+### Severity
+minor
+
+### Time lost
+About four minutes.
+
+### Workaround
+Rerun against the already-pushed immutable image, then extend the bounded polling window from three to six minutes for future scan queue variance.
+
+### Suggested improvement
+Expose ECR scan queue latency or an event-driven completion signal so deploy gates do not need to guess a polling deadline.

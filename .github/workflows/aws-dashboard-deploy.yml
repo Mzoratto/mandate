@@ -59,7 +59,7 @@ jobs:
           REPOSITORY_URI: ${{ steps.image.outputs.repository_uri }}
         run: |
           scan_status=""
-          for attempt in $(seq 1 36); do
+          for attempt in $(seq 1 72); do
             scan_status="$(aws ecr describe-image-scan-findings \
               --repository-name mandate-dashboard \
               --image-id "imageTag=${GITHUB_SHA}" \
