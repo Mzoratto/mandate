@@ -1155,3 +1155,29 @@ First test a dedicated keyless intermediary role trusted only by the Identity Ce
 
 ### Suggested improvement
 Amazon should support IAM Identity Center or OIDC identities for toolkit onboarding and document the target role's trust requirements instead of requiring long-lived IAM user credentials.
+
+### Resolution
+The dedicated keyless intermediary role was deployed and could be assumed from Identity Center, but Amazon rejected the second role assumption. The trial stack, role, and local profiles were deleted; no IAM user or access key was created.
+
+## FL-050
+
+### Task
+Remove temporary AWS CLI role-chain profiles after the failed Alexa toolkit trial.
+
+### Expected
+`aws configure unset profile.<name>.<key>` to remove the temporary settings symmetrically with `aws configure set`.
+
+### Actual
+AWS CLI 2.36.44 has no `configure unset` subcommand and returned `Found invalid choice 'unset'`; the already-triggered CloudFormation cleanup still completed.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Remove only the two exact profile sections with an atomic, permission-preserving configuration-file rewrite, then verify both profiles are absent and the original SSO profile still resolves correctly.
+
+### Suggested improvement
+AWS CLI should provide a supported profile/key removal command or document a safe symmetric alternative to `aws configure set`.
