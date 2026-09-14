@@ -922,3 +922,26 @@ Install a synchronized Chrome 153 and ChromeDriver pair with `browser-driver-man
 
 ### Suggested improvement
 Accessibility CLIs should resolve or provision a browser and driver as a synchronized pair rather than discovering them independently.
+
+## FL-040
+
+### Task
+Deploy a public guided demonstration while retaining authentication on the operator record.
+
+### Expected
+The deployment workflow to verify both route boundaries after the image update.
+
+### Actual
+The image deployed successfully, but the inherited smoke test still required the root URL to return `401`. The root now intentionally returns the public, non-executing demonstration with `200`, so the post-deploy job failed.
+
+### Severity
+minor
+
+### Time lost
+About four minutes.
+
+### Workaround
+Verify a product-specific marker and `200` at `/`, then independently require `401` at `/dashboard`.
+
+### Suggested improvement
+Keep deployment probes tied to explicit route contracts rather than assuming that one authentication policy covers an entire application.

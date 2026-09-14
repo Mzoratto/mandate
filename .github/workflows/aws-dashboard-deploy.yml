@@ -88,12 +88,17 @@ jobs:
             --image-uri "${REPOSITORY_URI}@${digest}" >/dev/null
           aws lambda wait function-updated-v2 --function-name mandate-dashboard
 
-      - name: Verify authentication boundary
+      - name: Verify public and authentication boundaries
         run: |
           url="$(aws cloudformation describe-stacks \
             --stack-name mandate-dashboard \
             --query 'Stacks[0].Outputs[?OutputKey==`DashboardUrl`].OutputValue' \
             --output text)"
-          status="$(curl --silent --output /dev/null --write-out '%{http_code}' "$url")"
-          test "$status" = "401"
-          echo "Dashboard: $url" >> "$GITHUB_STEP_SUMMARY"
+          public_body="$(mktemp)"
+          public_status="$(curl --silent --output "$public_body" --write-out '%{http_code}' "$url")"
+          operator_status="$(curl --silent --output /dev/null --write-out '%{http_code}' "${url%/}/dashboard")"
+          test "$public_status" = "200"
+          grep -q "Delegate outcomes" "$public_body"
+          test "$operator_status" = "401"
+          echo "Public demo: $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "Authenticated operator record: ${url%/}/dashboard" >> "$GITHUB_STEP_SUMMARY"
