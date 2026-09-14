@@ -29,7 +29,7 @@ MCP-Protocol-Version: 2025-11-25
 
 The protocol-version header is not required on the initial `initialize` request. Bodies are limited to 1 MiB. A present `Origin` must exactly match `MANDATE_MCP_ALLOWED_ORIGINS`; absent origins are permitted for server-to-server Alexa requests. A present `Host` must match the configured resource URL. Allowed browser origins receive a bounded `OPTIONS` preflight and exact-origin CORS response; unlisted origins fail before authentication. `GET` and stateful transport methods return `405` because this first slice has no server-initiated notifications or resumable streams.
 
-When the complete OAuth configuration is present, the server publishes RFC 9728 metadata at the path-bound `/.well-known/oauth-protected-resource/mcp` location and the root fallback, and OAuth `401` responses point to that metadata with `WWW-Authenticate`. Metadata otherwise returns `503` rather than advertising a placeholder authorization server.
+When the complete OAuth configuration is present, the server publishes RFC 9728 metadata at the path-bound `/.well-known/oauth-protected-resource/mcp` location and the root fallback. The protected-resource document advertises only the customer scopes `mcp:tools mcp:resources`; `mcp:service` remains reserved for the authorization server's client-credentials flow. Metadata otherwise returns `503` rather than advertising a placeholder authorization server. Alexa+ explicitly does not support `WWW-Authenticate`, so authentication failures omit that header; a customer-tool call made with only service authority returns HTTP `403` to trigger account linking.
 
 The resource server now validates JWT access tokens fail closed using the configured remote JWKS. It requires an exact issuer and `/mcp` audience, an explicit `RS256`/`ES256` algorithm allowlist, a registered static Alexa client ID, `iat`/`exp` with at most a one-hour lifetime, an access-token marker when present, and a durable `(authorization server, subject)` mapping to a Mandate principal. Service principals may receive only `mcp:service`; customer principals require `mcp:tools mcp:resources` and cannot inherit service authority. Configure all of:
 
@@ -69,7 +69,7 @@ The protocol contract is executable without Alexa credentials:
 corepack pnpm test -- tests/api/mcp-handler.test.ts tests/api/mcp-oauth.test.ts
 ```
 
-The tests prove exact protocol negotiation, bounded work preparation, minimized completed/paused/blocked status, separation of service and customer authority, OAuth challenge discovery, JWT resource/client/scope/lifetime checks, development-bridge `401` behavior, bounded CORS, origin and host rejection, method restrictions, and body limits.
+The tests prove exact protocol negotiation, bounded work preparation, minimized completed/paused/blocked status, service discovery versus customer-tool separation, protected-resource discovery without unsupported challenge headers, JWT resource/client/scope/lifetime checks, development-bridge `401` behavior, bounded CORS, origin and host rejection, method restrictions, and body limits.
 
 ## Alexa onboarding gate
 

@@ -1109,3 +1109,26 @@ Raise only the comprehensive flow's bounded timeout to 60 seconds while retainin
 
 ### Suggested improvement
 Keep remote branch correctness suites tolerant of bounded network variance and enforce endpoint latency with dedicated warm-client measurements rather than a wall-clock limit on a multi-step lifecycle test.
+
+## FL-048
+
+### Task
+Reconcile the implemented RFC 9728 authentication challenge with Alexa+'s account-linking behavior.
+
+### Expected
+A standards-oriented `WWW-Authenticate` response pointing to protected-resource metadata to be accepted by the MCP client.
+
+### Actual
+Alexa+'s authentication documentation explicitly lists `WWW-Authenticate` headers as unsupported and initiates linking from an HTTP `401` or `403` on a customer-specific tool. Advertising the reserved `mcp:service` scope in customer protected-resource metadata could also request service authority during the user flow.
+
+### Severity
+major
+
+### Time lost
+About five minutes.
+
+### Workaround
+Keep RFC 9728 metadata at the documented well-known paths, advertise only `mcp:tools mcp:resources`, omit `WWW-Authenticate` on all failures, and return transport-level `403` when a service token attempts a customer tool.
+
+### Suggested improvement
+Alexa+'s MCP documentation should clearly distinguish its discovery mechanism from the general MCP authorization challenge flow and publish exact protected-resource metadata examples for two-tier authentication.
