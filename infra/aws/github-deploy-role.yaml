@@ -81,7 +81,7 @@ Resources:
               - Sid: DashboardFunctionCode
                 Effect: Allow
                 Action:
-                  - lambda:GetFunctionConfiguration
+                  - lambda:GetFunction
                   - lambda:UpdateFunctionCode
                 Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:mandate-dashboard
               - Sid: DashboardStackRead

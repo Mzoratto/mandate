@@ -830,3 +830,26 @@ Format the validated ISO timestamp as an explicit UTC clock value with `toISOStr
 
 ### Suggested improvement
 Never use an implicit host timezone for server-rendered text; choose a fixed timezone or defer localized formatting until after hydration.
+
+## FL-036
+
+### Task
+Wait for the scoped GitHub dashboard deployment to finish updating Lambda.
+
+### Expected
+`lambda:GetFunctionConfiguration` to satisfy the `function-updated-v2` waiter.
+
+### Actual
+The image update succeeded, but AWS CLI v2's waiter called `lambda:GetFunction`; the scoped role lacked that exact action and the workflow failed after deployment.
+
+### Severity
+minor
+
+### Time lost
+About three minutes.
+
+### Workaround
+Replace the unused `lambda:GetFunctionConfiguration` permission with `lambda:GetFunction`, redeploy the scoped role, and rerun the workflow.
+
+### Suggested improvement
+Derive least-privilege waiter permissions from CloudTrail or a dry run of the exact pinned AWS CLI version rather than from similarly named API operations.
