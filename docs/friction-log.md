@@ -1181,3 +1181,26 @@ Remove only the two exact profile sections with an atomic, permission-preserving
 
 ### Suggested improvement
 AWS CLI should provide a supported profile/key removal command or document a safe symmetric alternative to `aws configure set`.
+
+## FL-051
+
+### Task
+Use Amazon's documented IAM-user fallback to access the private Alexa AI toolkit.
+
+### Expected
+A console-disabled IAM user with one active key and an inline policy permitting only `sts:AssumeRole` on `AddOn3PDeveloperToolsRead` to match Amazon's setup requirements.
+
+### Actual
+The base IAM user authenticated successfully, but Amazon rejected the exact target-role assumption on five attempts across a short propagation window. This matched the prior SSO and intermediary-role rejection and confirms AWS account `889568839972` is absent from the Amazon-side trust/onboarding boundary.
+
+### Severity
+blocker
+
+### Time lost
+About ten minutes.
+
+### Workaround
+Delete the access key, IAM user, policy, Keychain entries, credential-process script, and temporary profiles. Continue with the clearly labeled simulated Alexa+ path while requesting Amazon-side account enablement.
+
+### Suggested improvement
+Alexa+ onboarding should expose target-role trust status before developers create credentials and provide a self-service way to register an AWS account or approved principal.

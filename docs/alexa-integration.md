@@ -87,7 +87,7 @@ source_profile = mandate-alexa-bootstrap
 region = us-west-2
 ```
 
-A successful `aws sts get-caller-identity --profile alexa-ai` must resolve account `372468808636`. The September 14 trial reached the local intermediary but Amazon rejected its target-role assumption. The stack, role, and temporary profiles were then deleted. Do not redeploy the intermediary unless Amazon confirms role-based trust; confirm Alexa+ onboarding with Amazon or obtain separate approval for the documented narrow IAM-user fallback.
+A successful `aws sts get-caller-identity --profile alexa-ai` must resolve account `372468808636`. The September 14 keyless trial reached the local intermediary but Amazon rejected its target-role assumption. A separately authorized fallback then created Amazon's documented IAM-user shape with no console password, one Keychain-held key, and only the exact target-role permission; Amazon rejected that principal too after propagation retries. Every temporary role, user, key, policy, profile, script, and Keychain entry was deleted. AWS account `889568839972` now requires Amazon-side Alexa+ onboarding before toolkit setup can continue.
 
 Once toolkit access is available:
 
