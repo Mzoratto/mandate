@@ -1,6 +1,6 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { configuredViewerAuthorization, viewerAuthorizationMatches } from "./lib/viewer-auth";
 
 function response(status: number, message: string): Response {
   return new Response(message, {
@@ -16,11 +16,8 @@ function response(status: number, message: string): Response {
 
 export function proxy(request: NextRequest): Response {
   if (process.env.MANDATE_DASHBOARD_MODE === "illustrative") return NextResponse.next();
-  const configured = process.env.MANDATE_DASHBOARD_BASIC_CREDENTIAL;
-  if (!configured || !configured.includes(":")) return response(503, "Mission control authentication is unavailable.");
-  const supplied = createHash("sha256").update(request.headers.get("authorization") ?? "").digest();
-  const expected = createHash("sha256").update(`Basic ${Buffer.from(configured, "utf8").toString("base64")}`).digest();
-  if (!timingSafeEqual(supplied, expected)) {
+  if (!configuredViewerAuthorization()) return response(503, "Mission control authentication is unavailable.");
+  if (!viewerAuthorizationMatches(request.headers.get("authorization"))) {
     return response(401, "Authentication required.");
   }
   const next = NextResponse.next();
@@ -28,4 +25,4 @@ export function proxy(request: NextRequest): Response {
   return next;
 }
 
-export const config = { matcher: ["/dashboard/:path*"] };
+export const config = { matcher: ["/dashboard/:path*", "/simulator/:path*"] };

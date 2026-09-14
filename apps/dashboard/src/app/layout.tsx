@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "@fontsource-variable/inter";
 import "./globals.css";
 import "./demo.css";
+import "./simulator.css";
 export const metadata: Metadata = {
   title: "Mandate — Mission Control",
   description:

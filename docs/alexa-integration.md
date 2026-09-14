@@ -61,6 +61,12 @@ Alexa+ → prepare bounded work proposal → review exact digest
 
 The server, not Alexa's model, must resolve the subject agent, repository commit, effect rules, trusted assumptions, budgets, and verifier identities. Agent work is asynchronous; Alexa receives an immediate durable state and retrieves the result through a later status call.
 
+## Simulated Alexa+ fallback
+
+The dashboard includes a protected `/simulator` route for the deadline-safe fallback. It invokes the same deployed `prepare_agent_work` and `get_agent_work_status` MCP tools through the server-only development-bridge credential. The browser receives only validated, minimized tool output; it never receives the bearer. The route is behind the same narrow single-operator Basic-auth boundary as `/dashboard`, uses no Alexa branding claims, and labels the client as simulated, not Amazon-hosted, and not account-linked.
+
+Submitting an outcome creates a real immutable Mandate proposal and stops at `AWAITING_APPROVAL`. The route contains no approval, amendment, execution, deployment, or merge controls. Illustrative dashboard mode disables submission even if credentials are otherwise present. Do not use this fallback as evidence of Alexa-hosted execution or OAuth account linking.
+
 ## Local verification
 
 The protocol contract is executable without Alexa credentials:
@@ -69,7 +75,7 @@ The protocol contract is executable without Alexa credentials:
 corepack pnpm test -- tests/api/mcp-handler.test.ts tests/api/mcp-oauth.test.ts
 ```
 
-The tests prove exact protocol negotiation, bounded work preparation, minimized completed/paused/blocked status, service discovery versus customer-tool separation, protected-resource discovery without unsupported challenge headers, JWT resource/client/scope/lifetime checks, development-bridge `401` behavior, bounded CORS, origin and host rejection, method restrictions, and body limits.
+The tests prove exact protocol negotiation, bounded work preparation, minimized completed/paused/blocked status, service discovery versus customer-tool separation, protected-resource discovery without unsupported challenge headers, JWT resource/client/scope/lifetime checks, development-bridge `401` behavior, bounded CORS, origin and host rejection, method restrictions, body limits, and server-only simulator calls with strict response validation.
 
 ## Alexa onboarding gate
 

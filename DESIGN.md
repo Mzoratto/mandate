@@ -152,7 +152,9 @@ The public `/` route is a guided explanatory surface. Its first viewport pairs a
 
 The authenticated `/dashboard` route uses a fixed 210px rail and a fluid main canvas with 26–32px outer padding. Its first surface is a two-column 480px hero: authority statement on the left, procedural portrait on the right. Execution and attention form the next row; evidence and demo controls close the dashboard.
 
-Below 1180px the public hero stacks; below 760px its stage controls scroll horizontally and proof regions become one column. At 1000px the authenticated hero becomes one column and the portrait receives its own 440px stage. At 600px the rail becomes a 112px fixed header. Both routes preserve every decision and evidence field rather than dropping information.
+The protected `/simulator` route is a two-column conversation instrument rather than a dashboard. Human outcome capture and simulated Alexa+ readback occupy the left side; the real MCP response and immutable authority summary occupy the right. A separate connection-truth ledger states which boundaries are live, simulated, externally blocked, or intentionally absent.
+
+Below 1180px the public hero stacks; below 760px its stage controls scroll horizontally and proof regions become one column. At 1000px the authenticated hero becomes one column and the portrait receives its own 440px stage. The simulator stacks below 940px and condenses its transcript, envelope fields, and reference lookup below 660px. At 600px the dashboard rail becomes a 112px fixed header. Every route preserves decision and evidence fields rather than dropping information.
 
 **The Mechanism-First Rule.** The mandate and living authority field share the first viewport; generic metrics never lead the page.
 
@@ -195,6 +197,10 @@ Broad panels use 16px corners, the hero uses 18px, controls use 9px, and small e
 
 The signature component combines a bundled reference image, a CC0 anatomical mesh, custom vertex and fragment shaders, and post-processing bloom. It assembles once, accepts pointer and keyboard yaw within ±4°, shifts state without changing authority, and falls back to explanatory text when WebGL is unavailable. Reduced-motion mode disables assembly, drift, evidence trails, and decorative state animation while preserving the final portrait and all status language.
 
+### Simulated Alexa+ Client
+
+The protected fallback uses a speech-shaped outline only as a channel marker, never as proof of Amazon hosting. Its form captures an outcome—not authority fields—and its result panel renders only validated MCP output. Connection truth appears above the interaction; an amber rule repeats that the surface cannot approve or execute. Empty, unavailable, pending, waiting-for-review, active, and independently verified states remain textually distinct.
+
 ### Dialogs
 
 Native modal dialogs hold the execution trace and authority delta. They use Panel Deep, a broad black focus shadow, Escape/backdrop dismissal, a named close control, and plain-language evidence. Demonstration status remains visible in the content.
@@ -207,6 +213,7 @@ Native modal dialogs hold the execution trace and authority delta. They use Pane
 - **Do** present live-service state only when it comes from the authenticated server boundary; label the public simulation and explicit fixture mode as non-executing or illustrative.
 - **Do** use local assets with attribution and embedded provenance.
 - **Do** let one state transition carry the motion story, then keep the console quiet.
+- **Do** label the fallback as simulated, not Amazon-hosted, and development-credential-backed next to the interaction itself.
 
 ### Don't:
 - **Don't** use state colors for generic links, borders, or decorative emphasis.
@@ -216,3 +223,4 @@ Native modal dialogs hold the execution trace and authority delta. They use Pane
 - **Don't** add promotional eyebrows; compact uppercase labels must identify a real operational field.
 - **Don't** present fixture timestamps, approvals, evidence, or AgentOS/Alexa+ status as live.
 - **Don't** let the public guided simulation execute tools or borrow the operator credential.
+- **Don't** place approval, amendment, execution, deployment, or merge controls in the simulated Alexa+ client.

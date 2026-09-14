@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/", headers: securityHeaders },
       { source: "/dashboard", headers: securityHeaders },
+      { source: "/simulator", headers: securityHeaders },
     ];
   },
 };
