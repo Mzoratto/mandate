@@ -8,7 +8,7 @@ Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md
 
 ## Current status
 
-The protocol/runtime path is implemented and adversarially tested. The reference dashboard supports fail-closed, server-authenticated live records, and the transactional control-plane API is live on AWS Lambda with Neon persistence and CloudWatch request correlation. A checksum-approved AgentOS checkout rehearsal completed through the deployed control plane with action-bound trace evidence, independently authenticated test/review evidence, and an intact 16-event ledger. The public source now includes the minimum AgentOS host boundary needed to reproduce that deterministic rehearsal and an MCP 2025-11-25 Streamable HTTP adapter exposing status, denial explanations, and configuration-gated bounded work preparation. JWT resource-server validation and durable approval challenges are implemented but remain disabled until a compatible OAuth provider and secure approval presentation boundary are configured. Durable cloud dispatch, general autonomous AgentOS interception, and AgentCore remain fail-closed.
+The protocol/runtime path is implemented and adversarially tested. The reference dashboard supports fail-closed, server-authenticated live records, and the transactional control-plane API is live on AWS Lambda with Neon persistence and CloudWatch request correlation. A checksum-approved AgentOS checkout rehearsal completed through the deployed control plane with action-bound trace evidence, independently authenticated test/review evidence, and an intact 16-event ledger. The public source now includes the minimum AgentOS host boundary needed to reproduce that deterministic rehearsal and an MCP 2025-11-25 Streamable HTTP adapter exposing status, denial explanations, and configuration-gated bounded work preparation. A protected, clearly labeled simulated Alexa+ client uses those same live tools while Amazon-side toolkit onboarding remains blocked. JWT resource-server validation and durable approval challenges are implemented but remain disabled until a compatible OAuth provider and secure approval presentation boundary are configured. Durable cloud dispatch, general autonomous AgentOS interception, and AgentCore remain fail-closed.
 
 ## Live proof
 
@@ -40,7 +40,7 @@ corepack pnpm typecheck
 corepack pnpm --filter @mandate/dashboard build
 ```
 
-Run the illustrative dashboard with `corepack pnpm --filter @mandate/dashboard dev`. See [`docs/alexa-integration.md`](docs/alexa-integration.md) for the MCP endpoint, trust boundary, protocol checks, and remaining Alexa+ onboarding work. The deterministic checkout rehearsal is documented in [`docs/aws-deployment.md`](docs/aws-deployment.md); it no longer requires a private AgentOS checkout.
+Run the illustrative dashboard with `corepack pnpm --filter @mandate/dashboard dev`. Illustrative mode renders `/simulator` but disables its real preparation action. See [`docs/alexa-integration.md`](docs/alexa-integration.md) for the MCP endpoint, simulated fallback boundary, protocol checks, and remaining Alexa+ onboarding work. The deterministic checkout rehearsal is documented in [`docs/aws-deployment.md`](docs/aws-deployment.md); it no longer requires a private AgentOS checkout.
 
 GitHub Actions uses the repository secret `NEON_API_KEY` and variable `NEON_PROJECT_ID`. Pull requests test migrations on an expiring Neon branch; the production migration workflow is manual and restricted to `main`.
 

@@ -9,8 +9,8 @@ const request = (authorization?: string) => ({
 describe("dashboard viewer authentication", () => {
   afterEach(() => vi.unstubAllEnvs());
 
-  it("keeps the public demo outside the authenticated operator route", () => {
-    expect(config.matcher).toEqual(["/dashboard/:path*"]);
+  it("keeps the public demo outside the authenticated operator routes", () => {
+    expect(config.matcher).toEqual(["/dashboard/:path*", "/simulator/:path*"]);
   });
 
   it("fails closed when viewer authentication is not configured", () => {

@@ -1204,3 +1204,26 @@ Delete the access key, IAM user, policy, Keychain entries, credential-process sc
 
 ### Suggested improvement
 Alexa+ onboarding should expose target-role trust status before developers create credentials and provide a self-service way to register an AWS account or approved principal.
+
+## FL-052
+
+### Task
+Run the required browser verification for the simulated Alexa+ client.
+
+### Expected
+The documented `agent-browser` executable to be available directly in the coding-agent shell.
+
+### Actual
+The shell returned `agent-browser: command not found` even though the skill documentation used the bare command.
+
+### Severity
+minor
+
+### Time lost
+Less than one minute.
+
+### Workaround
+Invoke the same CLI with `npx --yes agent-browser`, then complete desktop/mobile screenshots, semantic snapshots, and console-error inspection.
+
+### Suggested improvement
+The browser skill should either provision its executable on `PATH` or document `npx --yes agent-browser` as the portable invocation.
