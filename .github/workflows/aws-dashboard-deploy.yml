@@ -58,6 +58,26 @@ jobs:
         env:
           REPOSITORY_URI: ${{ steps.image.outputs.repository_uri }}
         run: |
+          scan_status=""
+          for attempt in $(seq 1 36); do
+            scan_status="$(aws ecr describe-image-scan-findings \
+              --repository-name mandate-dashboard \
+              --image-id "imageTag=${GITHUB_SHA}" \
+              --query 'imageScanStatus.status' \
+              --output text 2>/dev/null || true)"
+            case "$scan_status" in
+              COMPLETE) break ;;
+              FAILED) exit 1 ;;
+            esac
+            sleep 5
+          done
+          test "$scan_status" = "COMPLETE"
+          critical="$(aws ecr describe-image-scan-findings \
+            --repository-name mandate-dashboard \
+            --image-id "imageTag=${GITHUB_SHA}" \
+            --query 'imageScanFindings.findingSeverityCounts.CRITICAL || `0`' \
+            --output text)"
+          test "$critical" = "0"
           digest="$(aws ecr describe-images \
             --repository-name mandate-dashboard \
             --image-ids "imageTag=${GITHUB_SHA}" \

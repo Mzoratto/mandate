@@ -853,3 +853,49 @@ Replace the unused `lambda:GetFunctionConfiguration` permission with `lambda:Get
 
 ### Suggested improvement
 Derive least-privilege waiter permissions from CloudTrail or a dry run of the exact pinned AWS CLI version rather than from similarly named API operations.
+
+## FL-037
+
+### Task
+Review the ECR scan for the first deployed dashboard image.
+
+### Expected
+The minimal runtime image to avoid critical operating-system findings.
+
+### Actual
+The Debian slim runtime reported three critical and thirteen high findings, primarily in Perl and utility packages the Next.js server does not need at runtime.
+
+### Severity
+medium
+
+### Time lost
+About five minutes.
+
+### Workaround
+Keep Debian slim only for the build stage and run the standalone output on a digest-pinned, non-root distroless Node.js image. The local runtime remained functional, the image shrank from about 98 MB to 70 MB, and the preflight ECR scan returned no findings.
+
+### Suggested improvement
+Keep the deployment gate that waits for completed ECR scanning and rejects critical findings before Lambda update.
+
+## FL-038
+
+### Task
+Wait for scan-on-push findings immediately after publishing an ECR image.
+
+### Expected
+The AWS `image-scan-complete` waiter to retry until the automatically scheduled scan existed and completed.
+
+### Actual
+The waiter exited immediately with `ScanNotFoundException` during ECR's short registration gap; the scan appeared as `IN_PROGRESS` seconds later.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Poll `describe-image-scan-findings`, tolerate the initial not-found response, fail on `FAILED`, and require `COMPLETE` within three minutes.
+
+### Suggested improvement
+Treat scan registration and scan completion as separate asynchronous states in deployment tooling.

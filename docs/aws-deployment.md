@@ -21,7 +21,7 @@ Dashboard:     https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/
 
 The Lambda runs outside a VPC so it can reach Neon over TLS. Its PostgreSQL pool is capped at two connections per warm execution environment. `DATABASE_URL` is injected as a CloudFormation `NoEcho` parameter by the protected deployment workflow; it is never committed or printed.
 
-`infra/aws/dashboard-registry.yaml` owns the immutable, encrypted, scan-on-push `mandate-dashboard` ECR repository. `infra/aws/dashboard.yaml` owns a Node.js 24 standalone Next.js image Lambda, a 14-day log group, and a separate HTTP API with a 25 request/second rate and burst limit of 50. The image uses digest-pinned Node and AWS Lambda Web Adapter bases; there is no direct Function URL. See [`dashboard-live-data.md`](dashboard-live-data.md) for its identity and data boundary.
+`infra/aws/dashboard-registry.yaml` owns the immutable, encrypted, scan-on-push `mandate-dashboard` ECR repository. `infra/aws/dashboard.yaml` owns a Node.js 24 standalone Next.js image Lambda, a 14-day log group, and a separate HTTP API with a 25 request/second rate and burst limit of 50. The image uses a digest-pinned non-root distroless Node runtime and AWS Lambda Web Adapter; there is no direct Function URL. See [`dashboard-live-data.md`](dashboard-live-data.md) for its identity and data boundary.
 
 `infra/aws/github-deploy-role.yaml` bootstraps `mandate-github-control-plane-deploy`. Its trust policy requires:
 
@@ -50,7 +50,7 @@ Dashboard code deployment is independently manual and confirmation-gated:
 gh workflow run aws-dashboard-deploy.yml --ref main -f confirm=DEPLOY
 ```
 
-The workflow builds an amd64 single-manifest image, pushes it under the immutable commit SHA, updates only `mandate-dashboard`, and verifies that the public origin still rejects unauthenticated requests.
+The workflow builds an amd64 single-manifest image, pushes it under the immutable commit SHA, requires the ECR scan to complete with zero critical findings, updates only `mandate-dashboard`, and verifies that the public origin still rejects unauthenticated requests. The scoped, replay-safe deployment path passed in [run 34812140220](https://github.com/Mzoratto/mandate/actions/runs/34812140220).
 
 ## Verification artifacts
 

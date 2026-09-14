@@ -37,7 +37,7 @@ https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/
 
 The public URL grants no record access by itself: unauthenticated requests receive `401`, while the live control-plane bearer remains only in the Lambda environment. The operator viewer password is stored in macOS Keychain under service `mandate-dashboard`, account `operator`; it is not committed or stored in GitHub.
 
-`apps/dashboard/Dockerfile` produces a pinned, single-architecture Next.js standalone image with the AWS Lambda Web Adapter. `infra/aws/dashboard-registry.yaml` owns the encrypted, immutable, scan-on-push ECR repository. `infra/aws/dashboard.yaml` owns the image Lambda, its execution role, a 14-day CloudWatch log group, and an API Gateway HTTP API limited to 25 requests per second with a burst of 50. There is no direct Lambda Function URL.
+`apps/dashboard/Dockerfile` produces a pinned, single-architecture Next.js standalone image on a non-root distroless Node.js runtime with the AWS Lambda Web Adapter. `infra/aws/dashboard-registry.yaml` owns the encrypted, immutable, scan-on-push ECR repository. `infra/aws/dashboard.yaml` owns the image Lambda, its execution role, a 14-day CloudWatch log group, and an API Gateway HTTP API limited to 25 requests per second with a burst of 50. There is no direct Lambda Function URL.
 
 The protected `aws-dashboard-deploy.yml` workflow can publish an immutable commit-tagged image and update only `mandate-dashboard` through the scoped GitHub OIDC role. Runtime credentials are provisioned separately as CloudFormation `NoEcho` parameters and are not passed to that workflow. The protected image-deployment path is nevertheless trusted because deployed server code can access its runtime environment.
 
