@@ -8,6 +8,7 @@
     "db:migrate": "node scripts/migrate.mjs",
     "db:check": "node scripts/check-schema.mjs",
     "credential:create": "node scripts/create-credential.mjs",
+    "oauth:link-subject": "node scripts/link-oauth-subject.mjs",
     "demo:provision": "node scripts/provision-demo.mjs",
     "demo:rehearse-agentos": "node scripts/run-agentos-rehearsal.mjs",
     "verifiers:provision": "node scripts/provision-verifiers.mjs",
@@ -21,6 +22,7 @@
     "@mandate/schemas": "workspace:*",
     "@modelcontextprotocol/sdk": "1.30.0",
     "drizzle-orm": "latest",
+    "jose": "6.2.12",
     "pg": "latest",
     "zod": "latest"
   },

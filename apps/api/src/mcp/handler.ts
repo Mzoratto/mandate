@@ -7,6 +7,8 @@ import {
   type AuthenticatedIdentity,
   type ControlPlaneRepository,
 } from "../control-plane/repository.js";
+import type { McpAuthentication } from "./oauth.js";
+import type { PrepareAgentWorkInput, PreparedAgentWork } from "./work-preparation.js";
 
 const MCP_PROTOCOL_VERSION = "2025-11-25";
 const reference = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/);
@@ -37,9 +39,26 @@ const contextSchema = z.object({
     tokensUsed: z.number().int().nonnegative(),
     actions: z.array(action),
   }).passthrough().nullable(),
-  evidence: z.array(z.object({ verified: z.boolean() }).passthrough()),
-}).passthrough();
+  evidence: z.array(z.object({ verified: z.boolean() }).passthrough()).optional(),
+  evidenceSummary: z.object({
+    records: z.number().int().nonnegative().safe(),
+    independentlyVerified: z.number().int().nonnegative().safe(),
+  }).optional(),
+}).passthrough().superRefine((context, refinement) => {
+  if (!context.evidence && !context.evidenceSummary) {
+    refinement.addIssue({ code: "custom", message: "Evidence summary is unavailable" });
+  }
+  if (context.evidenceSummary && context.evidenceSummary.independentlyVerified > context.evidenceSummary.records) {
+    refinement.addIssue({ code: "custom", message: "Verified evidence count exceeds total records" });
+  }
+});
 
+const prepareOutput = z.object({
+  reference: reference,
+  state: z.literal("AWAITING_APPROVAL"),
+  summary: z.string(),
+  nextStep: z.string(),
+});
 const statusOutput = z.object({
   success: z.literal(true),
   state: z.enum(mandateStatuses),
@@ -72,21 +91,23 @@ const explanationOutput = z.object({
   nextStep: z.string(),
 });
 
-type McpRepository = Pick<ControlPlaneRepository, "authenticate" | "getMandateContext">;
+type McpRepository = Pick<ControlPlaneRepository, "authenticate" | "authenticateMcpMandateContext" | "getMcpMandateContext">;
 
 export interface MandateMcpOptions {
   resourceUrl: string;
   authorizationServerUrl?: string;
   allowedOrigins?: string[];
+  prepareWork?: (identity: AuthenticatedIdentity, input: PrepareAgentWorkInput) => Promise<PreparedAgentWork>;
+  authenticateToken?: (token: string) => Promise<McpAuthentication>;
 }
 
-function validateOptions(options: MandateMcpOptions): { resource: URL; authorizationServer?: URL; allowedOrigins: Set<string> } {
+function validateOptions(options: MandateMcpOptions): { resource: URL; authorizationServer?: string; allowedOrigins: Set<string> } {
   const resource = new URL(options.resourceUrl);
   if (resource.protocol !== "https:" || resource.username || resource.password || resource.pathname !== "/mcp" || resource.search || resource.hash) {
     throw new Error("Mandate MCP resource URL must be an HTTPS /mcp URL without credentials or query data");
   }
-  const authorizationServer = options.authorizationServerUrl ? new URL(options.authorizationServerUrl) : undefined;
-  if (authorizationServer && (authorizationServer.protocol !== "https:" || authorizationServer.username || authorizationServer.password || authorizationServer.search || authorizationServer.hash)) {
+  const authorizationServerUrl = options.authorizationServerUrl ? new URL(options.authorizationServerUrl) : undefined;
+  if (authorizationServerUrl && (authorizationServerUrl.protocol !== "https:" || authorizationServerUrl.username || authorizationServerUrl.password || authorizationServerUrl.search || authorizationServerUrl.hash)) {
     throw new Error("Mandate MCP authorization server URL must be HTTPS without credentials, query data, or a fragment");
   }
   const allowedOrigins = new Set(options.allowedOrigins ?? []);
@@ -96,17 +117,40 @@ function validateOptions(options: MandateMcpOptions): { resource: URL; authoriza
       throw new Error("Mandate MCP allowed origins must be exact HTTP(S) origins");
     }
   }
-  return { resource, ...(authorizationServer ? { authorizationServer } : {}), allowedOrigins };
+  return {
+    resource,
+    ...(options.authorizationServerUrl ? { authorizationServer: options.authorizationServerUrl } : {}),
+    allowedOrigins,
+  };
 }
 
 function bearerToken(request: Request): string {
-  const match = /^Bearer ([A-Za-z0-9._~-]{32,512})$/.exec(request.headers.get("authorization") ?? "");
+  const match = /^Bearer ([A-Za-z0-9._~-]{32,4096})$/.exec(request.headers.get("authorization") ?? "");
   if (!match) throw new ControlPlaneError(401, "UNAUTHENTICATED", "An access token is required");
   return match[1]!;
 }
 
 function identityFrom(extra: { authInfo?: { extra?: Record<string, unknown> } }): AuthenticatedIdentity | undefined {
   return extra.authInfo?.extra?.identity as AuthenticatedIdentity | undefined;
+}
+
+function contextFrom(
+  extra: { authInfo?: { extra?: Record<string, unknown> } },
+  mandateId: string,
+): unknown | undefined {
+  return extra.authInfo?.extra?.mandateId === mandateId
+    ? extra.authInfo.extra.mandateContext
+    : undefined;
+}
+
+function customerToolReference(parsed: unknown): string | undefined {
+  if (Array.isArray(parsed) || typeof parsed !== "object" || parsed === null || !("method" in parsed) || parsed.method !== "tools/call") return undefined;
+  if (!("params" in parsed) || typeof parsed.params !== "object" || parsed.params === null) return undefined;
+  const params = parsed.params as { name?: unknown; arguments?: unknown };
+  if (!["get_agent_work_status", "explain_blocked_action"].includes(String(params.name))) return undefined;
+  if (typeof params.arguments !== "object" || params.arguments === null || !("reference" in params.arguments)) return undefined;
+  const parsedReference = reference.safeParse(params.arguments.reference);
+  return parsedReference.success ? parsedReference.data : undefined;
 }
 
 function customerError(error: unknown) {
@@ -151,8 +195,29 @@ function stateMessage(status: MandateStatus, hasExecution: boolean, latestAction
   };
 }
 
-function createServer(repository: McpRepository) {
+function createServer(repository: McpRepository, options: Pick<MandateMcpOptions, "prepareWork">) {
   const server = new McpServer({ name: "mandate", version: "0.1.0" });
+  if (options.prepareWork) server.registerTool("prepare_agent_work", {
+    title: "Prepare governed checkout repair work",
+    description: "Use when the customer asks AgentOS to repair a checkout code regression. This creates only an immutable, bounded proposal for separate human review; it never approves, starts, deploys, or merges work.",
+    inputSchema: {
+      outcome: z.string().trim().min(10).max(300).describe("The customer's desired checkout repair outcome, without implementation or authority details"),
+      requestKey: reference.describe("A stable idempotency key reused only when retrying this exact customer request"),
+    },
+    outputSchema: prepareOutput.shape,
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+  }, async (input, extra) => {
+    const identity = identityFrom(extra);
+    if (!identity || identity.kind !== "principal" || identity.principalType === "service") {
+      return { isError: true, content: [{ type: "text", text: "Link a customer account before preparing private agent work." }] };
+    }
+    try {
+      const result = await options.prepareWork!(identity, input);
+      return { structuredContent: { ...result }, content: [{ type: "text", text: `${result.summary} ${result.nextStep} Your work reference is ${result.reference}.` }] };
+    } catch {
+      return { isError: true, content: [{ type: "text", text: "I couldn't prepare that work safely. Nothing executed. Try the request again or review Mandate's availability." }] };
+    }
+  });
   server.registerTool("get_agent_work_status", {
     title: "Get governed agent work status",
     description: "Use when the customer asks whether previously delegated agent work is waiting, running, blocked, or independently verified. This tool is read-only and never starts or approves work.",
@@ -165,10 +230,16 @@ function createServer(repository: McpRepository) {
       return { isError: true, content: [{ type: "text", text: "Link a customer account before requesting private work status." }] };
     }
     try {
-      const context = contextSchema.parse(await repository.getMandateContext(identity, mandateId));
+      const context = contextSchema.parse(
+        contextFrom(extra, mandateId) ?? await repository.getMcpMandateContext(identity, mandateId),
+      );
       const latestAction = context.execution?.actions.at(-1);
       const latestActionBlocked = Boolean(latestAction && latestAction.decision !== "ALLOW");
       const message = stateMessage(context.mandate.status, context.execution !== null, latestActionBlocked);
+      const verification = context.evidenceSummary ?? {
+        records: context.evidence?.length ?? 0,
+        independentlyVerified: context.evidence?.filter(({ verified }) => verified).length ?? 0,
+      };
       const result = {
         success: true as const,
         state: context.mandate.status,
@@ -186,10 +257,7 @@ function createServer(repository: McpRepository) {
           tokensUsed: context.execution.tokensUsed,
           monetarySpentMicroUsd: context.execution.monetarySpentMicroUsd,
         } : null,
-        verification: {
-          records: context.evidence.length,
-          independentlyVerified: context.evidence.filter(({ verified }) => verified).length,
-        },
+        verification,
       };
       return { structuredContent: result, content: [{ type: "text", text: `${result.summary} ${result.nextStep}` }] };
     } catch (error) {
@@ -209,7 +277,9 @@ function createServer(repository: McpRepository) {
       return { isError: true, content: [{ type: "text", text: "Link a customer account before requesting private work details." }] };
     }
     try {
-      const context = contextSchema.parse(await repository.getMandateContext(identity, mandateId));
+      const context = contextSchema.parse(
+        contextFrom(extra, mandateId) ?? await repository.getMcpMandateContext(identity, mandateId),
+      );
       const blocked = [...(context.execution?.actions ?? [])].reverse().find(({ decision }) => decision !== "ALLOW");
       const result = blocked ? {
         success: true as const,
@@ -245,6 +315,14 @@ function httpError(status: number, code: string, message: string): Response {
       "x-content-type-options": "nosniff",
     },
   });
+}
+
+function withOAuthChallenge(response: Response, resource: URL, enabled: boolean): Response {
+  if (enabled && response.status === 401) {
+    const metadata = new URL("/.well-known/oauth-protected-resource/mcp", resource).href;
+    response.headers.set("www-authenticate", `Bearer resource_metadata="${metadata}"`);
+  }
+  return response;
 }
 
 function withCors(response: Response, origin: string | undefined): Response {
@@ -283,7 +361,7 @@ export function createMandateMcpHandler(repository: McpRepository, options: Mand
         if (!authorizationServer) return httpError(503, "oauth_unavailable", "Alexa account linking is not configured");
         return new Response(JSON.stringify({
           resource: resource.href,
-          authorization_servers: [authorizationServer.href],
+          authorization_servers: [authorizationServer],
           bearer_methods_supported: ["header"],
           scopes_supported: ["mcp:service", "mcp:tools", "mcp:resources"],
         }), {
@@ -321,7 +399,6 @@ export function createMandateMcpHandler(repository: McpRepository, options: Mand
       }
       if (request.method !== "POST") return withCors(httpError(405, "method_not_allowed", "This stateless MCP endpoint accepts POST requests"), corsOrigin);
       const token = bearerToken(request);
-      const identity = await repository.authenticate(token);
       const parsed = await parsedBody(request);
       const messages = Array.isArray(parsed) ? parsed : [parsed];
       const initializeWithWrongVersion = messages.some((message) => {
@@ -341,7 +418,21 @@ export function createMandateMcpHandler(repository: McpRepository, options: Mand
       if (requiresVersion && request.headers.get("mcp-protocol-version") !== MCP_PROTOCOL_VERSION) {
         return withCors(httpError(400, "protocol_version_required", `MCP-Protocol-Version must be ${MCP_PROTOCOL_VERSION}`), corsOrigin);
       }
-      const server = createServer(repository);
+      const preloadReference = customerToolReference(parsed);
+      const preloaded = preloadReference && !options.authenticateToken
+        ? await repository.authenticateMcpMandateContext(token, preloadReference)
+        : undefined;
+      const authentication: McpAuthentication | undefined = preloaded
+        ? { identity: preloaded.identity, scopes: ["mcp:service", "mcp:tools", "mcp:resources"] }
+        : options.authenticateToken ? await options.authenticateToken(token) : undefined;
+      const identity = authentication?.identity ?? await repository.authenticate(token);
+      const scopes = authentication?.scopes ?? (
+        identity.kind === "principal" && identity.principalType !== "service"
+          ? ["mcp:service", "mcp:tools", "mcp:resources"]
+          : ["mcp:service"]
+      );
+      if (!scopes.length) throw new ControlPlaneError(403, "INSUFFICIENT_SCOPE", "Access token has no MCP scope");
+      const server = createServer(repository, options);
       const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
       await server.connect(transport);
       const response = await transport.handleRequest(request, {
@@ -349,19 +440,24 @@ export function createMandateMcpHandler(repository: McpRepository, options: Mand
         authInfo: {
           token,
           clientId: identity.id,
-          scopes: identity.kind === "principal" && identity.principalType !== "service"
-            ? ["mcp:service", "mcp:tools", "mcp:resources"]
-            : ["mcp:service"],
+          scopes,
           resource,
-          extra: { identity },
+          extra: {
+            identity,
+            ...(preloaded && preloadReference
+              ? { mandateId: preloadReference, mandateContext: preloaded.context }
+              : {}),
+          },
         },
       });
       response.headers.set("cache-control", "no-store");
       response.headers.set("x-content-type-options", "nosniff");
       return withCors(response, corsOrigin);
     } catch (error) {
-      if (error instanceof ControlPlaneError) return withCors(httpError(error.status, error.code.toLowerCase(), error.message), corsOrigin);
-      return withCors(httpError(500, "internal_error", "Mandate MCP failed closed"), corsOrigin);
+      const response = error instanceof ControlPlaneError
+        ? httpError(error.status, error.code.toLowerCase(), error.message)
+        : httpError(500, "internal_error", "Mandate MCP failed closed");
+      return withCors(withOAuthChallenge(response, resource, Boolean(authorizationServer)), corsOrigin);
     }
   };
 }

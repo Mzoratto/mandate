@@ -25,6 +25,11 @@ jobs:
       AWS_REGION: us-east-1
       NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
       NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+      MCP_ALLOWED_ORIGINS: ${{ vars.MANDATE_MCP_ALLOWED_ORIGINS }}
+      MCP_AUTHORIZATION_SERVER_URL: ${{ vars.MANDATE_MCP_AUTHORIZATION_SERVER_URL }}
+      MCP_JWKS_URL: ${{ vars.MANDATE_MCP_JWKS_URL }}
+      MCP_OAUTH_CLIENT_IDS: ${{ vars.MANDATE_MCP_OAUTH_CLIENT_IDS }}
+      MCP_CHECKOUT_COMMIT_DIGEST: ${{ vars.MANDATE_MCP_CHECKOUT_COMMIT_DIGEST }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -92,7 +97,12 @@ jobs:
               CodeBucket="$CODE_BUCKET" \
               CodeKey="$CODE_KEY" \
               DatabaseUrl="$DATABASE_URL" \
-              McpResourceUrl="$MCP_RESOURCE_URL"
+              McpResourceUrl="$MCP_RESOURCE_URL" \
+              McpAllowedOrigins="$MCP_ALLOWED_ORIGINS" \
+              McpAuthorizationServerUrl="$MCP_AUTHORIZATION_SERVER_URL" \
+              McpJwksUrl="$MCP_JWKS_URL" \
+              McpOAuthClientIds="$MCP_OAUTH_CLIENT_IDS" \
+              McpCheckoutCommitDigest="$MCP_CHECKOUT_COMMIT_DIGEST"
 
       - name: Verify fail-closed endpoint
         run: |

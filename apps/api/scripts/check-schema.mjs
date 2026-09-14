@@ -6,6 +6,7 @@ if (!connectionString) throw new Error("DATABASE_URL is required");
 
 const requiredTables = [
   "agents",
+  "approval_challenges",
   "authorization_decisions",
   "control_plane_credentials",
   "criterion_results",
@@ -21,16 +22,21 @@ const requiredTables = [
   "mandate_schema_migrations",
   "mandate_versions",
   "mandates",
+  "mcp_work_requests",
+  "oauth_subjects",
   "principals",
 ];
 
 const requiredColumns = {
+  approval_challenges: ["principal_id", "mandate_id", "mandate_version", "subject_digest", "nonce_hash", "expires_at", "consumed_at", "decision"],
   authorization_decisions: ["amendment_suggested"],
   control_plane_credentials: ["token_hash", "principal_id", "agent_id", "expires_at", "revoked_at"],
   evidence: ["execution_action_id"],
   execution_actions: ["request_digest", "settlement_digest"],
   mandate_assumption_state: ["key", "value_hash", "invalidates_on_change", "source"],
   mandate_events: ["sequence"],
+  mcp_work_requests: ["principal_id", "idempotency_key", "request_digest", "mandate_id"],
+  oauth_subjects: ["authorization_server", "subject", "principal_id"],
 };
 
 const client = new Client({ connectionString });

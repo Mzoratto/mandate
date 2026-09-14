@@ -14,7 +14,6 @@ import {
 const id = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/);
 const digest = z.string().regex(/^sha256:[0-9a-f]{64}$/);
 const transitionBody = z.object({ to: z.enum(["PROPOSED", "AWAITING_APPROVAL"]) }).strict();
-const approvalBody = z.object({ nonce: id }).strict();
 const executionBody = z.object({ executionId: id }).strict();
 const assumptionBody = z.object({ valueHash: digest }).strict();
 const authorizationBody = z.object({
@@ -145,8 +144,12 @@ export function createControlPlaneHandler(
 
       match = /^\/v1\/mandates\/([^/]+)\/approvals$/.exec(url.pathname);
       if (request.method === "POST" && match) {
-        const input = approvalBody.parse(await body(request));
-        return json(201, await repository.approveMandate(identity, segment(match[1]!), input.nonce), requestId);
+        return json(409, {
+          error: {
+            code: "APPROVAL_CHALLENGE_REQUIRED",
+            message: "Create and answer a digest-bound approval challenge",
+          },
+        }, requestId);
       }
 
       match = /^\/v1\/mandates\/([^/]+)\/assumptions\/([^/]+)$/.exec(url.pathname);
