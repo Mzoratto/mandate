@@ -8,7 +8,7 @@ Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md
 
 ## Current status
 
-The protocol/runtime path is implemented and adversarially tested. The reference dashboard now supports fail-closed, server-authenticated live records, and the transactional control-plane API is implemented. Migration 0002 is active on Neon, and the fail-closed API is live on AWS Lambda with CloudWatch request correlation. A checksum-approved AgentOS checkout rehearsal completed through the deployed control plane with action-bound trace evidence, independently authenticated test/review evidence, and an intact 16-event ledger. General autonomous AgentOS, Alexa+, and AgentCore enforcement remain fail-closed until their broader interception and identity boundaries are configured.
+The protocol/runtime path is implemented and adversarially tested. The reference dashboard supports fail-closed, server-authenticated live records, and the transactional control-plane API is live on AWS Lambda with Neon persistence and CloudWatch request correlation. A checksum-approved AgentOS checkout rehearsal completed through the deployed control plane with action-bound trace evidence, independently authenticated test/review evidence, and an intact 16-event ledger. The public source now includes the minimum AgentOS host boundary needed to reproduce that deterministic rehearsal and an MCP 2025-11-25 Streamable HTTP adapter exposing read-only status and denial explanations. Alexa+ OAuth, MCP approval tools, durable cloud dispatch, general autonomous AgentOS interception, and AgentCore remain fail-closed until their identity and execution boundaries are configured.
 
 ## Live proof
 
@@ -19,26 +19,28 @@ The protocol/runtime path is implemented and adversarially tested. The reference
 - Merged checksum-approved output: [`checkout-demo` PR #1](https://github.com/Mzoratto/checkout-demo/pull/1) at `7cd240f`
 - Isolated Neon completion test: [run 34791128902](https://github.com/Mzoratto/mandate/actions/runs/34791128902)
 - Control-plane deployment verification: [run 34791192125](https://github.com/Mzoratto/mandate/actions/runs/34791192125)
-- Dashboard deployment verification: [run 34813074224](https://github.com/Mzoratto/mandate/actions/runs/34813074224)
-- AgentOS accounting-order fix: [PR #118](https://github.com/Mzoratto/AgentOS/pull/118)
+- Dashboard deployment verification: [run 34818318342](https://github.com/Mzoratto/mandate/actions/runs/34818318342)
+- Public AgentOS rehearsal boundary: [`packages/agentos-reference-host`](packages/agentos-reference-host)
 
 The control-plane endpoint grants no authority without an identity-bound credential, and the dashboard requires a separate viewer credential while keeping its control-plane bearer server-only. Verification artifacts remain private, encrypted, versioned, and object-locked in AWS.
 
 ## Development
 
+Prerequisites: Node.js 24+, Corepack, and Docker for the local database.
+
 ```bash
+cp .env.example .env
 corepack pnpm install
+docker compose up -d
+set -a; source .env; set +a
+corepack pnpm db:migrate
+corepack pnpm db:check
 corepack pnpm test
 corepack pnpm typecheck
 corepack pnpm --filter @mandate/dashboard build
 ```
 
-Run the dashboard with `corepack pnpm --filter @mandate/dashboard dev`. Database migrations require a direct `DATABASE_URL`:
-
-```bash
-DATABASE_URL='postgresql://…' corepack pnpm --filter @mandate/api db:migrate
-DATABASE_URL='postgresql://…' corepack pnpm --filter @mandate/api db:check
-```
+Run the illustrative dashboard with `corepack pnpm --filter @mandate/dashboard dev`. See [`docs/alexa-integration.md`](docs/alexa-integration.md) for the MCP endpoint, trust boundary, protocol checks, and remaining Alexa+ onboarding work. The deterministic checkout rehearsal is documented in [`docs/aws-deployment.md`](docs/aws-deployment.md); it no longer requires a private AgentOS checkout.
 
 GitHub Actions uses the repository secret `NEON_API_KEY` and variable `NEON_PROJECT_ID`. Pull requests test migrations on an expiring Neon branch; the production migration workflow is manual and restricted to `main`.
 

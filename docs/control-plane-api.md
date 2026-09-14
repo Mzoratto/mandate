@@ -52,6 +52,12 @@ The authorization request contains the protocol `ProposedAction`, deterministic 
 - The final required verification transaction re-evaluates assumptions, open amendments, unsettled actions, violations, verified evidence, and criterion results before atomically completing the Mandate and execution.
 - Unknown routes, invalid identities, stale assumptions, malformed effects, and internal errors fail closed.
 
+## Alexa+ MCP read boundary
+
+`POST /mcp` is a stateless MCP `2025-11-25` Streamable HTTP endpoint backed by the same authenticated repository. It currently exposes only `get_agent_work_status` and `explain_blocked_action`; both are read-only and require the owning customer principal. Service principals may initialize and list tools but cannot read a customer's Mandate. The endpoint is disabled unless `MANDATE_MCP_RESOURCE_URL` is configured as the exact public HTTPS `/mcp` resource URL. See [`alexa-integration.md`](alexa-integration.md).
+
+The existing opaque credentials are only the pre-OAuth development boundary. They must not be registered as Alexa account-linking credentials or converted into automated approval.
+
 ## AgentOS callback client
 
 `@mandate/adapter-agentos` exports `createAgentOsControlPlaneHandlers`. It converts the AgentOS interceptor's `beforeAction` and action-bound `publishEvidence` callbacks into authenticated authorization and settlement requests:

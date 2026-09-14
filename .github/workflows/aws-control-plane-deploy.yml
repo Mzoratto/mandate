@@ -72,6 +72,15 @@ jobs:
           echo "CODE_BUCKET=$bucket" >> "$GITHUB_ENV"
           echo "CODE_KEY=$key" >> "$GITHUB_ENV"
 
+      - name: Resolve canonical MCP resource
+        run: |
+          control_plane_url="$(aws cloudformation describe-stacks \
+            --stack-name mandate-control-plane \
+            --query 'Stacks[0].Outputs[?OutputKey==`ControlPlaneUrl`].OutputValue' \
+            --output text)"
+          test -n "$control_plane_url"
+          echo "MCP_RESOURCE_URL=${control_plane_url%/}/mcp" >> "$GITHUB_ENV"
+
       - name: Deploy control plane
         run: |
           aws cloudformation deploy \
@@ -82,7 +91,8 @@ jobs:
             --parameter-overrides \
               CodeBucket="$CODE_BUCKET" \
               CodeKey="$CODE_KEY" \
-              DatabaseUrl="$DATABASE_URL"
+              DatabaseUrl="$DATABASE_URL" \
+              McpResourceUrl="$MCP_RESOURCE_URL"
 
       - name: Verify fail-closed endpoint
         run: |
@@ -94,4 +104,12 @@ jobs:
           test "$(jq -r .status <<<"$health")" = "ok"
           status="$(curl --silent --output /dev/null --write-out '%{http_code}' "${url}v1/mandates/unavailable")"
           test "$status" = "401"
+          mcp_status="$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            --request POST \
+            --header 'accept: application/json, text/event-stream' \
+            --header 'content-type: application/json' \
+            --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"deployment-probe","version":"1.0.0"}}}' \
+            "${url}mcp")"
+          test "$mcp_status" = "401"
           echo "Control plane: $url" >> "$GITHUB_STEP_SUMMARY"
+          echo "MCP resource: ${url}mcp" >> "$GITHUB_STEP_SUMMARY"

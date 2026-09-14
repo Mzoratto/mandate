@@ -968,3 +968,95 @@ Rerun against the already-pushed immutable image, then extend the bounded pollin
 
 ### Suggested improvement
 Expose ECR scan queue latency or an event-driven completion signal so deploy gates do not need to guess a polling deadline.
+
+## FL-042
+
+### Task
+Verify that a judge could reproduce the governed AgentOS checkout path from the required public repository.
+
+### Expected
+Every runtime component needed by the published rehearsal to be available from the public Mandate source tree.
+
+### Actual
+The rehearsal required `AGENTOS_ROOT` and dynamically imported three files from a separate private AgentOS checkout. The public README also linked to private pull requests that returned `404` to unauthenticated judges.
+
+### Severity
+major
+
+### Time lost
+About fifteen minutes.
+
+### Workaround
+Extract the rehearsal's AgentOS runner dependency closure, including its checksum-bound approval relay and deterministic Mandate interceptor, into the Apache-2.0 `@mandate/agentos-reference-host` workspace package; update the rehearsal to import that package and replace private proof links with public source.
+
+### Suggested improvement
+Include an unauthenticated public-clone rehearsal in submission readiness checks; authenticated repository access can hide missing-source failures from maintainers.
+
+## FL-043
+
+### Task
+Create the stateless Web-standard MCP Streamable HTTP transport under strict TypeScript settings.
+
+### Expected
+Passing `sessionIdGenerator: undefined`, as shown conceptually in the SDK documentation, to enable stateless mode.
+
+### Actual
+The SDK option is optional but does not explicitly include `undefined`; TypeScript's `exactOptionalPropertyTypes` therefore rejected the documented object shape.
+
+### Severity
+minor
+
+### Time lost
+Less than one minute.
+
+### Workaround
+Omit `sessionIdGenerator` entirely. The transport then uses its documented stateless default.
+
+### Suggested improvement
+MCP SDK examples should compile with `exactOptionalPropertyTypes`, either by omitting optional properties or declaring explicit `undefined` where supported.
+
+## FL-044
+
+### Task
+Select an MCP TypeScript SDK that matches Alexa+'s required MCP `2025-11-25` protocol version.
+
+### Expected
+The latest stable major release to be the safest default.
+
+### Actual
+The split `@modelcontextprotocol/server` 2.0.0 package targets the newer `2026-07-28` protocol, while Alexa+'s current onboarding documentation specifies `2025-11-25`. The current MCP Apps 2.0 package also requires the split 2.0 package family and cannot be mixed with the v1 SDK.
+
+### Severity
+major
+
+### Time lost
+About five minutes.
+
+### Workaround
+Pin `@modelcontextprotocol/sdk` 1.30.0 for the first transport slice; that release declares `2025-11-25` as its latest negotiated version and still supports Web-standard Streamable HTTP. Defer MCP Apps until Alexa's supported extension/package combination is verified in its Local Inspector.
+
+### Suggested improvement
+Alexa+ documentation should publish a tested SDK/package compatibility matrix for the required MCP protocol and MCP Apps extension versions.
+
+## FL-045
+
+### Task
+Run the independent pre-PR Codex review against the uncommitted Alexa/MCP foundation.
+
+### Expected
+`codex exec review --uncommitted` to use the configured default model and complete read-only review.
+
+### Actual
+Codex selected `gpt-6-astra`, warned that its model metadata was missing, then returned HTTP `400` because that model requires a newer CLI.
+
+### Severity
+minor
+
+### Time lost
+About one minute.
+
+### Workaround
+Rerun as `codex exec -m gpt-5.6-sol review --uncommitted`. The review completed and found three actionable ordering, file-move, and paused-status issues, all covered by regression fixes.
+
+### Suggested improvement
+Codex should validate configured model/CLI compatibility before starting a review and automatically suggest an installed compatible model.

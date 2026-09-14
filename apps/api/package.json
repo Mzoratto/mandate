@@ -14,10 +14,12 @@
     "build:aws": "node scripts/build-aws.mjs"
   },
   "dependencies": {
+    "@mandate/agentos-reference-host": "workspace:*",
     "@mandate/evidence": "workspace:*",
     "@mandate/protocol": "workspace:*",
     "@mandate/runtime": "workspace:*",
     "@mandate/schemas": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "drizzle-orm": "latest",
     "pg": "latest",
     "zod": "latest"

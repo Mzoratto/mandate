@@ -9,6 +9,15 @@ Parameters:
   DatabaseUrl:
     Type: String
     NoEcho: true
+  McpResourceUrl:
+    Type: String
+    Default: ""
+  McpAllowedOrigins:
+    Type: String
+    Default: ""
+  McpAuthorizationServerUrl:
+    Type: String
+    Default: ""
 
 Resources:
   FunctionRole:
@@ -42,6 +51,9 @@ Resources:
       Environment:
         Variables:
           DATABASE_URL: !Ref DatabaseUrl
+          MANDATE_MCP_RESOURCE_URL: !Ref McpResourceUrl
+          MANDATE_MCP_ALLOWED_ORIGINS: !Ref McpAllowedOrigins
+          MANDATE_MCP_AUTHORIZATION_SERVER_URL: !Ref McpAuthorizationServerUrl
 
   FunctionLogGroup:
     Type: AWS::Logs::LogGroup
