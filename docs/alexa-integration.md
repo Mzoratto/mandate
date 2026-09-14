@@ -6,12 +6,13 @@ Mandate includes a real MCP `2025-11-25` Streamable HTTP adapter at `POST /mcp`.
 
 The deployed endpoint is not enabled until `MANDATE_MCP_RESOURCE_URL` is set to its exact public HTTPS URL. This is deliberate: an inferred host or placeholder URL must not become an OAuth resource identity.
 
-The currently deployed model-visible tools are read-only:
+The deployed model-visible tools are:
 
-- `get_agent_work_status` returns minimized status, authority, usage, and verification counts;
-- `explain_blocked_action` explains the latest denied or escalated action and the compliant next step.
+- `get_agent_work_status`, which returns minimized status, authority, usage, and verification counts;
+- `explain_blocked_action`, which explains the latest denied or escalated action and the compliant next step;
+- `prepare_agent_work`, which is configuration-gated by an exact server-side checkout commit resolver.
 
-The source also contains a gated `prepare_agent_work` tool. It is advertised only when the host supplies an exact server-side checkout commit resolver. Alexa provides only the desired outcome and a retry key; Mandate resolves the principal, AgentOS instance, immutable repository commit, paths, effects, zero-token/zero-spend budgets, validity, and independent verifiers. Preparation atomically stops at `AWAITING_APPROVAL` and cannot execute anything.
+Alexa provides only the desired outcome and a retry key to preparation. Mandate resolves the principal, AgentOS instance, immutable repository commit, paths, effects, zero-token/zero-spend budgets, validity, and independent verifiers. Preparation atomically stops at `AWAITING_APPROVAL` and cannot approve, execute, deploy, or merge anything. The September 14 production verification discovered the tool without invoking it, so verification created no live Mandate.
 
 Customer tools require an authenticated human or organization principal. A service credential may initialize the server and discover tools, but it cannot read or prepare customer records. There are no model-visible approval, amendment, or execution tools.
 
@@ -82,3 +83,9 @@ alexa-ai deploy
 ```
 
 Test with the standard MCP Inspector, Alexa Local Inspector, and Alexa+ web simulator. Alexa caches tools and authentication metadata at deployment, so redeploy after changing either.
+
+## Production verification
+
+Migration [run 34843291827](https://github.com/Mzoratto/mandate/actions/runs/34843291827) and control-plane deployment [run 34843379804](https://github.com/Mzoratto/mandate/actions/runs/34843379804) promoted merge commit `dff01f29d690cef810deea7531c17ea94dd667b2`. Production negotiated MCP `2025-11-25`, advertised all three tools, returned distinct request IDs with `Cache-Control: no-store`, preserved `M-checkout-live-003` as `COMPLETED` with two independent verifications, and kept OAuth metadata fail closed at `503` because account linking is not configured.
+
+After five warm-up calls, 30 persistent-client reads of the completed record measured `257 ms` minimum, `277 ms` median, `326 ms` p95, and `735 ms` maximum from the verification client. This measures the existing opaque development bridge and the minimized single-query status projection; OAuth and Alexa-hosted latency remain unmeasured.
