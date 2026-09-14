@@ -27,7 +27,8 @@ Packages remain runtime-neutral:
 | `@mandate/evidence` | Evidence ingestion, verifier binding, completion guard |
 | `@mandate/testing` | In-memory end-to-end governance harness; not production enforcement |
 | `@mandate/adapter-agentos` | Runtime-neutral bridge contract and fail-closed AgentOS capability gate |
-| `@mandate/api` | Authenticated Web request handler, transactional Lakebase Postgres repository, migrations, and schema verification |
+| `@mandate/agentos-reference-host` | Public checksum-bound approval relay and deterministic AgentOS effect interceptor used by the checkout rehearsal |
+| `@mandate/api` | Authenticated Web request handler, transactional Lakebase Postgres repository, MCP 2025-11-25 read adapter, migrations, and schema verification |
 | `@mandate/dashboard` | Responsive authenticated authority console with an explicit illustrative boundary-demo mode |
 
 ## Enforcement path
@@ -68,13 +69,16 @@ Mandate core imports no AgentOS types. A host bridge must prove all four capabil
 3. stop-on-denial behavior;
 4. evidence callbacks.
 
-The companion AgentOS repository exposes an opt-in interceptor, merged through [AgentOS PR 117](https://github.com/Mzoratto/AgentOS/pull/117), on its app-server human-approval path. Bound command and file-change requests are normalized and sent to Mandate before the existing human gate; denial stops the phase, and allowed items must publish action-bound completion evidence. `@mandate/adapter-agentos` provides the authenticated HTTPS callback client, but the default AgentOS supervisor does not activate it. Live execution remains fail-closed until a trusted host injects the callbacks and provides real per-action cost/token settlement.
+`@mandate/agentos-reference-host` publishes the minimum reviewed AgentOS boundary used by the deterministic checkout rehearsal. Bound command and file-change requests are normalized and sent to Mandate before the separate checksum-bound human gate; denial stops the action, and allowed items must publish action-bound completion evidence. `@mandate/adapter-agentos` provides the authenticated HTTPS callback client. This makes the historical rehearsal reproducible without a private repository, but it is not the full AgentOS supervisor. General live execution remains fail-closed until a trusted host intercepts every effect and provides actual per-action cost/token settlement.
+
+## Alexa+ MCP boundary
+
+`apps/api/src/mcp/handler.ts` is a stateless JSON-response Streamable HTTP adapter built on `@modelcontextprotocol/sdk` 1.30.0, whose negotiated protocol version is MCP `2025-11-25`. It currently exposes only read-only customer intents for status and blocked-action explanations. Requests require an authenticated server-side identity, exact host binding, optional-origin allowlisting, strict body limits, and no-store responses. Service principals may discover tools but cannot read customer records. The adapter deliberately does not expose approval, execution, or amendment tools until Alexa+ OAuth identity and digest-bound approval challenges are implemented.
 
 ## Not yet implemented
 
 - per-client quotas/WAF and federated principal sessions for the control plane;
-- dashboard-backed authenticated data flows;
-- Alexa+ MCP server and MCP App;
+- Alexa+ OAuth 2.1 account linking, MCP App decisions, and add-on registration;
 - AgentCore Gateway/Policy enforcement;
 - cross-service CloudWatch/AgentCore correlation beyond the Lambda request boundary;
 - live AgentOS orchestration and trusted usage metering.

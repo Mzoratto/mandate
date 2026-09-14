@@ -5,13 +5,17 @@ import path from "node:path";
 import { PassThrough, Writable } from "node:stream";
 import { pathToFileURL } from "node:url";
 import { createAgentOsControlPlaneHandlers } from "../../../packages/adapter-agentos/src/index.ts";
+import {
+  HumanApprovalRelay,
+  createHumanApprovalRunner,
+  createMandateActionInterceptor,
+} from "@mandate/agentos-reference-host";
 
 const required = (name) => {
   const value = process.env[name];
   if (!value) throw new Error(`${name} is required`);
   return value;
 };
-const agentOsRoot = path.resolve(required("AGENTOS_ROOT"));
 const worktree = path.resolve(required("CHECKOUT_WORKTREE"));
 const approvalFile = path.resolve(required("MANDATE_APPROVAL_FILE"));
 const decisionFile = path.resolve(required("MANDATE_DECISION_FILE"));
@@ -24,12 +28,6 @@ const taskId = "c0ffee03";
 const target = path.join(worktree, "services/checkout/total.js");
 const before = "  return Math.round((subtotal - discount - discount) * 100) / 100;";
 const after = "  return Math.round((subtotal - discount) * 100) / 100;";
-
-const [{ HumanApprovalRelay }, { createHumanApprovalRunner }, { createMandateActionInterceptor }] = await Promise.all([
-  import(pathToFileURL(path.join(agentOsRoot, "src/human-approval-relay.js"))),
-  import(pathToFileURL(path.join(agentOsRoot, "src/codex-human-runner.js"))),
-  import(pathToFileURL(path.join(agentOsRoot, "src/mandate-interceptor.js"))),
-]);
 
 const codexHome = mkdtempSync(path.join(tmpdir(), "mandate-rehearsal-codex-"));
 let child;

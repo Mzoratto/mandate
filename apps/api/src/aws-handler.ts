@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createControlPlaneHandler } from "./control-plane/handler.js";
 import { ControlPlaneRepository } from "./control-plane/repository.js";
 import { createDatabase } from "./db/client.js";
+import { createMandateMcpHandler } from "./mcp/handler.js";
 
 interface FunctionUrlEvent {
   rawPath?: unknown;
@@ -18,12 +19,37 @@ interface LambdaContext {
   awsRequestId?: string;
 }
 
-let application: ReturnType<typeof createControlPlaneHandler> | undefined;
+let application: ((request: Request) => Promise<Response>) | undefined;
 
 function app() {
   if (!application) {
     const database = createDatabase(process.env.DATABASE_URL, 2);
-    application = createControlPlaneHandler(new ControlPlaneRepository(database.pool));
+    const repository = new ControlPlaneRepository(database.pool);
+    const controlPlane = createControlPlaneHandler(repository);
+    const mcp = process.env.MANDATE_MCP_RESOURCE_URL
+      ? createMandateMcpHandler(repository, {
+          resourceUrl: process.env.MANDATE_MCP_RESOURCE_URL,
+          ...(process.env.MANDATE_MCP_AUTHORIZATION_SERVER_URL
+            ? { authorizationServerUrl: process.env.MANDATE_MCP_AUTHORIZATION_SERVER_URL }
+            : {}),
+          allowedOrigins: (process.env.MANDATE_MCP_ALLOWED_ORIGINS ?? "")
+            .split(",")
+            .map((origin) => origin.trim())
+            .filter(Boolean),
+        })
+      : undefined;
+    application = (request) => [
+      "/mcp",
+      "/.well-known/oauth-protected-resource/mcp",
+      "/.well-known/oauth-protected-resource",
+    ].includes(new URL(request.url).pathname)
+      ? mcp
+        ? mcp(request)
+        : Promise.resolve(new Response(JSON.stringify({ error: "mcp_unavailable", message: "Mandate MCP is not configured" }), {
+            status: 503,
+            headers: { "cache-control": "no-store", "content-type": "application/json; charset=utf-8" },
+          }))
+      : controlPlane(request);
   }
   return application;
 }
@@ -66,6 +92,7 @@ export function functionUrlRequest(event: FunctionUrlEvent): Request {
 export async function handler(event: FunctionUrlEvent, context: LambdaContext = {}) {
   try {
     const response = await app()(functionUrlRequest(event));
+    if (!response.headers.has("x-request-id")) response.headers.set("x-request-id", randomUUID());
     const requestId = response.headers.get("x-request-id");
     console.info(JSON.stringify({
       component: "mandate-control-plane",

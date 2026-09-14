@@ -1,6 +1,6 @@
 # AWS control-plane deployment
 
-The authenticated control plane and mission-control dashboard are deployed in `us-east-1` behind separate API Gateway HTTP APIs. Their public URLs grant no authority: `/v1/*` requires a high-entropy Mandate bearer credential, while the dashboard requires a separate viewer credential and keeps its control-plane bearer server-only.
+The authenticated control plane and mission-control dashboard are deployed in `us-east-1` behind separate API Gateway HTTP APIs. Their public URLs grant no authority: `/v1/*` and `/mcp` require a high-entropy server-side credential, while the dashboard requires a separate viewer credential and keeps its control-plane bearer server-only.
 
 Current endpoints:
 
@@ -40,7 +40,7 @@ The manual workflow requires the literal confirmation `DEPLOY`:
 gh workflow run aws-control-plane-deploy.yml --ref main -f confirm=DEPLOY
 ```
 
-It resolves the default Neon branch from the existing protected `NEON_API_KEY`, builds a single CommonJS Lambda artifact, uploads it to the private encrypted artifact bucket under the Git commit SHA, deploys CloudFormation, and verifies both public health and unauthenticated rejection.
+It resolves the default Neon branch from the existing protected `NEON_API_KEY`, builds a single CommonJS Lambda artifact, uploads it to the private encrypted artifact bucket under the Git commit SHA, and resolves the existing stack URL as the exact `/mcp` resource identity. It then deploys CloudFormation and verifies public health plus unauthenticated rejection at both `/v1/*` and `/mcp`. A new stack must first be bootstrapped with MCP disabled, then updated once its stable API URL exists.
 
 The first successful Lambda deployment is [workflow run 34787693288](https://github.com/Mzoratto/mandate/actions/runs/34787693288). The direct Function URL was then removed and the rate-limited HTTP API verified in [workflow run 34787920994](https://github.com/Mzoratto/mandate/actions/runs/34787920994). Authenticated verifier completion passed on an isolated Neon branch in [run 34791128902](https://github.com/Mzoratto/mandate/actions/runs/34791128902) and the corresponding Lambda plus Node.js 24 OIDC action was verified in [run 34791192125](https://github.com/Mzoratto/mandate/actions/runs/34791192125).
 
@@ -62,7 +62,7 @@ Every application response carries an opaque `x-request-id`. Lambda writes one b
 
 ## Governed checkout rehearsal
 
-The public [`Mzoratto/checkout-demo`](https://github.com/Mzoratto/checkout-demo) repository preserves a deliberately failing base commit. `apps/api/scripts/run-agentos-rehearsal.mjs` runs one deterministic, zero-model-usage AgentOS action against an isolated worktree. The script still crosses both independent gates: the live control plane must authorize the normalized file effect, then the AgentOS relay waits for the exact checksum-bound human answer. It cannot execute the edit before both decisions, and it settles action-bound trace evidence only after trusted usage is available.
+The public [`Mzoratto/checkout-demo`](https://github.com/Mzoratto/checkout-demo) repository preserves a deliberately failing base commit. `apps/api/scripts/run-agentos-rehearsal.mjs` runs one deterministic, zero-model-usage AgentOS action against an isolated worktree using the public `@mandate/agentos-reference-host` package. The script still crosses both independent gates: the live control plane must authorize the normalized file effect, then the AgentOS relay waits for the exact checksum-bound human answer. It cannot execute the edit before both decisions, and it settles action-bound trace evidence only after trusted usage is available.
 
 This rehearsal proves the deployed path without implying that arbitrary Codex tool calls are fully intercepted. A general autonomous run remains fail-closed until AgentOS can intercept every effect, including commands the underlying runtime might otherwise classify as trusted.
 
