@@ -11,6 +11,7 @@ import type { McpAuthentication } from "./oauth.js";
 import type { PrepareAgentWorkInput, PreparedAgentWork } from "./work-preparation.js";
 
 const MCP_PROTOCOL_VERSION = "2025-11-25";
+const customerTools = new Set(["prepare_agent_work", "get_agent_work_status", "explain_blocked_action"]);
 const reference = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/);
 const digest = z.string().regex(/^sha256:[0-9a-f]{64}$/);
 const action = z.object({
@@ -143,11 +144,16 @@ function contextFrom(
     : undefined;
 }
 
+function customerToolName(parsed: unknown): string | undefined {
+  if (typeof parsed !== "object" || parsed === null || !("method" in parsed) || parsed.method !== "tools/call") return undefined;
+  if (!("params" in parsed) || typeof parsed.params !== "object" || parsed.params === null || !("name" in parsed.params)) return undefined;
+  return typeof parsed.params.name === "string" && customerTools.has(parsed.params.name) ? parsed.params.name : undefined;
+}
+
 function customerToolReference(parsed: unknown): string | undefined {
-  if (Array.isArray(parsed) || typeof parsed !== "object" || parsed === null || !("method" in parsed) || parsed.method !== "tools/call") return undefined;
-  if (!("params" in parsed) || typeof parsed.params !== "object" || parsed.params === null) return undefined;
-  const params = parsed.params as { name?: unknown; arguments?: unknown };
-  if (!["get_agent_work_status", "explain_blocked_action"].includes(String(params.name))) return undefined;
+  const name = customerToolName(parsed);
+  if (Array.isArray(parsed) || !name || !["get_agent_work_status", "explain_blocked_action"].includes(name)) return undefined;
+  const params = (parsed as { params: { arguments?: unknown } }).params;
   if (typeof params.arguments !== "object" || params.arguments === null || !("reference" in params.arguments)) return undefined;
   const parsedReference = reference.safeParse(params.arguments.reference);
   return parsedReference.success ? parsedReference.data : undefined;
@@ -317,14 +323,6 @@ function httpError(status: number, code: string, message: string): Response {
   });
 }
 
-function withOAuthChallenge(response: Response, resource: URL, enabled: boolean): Response {
-  if (enabled && response.status === 401) {
-    const metadata = new URL("/.well-known/oauth-protected-resource/mcp", resource).href;
-    response.headers.set("www-authenticate", `Bearer resource_metadata="${metadata}"`);
-  }
-  return response;
-}
-
 function withCors(response: Response, origin: string | undefined): Response {
   if (!origin) return response;
   response.headers.set("access-control-allow-origin", origin);
@@ -363,7 +361,7 @@ export function createMandateMcpHandler(repository: McpRepository, options: Mand
           resource: resource.href,
           authorization_servers: [authorizationServer],
           bearer_methods_supported: ["header"],
-          scopes_supported: ["mcp:service", "mcp:tools", "mcp:resources"],
+          scopes_supported: ["mcp:tools", "mcp:resources"],
         }), {
           status: 200,
           headers: {
@@ -432,6 +430,11 @@ export function createMandateMcpHandler(repository: McpRepository, options: Mand
           : ["mcp:service"]
       );
       if (!scopes.length) throw new ControlPlaneError(403, "INSUFFICIENT_SCOPE", "Access token has no MCP scope");
+      if (messages.some((message) => customerToolName(message)) && (
+        identity.kind !== "principal" || identity.principalType === "service"
+      )) {
+        throw new ControlPlaneError(403, "CUSTOMER_AUTHORIZATION_REQUIRED", "Customer account linking is required");
+      }
       const server = createServer(repository, options);
       const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
       await server.connect(transport);
@@ -457,7 +460,7 @@ export function createMandateMcpHandler(repository: McpRepository, options: Mand
       const response = error instanceof ControlPlaneError
         ? httpError(error.status, error.code.toLowerCase(), error.message)
         : httpError(500, "internal_error", "Mandate MCP failed closed");
-      return withCors(withOAuthChallenge(response, resource, Boolean(authorizationServer)), corsOrigin);
+      return withCors(response, corsOrigin);
     }
   };
 }

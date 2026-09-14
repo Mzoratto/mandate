@@ -262,6 +262,16 @@ describe("Alexa-compatible Mandate MCP transport", () => {
     expect((await json(response)).result.structuredContent.execution.running).toBe(false);
   });
 
+  it("allows service authority to discover tools without customer data", async () => {
+    const repo = repository({ kind: "principal", id: "alexa-service", principalType: "service" });
+    const response = await handler(repo)(request({ jsonrpc: "2.0", id: 4, method: "tools/list", params: {} }, {
+      "mcp-protocol-version": "2025-11-25",
+    }));
+    expect(response.status).toBe(200);
+    expect((await json(response)).result.tools).toBeDefined();
+    expect(repo.getMcpMandateContext).not.toHaveBeenCalled();
+  });
+
   it("does not treat a service credential as customer authority", async () => {
     const repo = repository({ kind: "principal", id: "alexa-service", principalType: "service" });
     const response = await handler(repo)(request({
@@ -270,8 +280,11 @@ describe("Alexa-compatible Mandate MCP transport", () => {
       method: "tools/call",
       params: { name: "get_agent_work_status", arguments: { reference: "M-checkout-live-003" } },
     }, { "mcp-protocol-version": "2025-11-25" }));
-    const body = await json(response);
-    expect(body.result.isError).toBe(true);
+    expect(response.status).toBe(403);
+    await expect(json(response)).resolves.toEqual({
+      error: "customer_authorization_required",
+      message: "Customer account linking is required",
+    });
     expect(repo.getMcpMandateContext).not.toHaveBeenCalled();
   });
 
@@ -284,7 +297,7 @@ describe("Alexa-compatible Mandate MCP transport", () => {
       resource: "https://mandate.example/mcp",
       authorization_servers: ["https://auth.mandate.example"],
       bearer_methods_supported: ["header"],
-      scopes_supported: ["mcp:service", "mcp:tools", "mcp:resources"],
+      scopes_supported: ["mcp:tools", "mcp:resources"],
     });
   });
 
@@ -296,14 +309,12 @@ describe("Alexa-compatible Mandate MCP transport", () => {
     expect(response.headers.has("www-authenticate")).toBe(false);
   });
 
-  it("advertises protected-resource metadata on OAuth authentication failures", async () => {
+  it("omits unsupported WWW-Authenticate headers on OAuth authentication failures", async () => {
     const unauthenticated = request(initialize);
     unauthenticated.headers.delete("authorization");
     const response = await handler(repository(), [], "https://auth.mandate.example")(unauthenticated);
     expect(response.status).toBe(401);
-    expect(response.headers.get("www-authenticate")).toBe(
-      'Bearer resource_metadata="https://mandate.example/.well-known/oauth-protected-resource/mcp"',
-    );
+    expect(response.headers.has("www-authenticate")).toBe(false);
   });
 
   it("supports bounded CORS preflight and responses for an allowed browser origin", async () => {
