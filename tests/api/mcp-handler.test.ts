@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createMandateMcpHandler } from "../../apps/api/src/mcp/handler.js";
-import type { AuthenticatedIdentity } from "../../apps/api/src/control-plane/repository.js";
+import { ControlPlaneError, type AuthenticatedIdentity } from "../../apps/api/src/control-plane/repository.js";
 
 const token = `mandate_${"a".repeat(32)}`;
 const principal: AuthenticatedIdentity = { kind: "principal", id: "alexa-user-001", principalType: "human" };
@@ -31,9 +31,14 @@ const context = {
 };
 
 function repository(identity: AuthenticatedIdentity = principal, record: Record<string, unknown> = context) {
+  const principalIdentity = (identity.kind === "principal" ? identity : principal) as Extract<AuthenticatedIdentity, { kind: "principal" }>;
   return {
     authenticate: vi.fn(async () => identity),
-    getMandateContext: vi.fn(async () => record),
+    authenticateMcpMandateContext: vi.fn(async (): Promise<{
+      identity: Extract<AuthenticatedIdentity, { kind: "principal" }>;
+      context?: Record<string, unknown>;
+    }> => ({ identity: principalIdentity, context: record })),
+    getMcpMandateContext: vi.fn(async () => record),
   };
 }
 
@@ -62,11 +67,22 @@ const initialize = {
   },
 };
 
-function handler(repo = repository(), allowedOrigins: string[] = [], authorizationServerUrl?: string) {
+function handler(
+  repo = repository(),
+  allowedOrigins: string[] = [],
+  authorizationServerUrl?: string,
+  prepareWork?: (identity: AuthenticatedIdentity, input: { outcome: string; requestKey: string }) => Promise<{
+    reference: string;
+    state: "AWAITING_APPROVAL";
+    summary: string;
+    nextStep: string;
+  }>,
+) {
   return createMandateMcpHandler(repo, {
     resourceUrl: "https://mandate.example/mcp",
     allowedOrigins,
     ...(authorizationServerUrl ? { authorizationServerUrl } : {}),
+    ...(prepareWork ? { prepareWork } : {}),
   });
 }
 
@@ -105,7 +121,7 @@ describe("Alexa-compatible Mandate MCP transport", () => {
     });
   });
 
-  it("advertises only read-only customer intents", async () => {
+  it("advertises only read-only customer intents while preparation is disabled", async () => {
     const response = await handler()(request({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} }, {
       "mcp-protocol-version": "2025-11-25",
     }));
@@ -116,6 +132,37 @@ describe("Alexa-compatible Mandate MCP transport", () => {
       "explain_blocked_action",
     ]);
     expect(body.result.tools.every((tool: { annotations?: { readOnlyHint?: boolean } }) => tool.annotations?.readOnlyHint)).toBe(true);
+  });
+
+  it("prepares bounded work without approving or executing it when the server resolver is enabled", async () => {
+    const prepareWork = vi.fn(async () => ({
+      reference: "M-alexa-0123456789abcdef012345",
+      state: "AWAITING_APPROVAL" as const,
+      summary: "I prepared bounded work. Nothing has executed.",
+      nextStep: "Review the exact authority envelope before approving it.",
+    }));
+    const response = await handler(repository(), [], undefined, prepareWork)(request({
+      jsonrpc: "2.0",
+      id: 3,
+      method: "tools/call",
+      params: {
+        name: "prepare_agent_work",
+        arguments: {
+          outcome: "Restore correct coupon totals in the checkout test suite.",
+          requestKey: "request-001",
+        },
+      },
+    }, { "mcp-protocol-version": "2025-11-25" }));
+    const body = await json(response);
+    expect(body.result.structuredContent).toMatchObject({
+      reference: "M-alexa-0123456789abcdef012345",
+      state: "AWAITING_APPROVAL",
+    });
+    expect(body.result.content[0].text).toContain("Nothing has executed");
+    expect(prepareWork).toHaveBeenCalledWith(principal, {
+      outcome: "Restore correct coupon totals in the checkout test suite.",
+      requestKey: "request-001",
+    });
   });
 
   it("returns a minimized independently verified work status", async () => {
@@ -135,7 +182,50 @@ describe("Alexa-compatible Mandate MCP transport", () => {
       verification: { records: 3, independentlyVerified: 2 },
     });
     expect(body.result.content[0].text).not.toContain("M-checkout-live-003");
-    expect(repo.getMandateContext).toHaveBeenCalledWith(principal, "M-checkout-live-003");
+    expect(repo.authenticateMcpMandateContext).toHaveBeenCalledWith(token, "M-checkout-live-003");
+    expect(repo.authenticate).not.toHaveBeenCalled();
+    expect(repo.getMcpMandateContext).not.toHaveBeenCalled();
+  });
+
+  it("returns a customer-safe MCP result when the optimized lookup cannot find the reference", async () => {
+    const repo = repository();
+    repo.authenticateMcpMandateContext.mockResolvedValueOnce({ identity: principal });
+    repo.getMcpMandateContext.mockRejectedValueOnce(
+      new ControlPlaneError(404, "MANDATE_NOT_FOUND", "Mandate was not found for this identity"),
+    );
+    const response = await handler(repo)(request({
+      jsonrpc: "2.0",
+      id: 4,
+      method: "tools/call",
+      params: { name: "get_agent_work_status", arguments: { reference: "M-missing-record" } },
+    }, { "mcp-protocol-version": "2025-11-25" }));
+    const body = await json(response);
+    expect(response.status).toBe(200);
+    expect(body.result.isError).toBe(true);
+    expect(body.result.content[0].text).toContain("couldn't find");
+  });
+
+  it("uses configured OAuth authentication instead of the opaque credential bridge", async () => {
+    const repo = repository();
+    const authenticateToken = vi.fn(async () => ({
+      identity: principal,
+      scopes: ["mcp:tools", "mcp:resources"],
+    }));
+    const oauthHandler = createMandateMcpHandler(repo, {
+      resourceUrl: "https://mandate.example/mcp",
+      authenticateToken,
+    });
+    const response = await oauthHandler(request({
+      jsonrpc: "2.0",
+      id: 4,
+      method: "tools/call",
+      params: { name: "get_agent_work_status", arguments: { reference: "M-checkout-live-003" } },
+    }, { "mcp-protocol-version": "2025-11-25" }));
+    expect(response.status).toBe(200);
+    expect(authenticateToken).toHaveBeenCalledWith(token);
+    expect(repo.authenticate).not.toHaveBeenCalled();
+    expect(repo.authenticateMcpMandateContext).not.toHaveBeenCalled();
+    expect(repo.getMcpMandateContext).toHaveBeenCalledWith(principal, "M-checkout-live-003");
   });
 
   it("reports an active execution with a latest denied action as blocked, not running", async () => {
@@ -182,7 +272,7 @@ describe("Alexa-compatible Mandate MCP transport", () => {
     }, { "mcp-protocol-version": "2025-11-25" }));
     const body = await json(response);
     expect(body.result.isError).toBe(true);
-    expect(repo.getMandateContext).not.toHaveBeenCalled();
+    expect(repo.getMcpMandateContext).not.toHaveBeenCalled();
   });
 
   it("publishes Alexa protected-resource metadata only when OAuth is configured", async () => {
@@ -192,7 +282,7 @@ describe("Alexa-compatible Mandate MCP transport", () => {
     expect(response.status).toBe(200);
     await expect(json(response)).resolves.toEqual({
       resource: "https://mandate.example/mcp",
-      authorization_servers: ["https://auth.mandate.example/"],
+      authorization_servers: ["https://auth.mandate.example"],
       bearer_methods_supported: ["header"],
       scopes_supported: ["mcp:service", "mcp:tools", "mcp:resources"],
     });
@@ -204,6 +294,16 @@ describe("Alexa-compatible Mandate MCP transport", () => {
     const response = await handler()(unauthenticated);
     expect(response.status).toBe(401);
     expect(response.headers.has("www-authenticate")).toBe(false);
+  });
+
+  it("advertises protected-resource metadata on OAuth authentication failures", async () => {
+    const unauthenticated = request(initialize);
+    unauthenticated.headers.delete("authorization");
+    const response = await handler(repository(), [], "https://auth.mandate.example")(unauthenticated);
+    expect(response.status).toBe(401);
+    expect(response.headers.get("www-authenticate")).toBe(
+      'Bearer resource_metadata="https://mandate.example/.well-known/oauth-protected-resource/mcp"',
+    );
   });
 
   it("supports bounded CORS preflight and responses for an allowed browser origin", async () => {

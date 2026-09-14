@@ -38,6 +38,7 @@ integration("authenticated control plane", () => {
     const agentId = `agent-${suffix}`;
     const principalToken = `mandate_${randomBytes(32).toString("base64url")}`;
     const agentToken = `mandate_${randomBytes(32).toString("base64url")}`;
+    const identity = { kind: "principal", id: principalId, principalType: "human" } as const;
     const pool = new pg.Pool({ connectionString, max: 3 });
 
     try {
@@ -55,7 +56,15 @@ integration("authenticated control plane", () => {
         [`credential-agent-${suffix}`, hashCredential(agentToken), agentId],
       );
 
-      const handler = createControlPlaneHandler(new ControlPlaneRepository(pool), (error) => {
+      const repository = new ControlPlaneRepository(pool);
+      await pool.query(
+        "INSERT INTO oauth_subjects (authorization_server, subject, principal_id) VALUES ($1, $2, $3)",
+        ["https://auth.example/", `subject-${suffix}`, principalId],
+      );
+      await expect(repository.resolveOAuthSubject("https://auth.example/", `subject-${suffix}`)).resolves.toEqual(identity);
+      await expect(repository.resolveOAuthSubject("https://auth.example/", "unknown-subject"))
+        .rejects.toMatchObject({ status: 401, code: "UNAUTHENTICATED" });
+      const handler = createControlPlaneHandler(repository, (error) => {
         throw error;
       });
       const call = async (
@@ -82,9 +91,36 @@ integration("authenticated control plane", () => {
       expect((await call("POST", `/v1/mandates/${draft.id}/transitions`, principalToken, { to: "PROPOSED" })).response.status).toBe(200);
       expect((await call("POST", `/v1/mandates/${draft.id}/transitions`, principalToken, { to: "AWAITING_APPROVAL" })).response.status).toBe(200);
 
-      const approval = await call("POST", `/v1/mandates/${draft.id}/approvals`, principalToken, { nonce: `nonce-${suffix}` });
-      expect(approval.response.status).toBe(201);
-      expect(approval.json.mandate.status).toBe("ACTIVE");
+      const legacyApproval = await call("POST", `/v1/mandates/${draft.id}/approvals`, principalToken, { nonce: `nonce-${suffix}` });
+      expect(legacyApproval).toMatchObject({ response: { status: 409 }, json: { error: { code: "APPROVAL_CHALLENGE_REQUIRED" } } });
+
+      const superseded = await repository.createMandateApprovalChallenge(identity, draft.id, "external-review");
+      const challenge = await repository.createMandateApprovalChallenge(identity, draft.id, "external-review");
+      await expect(repository.decideMandateApprovalChallenge(
+        identity,
+        superseded.id,
+        superseded.nonce,
+        "APPROVE",
+      )).rejects.toMatchObject({ status: 409, code: "APPROVAL_CHALLENGE_USED" });
+      await expect(repository.decideMandateApprovalChallenge(
+        identity,
+        challenge.id,
+        `approval_${"x".repeat(43)}`,
+        "APPROVE",
+      )).rejects.toMatchObject({ status: 404, code: "APPROVAL_CHALLENGE_NOT_FOUND" });
+      const approval = await repository.decideMandateApprovalChallenge(
+        identity,
+        challenge.id,
+        challenge.nonce,
+        "APPROVE",
+      );
+      expect(approval.mandate.status).toBe("ACTIVE");
+      await expect(repository.decideMandateApprovalChallenge(
+        identity,
+        challenge.id,
+        challenge.nonce,
+        "APPROVE",
+      )).rejects.toMatchObject({ status: 409, code: "APPROVAL_CHALLENGE_USED" });
 
       const executionId = `execution-${suffix}`;
       expect((await call("POST", `/v1/mandates/${draft.id}/executions`, agentToken, { executionId })).response.status).toBe(201);
@@ -167,6 +203,55 @@ integration("authenticated control plane", () => {
       expect(context.json.execution.actions).toHaveLength(3);
       expect(context.json.evidence).toHaveLength(1);
       expect(verifyEventChain(context.json.events)).toBe(true);
+      const mcpContext = await repository.getMcpMandateContext(identity, draft.id) as Record<string, any>;
+      expect(mcpContext).toMatchObject({
+        mandate: { id: draft.id, status: "SUSPENDED" },
+        execution: { actions: [{ decision: "ALLOW" }, { decision: "DENY" }, { decision: "INVALIDATE_APPROVAL" }] },
+        evidenceSummary: { records: 1, independentlyVerified: 0 },
+      });
+      const authenticatedMcp = await repository.authenticateMcpMandateContext(principalToken, draft.id);
+      expect(authenticatedMcp).toMatchObject({
+        identity: { kind: "principal", id: principalId, principalType: "human" },
+        context: { mandate: { id: draft.id }, evidenceSummary: { records: 1 } },
+      });
+      await expect(repository.authenticateMcpMandateContext("invalid-token-that-is-long-enough-1234567890", draft.id))
+        .rejects.toMatchObject({ status: 401, code: "UNAUTHENTICATED" });
+    } finally {
+      await pool.end();
+    }
+  }, 60_000);
+
+  it("prepares one awaiting-approval Mandate per principal idempotency key", async () => {
+    const suffix = randomUUID().replaceAll("-", "").slice(0, 12);
+    const principalId = `principal-${suffix}`;
+    const agentId = `agent-${suffix}`;
+    const pool = new pg.Pool({ connectionString, max: 2 });
+    const repository = new ControlPlaneRepository(pool);
+    const identity = { kind: "principal", id: principalId, principalType: "human" } as const;
+    try {
+      await pool.query("INSERT INTO principals (id, type) VALUES ($1, 'human')", [principalId]);
+      await pool.query(
+        "INSERT INTO agents (id, runtime, instance_id) VALUES ($1, 'agentos', $2)",
+        [agentId, `run-${suffix}`],
+      );
+      const draft = checkoutDraft(suffix, principalId, agentId);
+      const requestDigest = `sha256:${"c".repeat(64)}`;
+      const first = await repository.prepareAgentWork(identity, draft, `request-${suffix}`, requestDigest);
+      expect(first.mandate.status).toBe("AWAITING_APPROVAL");
+      const replay = await repository.prepareAgentWork(identity, draft, `request-${suffix}`, requestDigest);
+      expect(replay).toMatchObject({ mandate: { id: draft.id, status: "AWAITING_APPROVAL" }, versionDigest: first.versionDigest });
+      await expect(repository.prepareAgentWork(
+        identity,
+        draft,
+        `request-${suffix}`,
+        `sha256:${"d".repeat(64)}`,
+      )).rejects.toMatchObject({ status: 409, code: "WORK_REQUEST_REPLAY" });
+      const events = await pool.query("SELECT type FROM mandate_events WHERE mandate_id = $1 ORDER BY sequence", [draft.id]);
+      expect(events.rows.map(({ type }) => type)).toEqual([
+        "MANDATE_CREATED",
+        "MANDATE_PROPOSED",
+        "MANDATE_APPROVAL_REQUESTED",
+      ]);
     } finally {
       await pool.end();
     }
@@ -180,6 +265,7 @@ integration("authenticated control plane", () => {
     const agentToken = `mandate_${randomBytes(32).toString("base64url")}`;
     const testVerifierToken = `mandate_${randomBytes(32).toString("base64url")}`;
     const reviewVerifierToken = `mandate_${randomBytes(32).toString("base64url")}`;
+    const identity = { kind: "principal", id: principalId, principalType: "human" } as const;
     const pool = new pg.Pool({ connectionString, max: 3 });
 
     try {
@@ -196,7 +282,8 @@ integration("authenticated control plane", () => {
           [credentialId, hashCredential(token), identityId],
         );
       }
-      const handler = createControlPlaneHandler(new ControlPlaneRepository(pool), (error) => { throw error; });
+      const repository = new ControlPlaneRepository(pool);
+      const handler = createControlPlaneHandler(repository, (error) => { throw error; });
       const call = async (method: string, path: string, token: string, requestBody?: unknown) => {
         const response = await handler(new Request(`https://control.mandate.test${path}`, {
           method,
@@ -212,7 +299,8 @@ integration("authenticated control plane", () => {
       await call("POST", "/v1/mandates", principalToken, draft);
       await call("POST", `/v1/mandates/${draft.id}/transitions`, principalToken, { to: "PROPOSED" });
       await call("POST", `/v1/mandates/${draft.id}/transitions`, principalToken, { to: "AWAITING_APPROVAL" });
-      await call("POST", `/v1/mandates/${draft.id}/approvals`, principalToken, { nonce: `nonce-${suffix}` });
+      const challenge = await repository.createMandateApprovalChallenge(identity, draft.id, "external-review");
+      await repository.decideMandateApprovalChallenge(identity, challenge.id, challenge.nonce, "APPROVE");
       const executionId = `execution-verification-${suffix}`;
       await call("POST", `/v1/mandates/${draft.id}/executions`, agentToken, { executionId });
 

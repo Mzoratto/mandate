@@ -31,7 +31,7 @@ Identity records must already exist. Neon Auth or an external identity provider 
 | `POST` | `/v1/mandates` | principal | Create an unapproved version-1 draft |
 | `GET` | `/v1/mandates/:id` | owning principal or subject | Read the current Mandate, approval, latest execution, actions, evidence, amendments, and event chain |
 | `POST` | `/v1/mandates/:id/transitions` | owning principal | Move `DRAFT → PROPOSED → AWAITING_APPROVAL` |
-| `POST` | `/v1/mandates/:id/approvals` | eligible principal | Bind a replay-protected nonce and activate the current immutable version |
+| `POST` | `/v1/mandates/:id/approvals` | eligible principal | Disabled compatibility route; returns `APPROVAL_CHALLENGE_REQUIRED` |
 | `PUT` | `/v1/mandates/:id/assumptions/:key` | owning principal | Update trusted current assumption state |
 | `POST` | `/v1/mandates/:id/executions` | bound agent | Start or idempotently recover an execution |
 | `POST` | `/v1/executions/:id/actions/authorize` | bound agent | Persist the proposal/effects and return a fail-closed conformance decision before execution |
@@ -44,6 +44,8 @@ The authorization request contains the protocol `ProposedAction`, deterministic 
 
 - Mandate and execution rows are locked before lifecycle or conformance decisions.
 - Stored immutable content is schema-validated and its canonical digest is recomputed on every protected read.
+- MCP preparation keys are principal-scoped and idempotent only when the normalized customer intent digest matches; changed replays return `409`.
+- The repository's non-routed approval challenges bind principal, Mandate, version, canonical digest, channel, expiry, and a high-entropy nonce stored only as a hash. A new challenge supersedes earlier pending challenges, and each challenge can be consumed once. They remain unreachable over HTTP until an app-only or principal-session decision channel is proven.
 - Action IDs are idempotent only when the execution and canonical request digest match; changed replays return `409`.
 - Settlement is idempotent only when its canonical digest matches; changed replays return `409`.
 - Proposal, effects, decision, status change, usage, evidence, and hash-chained events commit or roll back together.
@@ -52,11 +54,11 @@ The authorization request contains the protocol `ProposedAction`, deterministic 
 - The final required verification transaction re-evaluates assumptions, open amendments, unsettled actions, violations, verified evidence, and criterion results before atomically completing the Mandate and execution.
 - Unknown routes, invalid identities, stale assumptions, malformed effects, and internal errors fail closed.
 
-## Alexa+ MCP read boundary
+## Alexa+ MCP boundary
 
-`POST /mcp` is a stateless MCP `2025-11-25` Streamable HTTP endpoint backed by the same authenticated repository. It currently exposes only `get_agent_work_status` and `explain_blocked_action`; both are read-only and require the owning customer principal. Service principals may initialize and list tools but cannot read a customer's Mandate. The endpoint is disabled unless `MANDATE_MCP_RESOURCE_URL` is configured as the exact public HTTPS `/mcp` resource URL. See [`alexa-integration.md`](alexa-integration.md).
+`POST /mcp` is a stateless MCP `2025-11-25` Streamable HTTP endpoint backed by the same authenticated repository. Its deployed surface currently exposes `get_agent_work_status` and `explain_blocked_action`. The optional `prepare_agent_work` tool becomes visible only when an exact server-side checkout commit resolver is configured; it converts customer intent into a zero-token, zero-spend, one-mutation Mandate at `AWAITING_APPROVAL` without starting execution. All customer tools require the owning principal. Service principals may initialize and list tools but cannot read or prepare customer records. The endpoint is disabled unless `MANDATE_MCP_RESOURCE_URL` is configured as the exact public HTTPS `/mcp` resource URL. See [`alexa-integration.md`](alexa-integration.md).
 
-The existing opaque credentials are only the pre-OAuth development boundary. They must not be registered as Alexa account-linking credentials or converted into automated approval.
+When fully configured, the MCP resource server validates signed access tokens against a remote JWKS with exact issuer, audience/resource, client, lifetime, and separated service/customer scope checks, then resolves the OAuth subject through `oauth_subjects`. Existing opaque credentials remain only the pre-OAuth development boundary. They must not be registered as Alexa account-linking credentials or converted into automated approval.
 
 ## AgentOS callback client
 

@@ -18,6 +18,15 @@ Parameters:
   McpAuthorizationServerUrl:
     Type: String
     Default: ""
+  McpJwksUrl:
+    Type: String
+    Default: ""
+  McpOAuthClientIds:
+    Type: String
+    Default: ""
+  McpCheckoutCommitDigest:
+    Type: String
+    Default: ""
 
 Resources:
   FunctionRole:
@@ -54,6 +63,9 @@ Resources:
           MANDATE_MCP_RESOURCE_URL: !Ref McpResourceUrl
           MANDATE_MCP_ALLOWED_ORIGINS: !Ref McpAllowedOrigins
           MANDATE_MCP_AUTHORIZATION_SERVER_URL: !Ref McpAuthorizationServerUrl
+          MANDATE_MCP_JWKS_URL: !Ref McpJwksUrl
+          MANDATE_MCP_OAUTH_CLIENT_IDS: !Ref McpOAuthClientIds
+          MANDATE_MCP_CHECKOUT_COMMIT_DIGEST: !Ref McpCheckoutCommitDigest
 
   FunctionLogGroup:
     Type: AWS::Logs::LogGroup

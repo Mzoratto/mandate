@@ -61,6 +61,27 @@ export const mandates = pgTable("mandates", {
   index("mandates_principal_status_idx").on(table.principalId, table.status),
 ]);
 
+export const oauthSubjects = pgTable("oauth_subjects", {
+  authorizationServer: text("authorization_server").notNull(),
+  subject: text().notNull(),
+  principalId: text("principal_id").notNull().references(() => principals.id),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull().defaultNow(),
+}, (table) => [
+  primaryKey({ columns: [table.authorizationServer, table.subject] }),
+  index("oauth_subjects_principal_idx").on(table.principalId),
+]);
+
+export const mcpWorkRequests = pgTable("mcp_work_requests", {
+  principalId: text("principal_id").notNull().references(() => principals.id),
+  idempotencyKey: text("idempotency_key").notNull(),
+  requestDigest: text("request_digest").notNull(),
+  mandateId: text("mandate_id").notNull().unique().references(() => mandates.id),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
+}, (table) => [
+  primaryKey({ columns: [table.principalId, table.idempotencyKey] }),
+  index("mcp_work_requests_mandate_idx").on(table.mandateId),
+]);
+
 export const mandateVersions = pgTable("mandate_versions", {
   mandateId: text("mandate_id").notNull().references(() => mandates.id),
   version: integer().notNull(),
@@ -97,6 +118,28 @@ export const approvals = pgTable("mandate_approvals", {
     foreignColumns: [mandateVersions.mandateId, mandateVersions.version],
   }),
   uniqueIndex("approvals_replay_guard_idx").on(table.principalId, table.mandateId, table.mandateVersion, table.nonce),
+]);
+
+export const approvalChallenges = pgTable("approval_challenges", {
+  id: text().primaryKey(),
+  principalId: text("principal_id").notNull().references(() => principals.id),
+  mandateId: text("mandate_id").notNull(),
+  mandateVersion: integer("mandate_version").notNull(),
+  subjectKind: text("subject_kind").notNull(),
+  subjectId: text("subject_id").notNull(),
+  subjectDigest: text("subject_digest").notNull(),
+  nonceHash: text("nonce_hash").notNull().unique(),
+  channel: text().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "string" }).notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true, mode: "string" }).notNull(),
+  consumedAt: timestamp("consumed_at", { withTimezone: true, mode: "string" }),
+  decision: text(),
+}, (table) => [
+  foreignKey({
+    columns: [table.mandateId, table.mandateVersion],
+    foreignColumns: [mandateVersions.mandateId, mandateVersions.version],
+  }),
+  index("approval_challenges_pending_idx").on(table.principalId, table.mandateId, table.expiresAt),
 ]);
 
 export const amendments = pgTable("mandate_amendments", {

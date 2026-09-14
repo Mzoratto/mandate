@@ -3,6 +3,8 @@ import { createControlPlaneHandler } from "./control-plane/handler.js";
 import { ControlPlaneRepository } from "./control-plane/repository.js";
 import { createDatabase } from "./db/client.js";
 import { createMandateMcpHandler } from "./mcp/handler.js";
+import { createJwtMcpAuthenticator } from "./mcp/oauth.js";
+import { createCheckoutWorkPreparer } from "./mcp/work-preparation.js";
 
 interface FunctionUrlEvent {
   rawPath?: unknown;
@@ -26,16 +28,49 @@ function app() {
     const database = createDatabase(process.env.DATABASE_URL, 2);
     const repository = new ControlPlaneRepository(database.pool);
     const controlPlane = createControlPlaneHandler(repository);
+    const prepareWork = process.env.MANDATE_MCP_CHECKOUT_COMMIT_DIGEST
+      ? createCheckoutWorkPreparer(repository, {
+          subject: { agentId: "agentos-checkout", runtime: "agentos", instanceId: "run-001" },
+          repositoryResource: "checkout-demo",
+          repositoryCommitDigest: process.env.MANDATE_MCP_CHECKOUT_COMMIT_DIGEST as `sha256:${string}`,
+          testVerifier: "verifier:test-runner",
+          reviewVerifier: "verifier:independent-review",
+        })
+      : undefined;
+    const oauthAuthorizationServer = process.env.MANDATE_MCP_AUTHORIZATION_SERVER_URL;
+    const oauthJwksUrl = process.env.MANDATE_MCP_JWKS_URL;
+    const oauthClientIds = (process.env.MANDATE_MCP_OAUTH_CLIENT_IDS ?? "")
+      .split(",")
+      .map((clientId) => clientId.trim())
+      .filter(Boolean);
+    const oauthPartiallyConfigured = Boolean(oauthAuthorizationServer || oauthJwksUrl || oauthClientIds.length)
+      && !(oauthAuthorizationServer && oauthJwksUrl && oauthClientIds.length);
+    const authenticateToken = oauthAuthorizationServer && oauthJwksUrl && oauthClientIds.length
+      ? createJwtMcpAuthenticator(repository, {
+          authorizationServer: oauthAuthorizationServer,
+          jwksUrl: oauthJwksUrl,
+          resource: process.env.MANDATE_MCP_RESOURCE_URL ?? "",
+          allowedClientIds: oauthClientIds,
+        })
+      : undefined;
     const mcp = process.env.MANDATE_MCP_RESOURCE_URL
-      ? createMandateMcpHandler(repository, {
+      ? oauthPartiallyConfigured
+        ? () => Promise.resolve(new Response(JSON.stringify({
+            error: "oauth_configuration_incomplete",
+            message: "Mandate MCP OAuth configuration is incomplete",
+          }), {
+            status: 503,
+            headers: { "cache-control": "no-store", "content-type": "application/json; charset=utf-8" },
+          }))
+        : createMandateMcpHandler(repository, {
           resourceUrl: process.env.MANDATE_MCP_RESOURCE_URL,
-          ...(process.env.MANDATE_MCP_AUTHORIZATION_SERVER_URL
-            ? { authorizationServerUrl: process.env.MANDATE_MCP_AUTHORIZATION_SERVER_URL }
-            : {}),
+          ...(oauthAuthorizationServer ? { authorizationServerUrl: oauthAuthorizationServer } : {}),
           allowedOrigins: (process.env.MANDATE_MCP_ALLOWED_ORIGINS ?? "")
             .split(",")
             .map((origin) => origin.trim())
             .filter(Boolean),
+          ...(prepareWork ? { prepareWork } : {}),
+          ...(authenticateToken ? { authenticateToken } : {}),
         })
       : undefined;
     application = (request) => [

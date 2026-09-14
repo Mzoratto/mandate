@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes, randomUUID, timingSafeEqual } from "node:crypto";
 import type { Pool, PoolClient, QueryResultRow } from "pg";
 import {
   deterministicId,
@@ -21,6 +21,7 @@ import {
   approveMandate,
   evaluateConformance,
   proposeMandate,
+  rejectMandate,
   requestApproval,
   verifyEventChain,
   type MandateEventType,
@@ -63,6 +64,23 @@ export interface AuthorizationResponse {
   violatedRules: string[];
   amendmentSuggested: boolean;
   mandateVersionDigest: string;
+}
+
+export interface MandateApprovalChallenge {
+  id: string;
+  nonce: string;
+  mandateId: string;
+  mandateVersion: number;
+  versionDigest: string;
+  channel: "mcp-app" | "external-review";
+  expiresAt: string;
+}
+
+export interface MandateApprovalChallengeDecision {
+  mandate: Mandate;
+  versionDigest: string;
+  decision: "APPROVE" | "REJECT";
+  approvalId?: string;
 }
 
 export interface SettleActionInput {
@@ -306,6 +324,28 @@ export class ControlPlaneRepository {
     return fail(500, "DATA_INTEGRITY", "Credential does not resolve to one identity");
   }
 
+  async resolveOAuthSubject(authorizationServer: string, subject: string): Promise<Extract<AuthenticatedIdentity, { kind: "principal" }>> {
+    const result = await this.pool.query<{
+      principal_id: string;
+      principal_type: "human" | "organization" | "service";
+      tenant_id: string | null;
+    }>(
+      `SELECT principal.id AS principal_id, principal.type AS principal_type, principal.tenant_id
+         FROM oauth_subjects AS oauth
+         JOIN principals AS principal ON principal.id = oauth.principal_id
+        WHERE oauth.authorization_server = $1 AND oauth.subject = $2`,
+      [authorizationServer, subject],
+    );
+    const row = result.rows[0];
+    if (!row) return fail(401, "UNAUTHENTICATED", "OAuth subject is not linked to a Mandate principal");
+    return {
+      kind: "principal",
+      id: row.principal_id,
+      principalType: row.principal_type,
+      ...(row.tenant_id ? { tenantId: row.tenant_id } : {}),
+    };
+  }
+
   private async loadMandate(
     client: SqlClient,
     mandateId: string,
@@ -418,7 +458,10 @@ export class ControlPlaneRepository {
     return event;
   }
 
-  async createMandate(identity: AuthenticatedIdentity, input: unknown): Promise<{ mandate: Mandate; versionDigest: string }> {
+  private initialMandate(
+    identity: AuthenticatedIdentity,
+    input: unknown,
+  ): { identity: Extract<AuthenticatedIdentity, { kind: "principal" }>; mandate: Mandate; digest: string } {
     if (identity.kind !== "principal") return fail(403, "PRINCIPAL_REQUIRED", "A principal credential is required");
     const mandate = parseMandate(input);
     if (mandate.version !== 1 || mandate.status !== "DRAFT" || mandate.approvedAt || mandate.completedAt) {
@@ -431,50 +474,120 @@ export class ControlPlaneRepository {
     ) {
       return fail(403, "PRINCIPAL_MISMATCH", "Authenticated principal does not match the Mandate principal");
     }
-    const digest = mandateVersionDigest(mandate);
+    return { identity, mandate, digest: mandateVersionDigest(mandate) };
+  }
+
+  private async insertMandate(
+    client: PoolClient,
+    identity: Extract<AuthenticatedIdentity, { kind: "principal" }>,
+    mandate: Mandate,
+    digest: string,
+  ): Promise<void> {
+    const agent = await client.query<{
+      runtime: "agentos" | "strands" | "custom";
+      instance_id: string | null;
+    }>("SELECT runtime, instance_id FROM agents WHERE id = $1", [mandate.subject.agentId]);
+    const subject = agent.rows[0];
+    if (
+      !subject
+      || subject.runtime !== mandate.subject.runtime
+      || (mandate.subject.instanceId && subject.instance_id !== mandate.subject.instanceId)
+    ) {
+      return fail(422, "SUBJECT_NOT_FOUND", "Mandate subject is not a registered matching agent");
+    }
+
+    await client.query(
+      `INSERT INTO mandates
+        (id, principal_id, subject_id, current_version, status, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [mandate.id, identity.id, mandate.subject.agentId, mandate.version, mandate.status, mandate.createdAt],
+    );
+    await client.query(
+      `INSERT INTO mandate_versions
+        (mandate_id, version, content, content_digest, created_at)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [mandate.id, mandate.version, jsonb(mandate), digest, mandate.createdAt],
+    );
+    for (const assumption of mandate.assumptions) {
+      await client.query(
+        `INSERT INTO mandate_assumption_state
+          (mandate_id, key, value_hash, invalidates_on_change, source, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [mandate.id, assumption.key, assumption.valueHash, assumption.invalidatesOnChange, `principal:${identity.id}`, mandate.createdAt],
+      );
+    }
+    await this.appendLedgerEvent(
+      client,
+      mandate,
+      "MANDATE_CREATED",
+      `principal:${identity.id}`,
+      { versionDigest: digest },
+      mandate.createdAt,
+    );
+  }
+
+  async createMandate(identity: AuthenticatedIdentity, input: unknown): Promise<{ mandate: Mandate; versionDigest: string }> {
+    const initial = this.initialMandate(identity, input);
     return this.transaction(async (client) => {
-      const agent = await client.query<{
-        runtime: "agentos" | "strands" | "custom";
-        instance_id: string | null;
-      }>("SELECT runtime, instance_id FROM agents WHERE id = $1", [mandate.subject.agentId]);
-      const subject = agent.rows[0];
-      if (
-        !subject
-        || subject.runtime !== mandate.subject.runtime
-        || (mandate.subject.instanceId && subject.instance_id !== mandate.subject.instanceId)
-      ) {
-        return fail(422, "SUBJECT_NOT_FOUND", "Mandate subject is not a registered matching agent");
+      await this.insertMandate(client, initial.identity, initial.mandate, initial.digest);
+      return { mandate: initial.mandate, versionDigest: initial.digest };
+    });
+  }
+
+  async prepareAgentWork(
+    identity: AuthenticatedIdentity,
+    input: unknown,
+    idempotencyKey: string,
+    requestDigest: string,
+  ): Promise<{ mandate: Mandate; versionDigest: string }> {
+    const initial = this.initialMandate(identity, input);
+    if (!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u.test(idempotencyKey) || !/^sha256:[0-9a-f]{64}$/u.test(requestDigest)) {
+      return fail(422, "INVALID_WORK_REQUEST", "Work request identity is invalid");
+    }
+    return this.transaction(async (client) => {
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [`mcp:${initial.identity.id}:${idempotencyKey}`]);
+      const existing = await client.query<{ request_digest: string; mandate_id: string }>(
+        `SELECT request_digest, mandate_id
+           FROM mcp_work_requests
+          WHERE principal_id = $1 AND idempotency_key = $2`,
+        [initial.identity.id, idempotencyKey],
+      );
+      const replay = existing.rows[0];
+      if (replay) {
+        if (replay.request_digest !== requestDigest) {
+          return fail(409, "WORK_REQUEST_REPLAY", "Work request identity was reused with different intent");
+        }
+        return this.loadMandate(client, replay.mandate_id, initial.identity, true);
       }
 
-      await client.query(
-        `INSERT INTO mandates
-          (id, principal_id, subject_id, current_version, status, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
-        [mandate.id, identity.id, mandate.subject.agentId, mandate.version, mandate.status, mandate.createdAt],
-      );
-      await client.query(
-        `INSERT INTO mandate_versions
-          (mandate_id, version, content, content_digest, created_at)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [mandate.id, mandate.version, jsonb(mandate), digest, mandate.createdAt],
-      );
-      for (const assumption of mandate.assumptions) {
-        await client.query(
-          `INSERT INTO mandate_assumption_state
-            (mandate_id, key, value_hash, invalidates_on_change, source, updated_at)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
-          [mandate.id, assumption.key, assumption.valueHash, assumption.invalidatesOnChange, `principal:${identity.id}`, mandate.createdAt],
-        );
-      }
+      await this.insertMandate(client, initial.identity, initial.mandate, initial.digest);
+      const proposed = lifecycle(() => proposeMandate(initial.mandate));
+      await client.query("UPDATE mandates SET status = $2 WHERE id = $1", [proposed.id, proposed.status]);
       await this.appendLedgerEvent(
         client,
-        mandate,
-        "MANDATE_CREATED",
-        `principal:${identity.id}`,
-        { versionDigest: digest },
-        mandate.createdAt,
+        proposed,
+        "MANDATE_PROPOSED",
+        `principal:${initial.identity.id}`,
+        { status: proposed.status },
+        initial.mandate.createdAt,
       );
-      return { mandate, versionDigest: digest };
+      const awaiting = lifecycle(() => requestApproval(proposed));
+      await client.query("UPDATE mandates SET status = $2 WHERE id = $1", [awaiting.id, awaiting.status]);
+      await this.appendLedgerEvent(
+        client,
+        awaiting,
+        "MANDATE_APPROVAL_REQUESTED",
+        `principal:${initial.identity.id}`,
+        { status: awaiting.status },
+        initial.mandate.createdAt,
+      );
+      await client.query(
+        `INSERT INTO mcp_work_requests
+          (principal_id, idempotency_key, request_digest, mandate_id, created_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [initial.identity.id, idempotencyKey, requestDigest, awaiting.id, initial.mandate.createdAt],
+      );
+      return { mandate: awaiting, versionDigest: initial.digest };
     });
   }
 
@@ -500,6 +613,193 @@ export class ControlPlaneRepository {
         now,
       );
       return { mandate, versionDigest: current.versionDigest };
+    });
+  }
+
+  async createMandateApprovalChallenge(
+    identity: AuthenticatedIdentity,
+    mandateId: string,
+    channel: "mcp-app" | "external-review",
+    now = new Date().toISOString(),
+  ): Promise<MandateApprovalChallenge> {
+    if (identity.kind !== "principal" || identity.principalType === "service") {
+      return fail(403, "HUMAN_PRINCIPAL_REQUIRED", "A human or organization principal is required");
+    }
+    if (!Number.isFinite(Date.parse(now)) || new Date(now).toISOString() !== now) {
+      return fail(422, "INVALID_CHALLENGE_TIME", "Approval challenge time is invalid");
+    }
+    return this.transaction(async (client) => {
+      const current = await this.loadMandate(client, mandateId, identity, true);
+      if (current.mandate.status !== "AWAITING_APPROVAL") {
+        return fail(409, "MANDATE_NOT_AWAITING_APPROVAL", "Mandate is not awaiting approval");
+      }
+      await client.query(
+        `UPDATE approval_challenges
+            SET consumed_at = $3, decision = 'SUPERSEDED'
+          WHERE principal_id = $1 AND mandate_id = $2 AND consumed_at IS NULL`,
+        [identity.id, mandateId, now],
+      );
+      const id = `challenge-${randomUUID()}`;
+      const nonce = `approval_${randomBytes(32).toString("base64url")}`;
+      const expiresAt = new Date(Date.parse(now) + 10 * 60_000).toISOString();
+      await client.query(
+        `INSERT INTO approval_challenges
+          (id, principal_id, mandate_id, mandate_version, subject_kind, subject_id,
+           subject_digest, nonce_hash, channel, created_at, expires_at)
+         VALUES ($1, $2, $3, $4, 'mandate', $3, $5, $6, $7, $8, $9)`,
+        [
+          id,
+          identity.id,
+          mandateId,
+          current.mandate.version,
+          current.versionDigest,
+          hashCredential(nonce),
+          channel,
+          now,
+          expiresAt,
+        ],
+      );
+      return {
+        id,
+        nonce,
+        mandateId,
+        mandateVersion: current.mandate.version,
+        versionDigest: current.versionDigest,
+        channel,
+        expiresAt,
+      };
+    });
+  }
+
+  async decideMandateApprovalChallenge(
+    identity: AuthenticatedIdentity,
+    challengeId: string,
+    nonce: string,
+    decision: "APPROVE" | "REJECT",
+    now = new Date().toISOString(),
+  ): Promise<MandateApprovalChallengeDecision> {
+    if (identity.kind !== "principal" || identity.principalType === "service") {
+      return fail(403, "HUMAN_PRINCIPAL_REQUIRED", "A human or organization principal is required");
+    }
+    if (!Number.isFinite(Date.parse(now)) || new Date(now).toISOString() !== now) {
+      return fail(422, "INVALID_CHALLENGE_TIME", "Approval decision time is invalid");
+    }
+    return this.transaction(async (client) => {
+      const reference = await client.query<{ mandate_id: string }>(
+        "SELECT mandate_id FROM approval_challenges WHERE id = $1 AND principal_id = $2",
+        [challengeId, identity.id],
+      );
+      if (!reference.rows[0]) return fail(404, "APPROVAL_CHALLENGE_NOT_FOUND", "Approval challenge was not found");
+      const current = await this.loadMandate(client, reference.rows[0].mandate_id, identity, true);
+      const result = await client.query<{
+        mandate_id: string;
+        mandate_version: number;
+        subject_kind: string;
+        subject_id: string;
+        subject_digest: string;
+        nonce_hash: string;
+        expires_at: string | Date;
+        consumed_at: string | Date | null;
+      }>(
+        `SELECT mandate_id, mandate_version, subject_kind, subject_id, subject_digest,
+                nonce_hash, expires_at, consumed_at
+           FROM approval_challenges
+          WHERE id = $1 AND principal_id = $2
+          FOR UPDATE`,
+        [challengeId, identity.id],
+      );
+      const challenge = result.rows[0];
+      if (!challenge) return fail(404, "APPROVAL_CHALLENGE_NOT_FOUND", "Approval challenge was not found");
+      const actualNonceHash = hashCredential(nonce);
+      const saved = Buffer.from(challenge.nonce_hash);
+      const actual = Buffer.from(actualNonceHash);
+      if (saved.length !== actual.length || !timingSafeEqual(saved, actual)) {
+        return fail(404, "APPROVAL_CHALLENGE_NOT_FOUND", "Approval challenge was not found");
+      }
+      if (challenge.consumed_at) return fail(409, "APPROVAL_CHALLENGE_USED", "Approval challenge has already been used");
+      if (Date.parse(iso(challenge.expires_at)) <= Date.parse(now)) {
+        return fail(409, "APPROVAL_CHALLENGE_EXPIRED", "Approval challenge has expired");
+      }
+      if (
+        challenge.subject_kind !== "mandate"
+        || challenge.subject_id !== current.mandate.id
+        || challenge.mandate_id !== current.mandate.id
+        || challenge.mandate_version !== current.mandate.version
+        || challenge.subject_digest !== current.versionDigest
+        || current.mandate.status !== "AWAITING_APPROVAL"
+      ) {
+        return fail(409, "APPROVAL_CHALLENGE_STALE", "Approval challenge no longer matches current authority");
+      }
+
+      await client.query(
+        "UPDATE approval_challenges SET consumed_at = $2, decision = $3 WHERE id = $1",
+        [challengeId, now, decision],
+      );
+      if (decision === "REJECT") {
+        const mandate = lifecycle(() => rejectMandate(current.mandate));
+        await client.query("UPDATE mandates SET status = 'REJECTED' WHERE id = $1", [mandate.id]);
+        await this.appendLedgerEvent(
+          client,
+          mandate,
+          "MANDATE_REJECTED",
+          `principal:${identity.id}`,
+          { challengeId, versionDigest: current.versionDigest },
+          now,
+        );
+        return { mandate, versionDigest: current.versionDigest, decision };
+      }
+
+      const assumptions = await this.currentAssumptions(client, current.mandate.id);
+      const approved = lifecycle(() => approveMandate(
+        current.mandate,
+        assumptions,
+        identity.id,
+        now,
+        `challenge:${challengeId}`,
+      ));
+      await client.query(
+        `INSERT INTO mandate_approvals
+          (id, mandate_id, mandate_version, version_digest, principal_id,
+           assumption_hashes, nonce, approved_at, supersedes_approval_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          approved.approval.id,
+          current.mandate.id,
+          approved.approval.mandateVersion,
+          approved.approval.mandateVersionDigest,
+          identity.id,
+          jsonb(approved.approval.assumptionHashes),
+          approved.approval.nonce,
+          approved.approval.approvedAt,
+          approved.approval.supersedesApprovalId ?? null,
+        ],
+      );
+      await client.query(
+        "UPDATE mandates SET status = 'ACTIVE', approved_at = $2 WHERE id = $1",
+        [current.mandate.id, now],
+      );
+      await this.appendLedgerEvent(
+        client,
+        approved.mandate,
+        "MANDATE_APPROVED",
+        `principal:${identity.id}`,
+        { approvalId: approved.approval.id, challengeId, versionDigest: current.versionDigest },
+        now,
+      );
+      await this.appendLedgerEvent(
+        client,
+        approved.mandate,
+        "MANDATE_ACTIVATED",
+        `principal:${identity.id}`,
+        { approvalId: approved.approval.id, challengeId },
+        now,
+      );
+      return {
+        mandate: approved.mandate,
+        versionDigest: current.versionDigest,
+        decision,
+        approvalId: approved.approval.id,
+      };
     });
   }
 
@@ -1156,6 +1456,151 @@ export class ControlPlaneRepository {
       }
       return { evidence, criteria: results, completion: { completed: completion.canComplete, reasons: completion.reasons } };
     });
+  }
+
+  private async mcpMandateContext(
+    selector: { kind: "principal"; principalId: string } | { kind: "token"; token: string },
+    mandateId: string,
+  ): Promise<{ identity: Extract<AuthenticatedIdentity, { kind: "principal" }>; context?: Record<string, unknown> }> {
+    const credentialSource = selector.kind === "token"
+      ? `SELECT principal.id AS principal_id, principal.type AS principal_type, principal.tenant_id
+           FROM control_plane_credentials AS credential
+           JOIN principals AS principal ON principal.id = credential.principal_id
+          WHERE credential.token_hash = $2
+            AND credential.revoked_at IS NULL
+            AND (credential.expires_at IS NULL OR credential.expires_at > now())`
+      : `SELECT principal.id AS principal_id, principal.type AS principal_type, principal.tenant_id
+           FROM principals AS principal
+          WHERE principal.id = $2`;
+    const selectorValue = selector.kind === "token" ? hashCredential(selector.token) : selector.principalId;
+    const result = await this.pool.query<MandateRow & QueryResultRow>(
+      `WITH credential AS (
+         ${credentialSource}
+       ), target AS (
+         SELECT mandate.*, version.content, version.content_digest
+           FROM credential
+           JOIN mandates AS mandate ON mandate.principal_id = credential.principal_id
+           JOIN mandate_versions AS version
+             ON version.mandate_id = mandate.id
+            AND version.version = mandate.current_version
+          WHERE mandate.id = $1
+       ), latest_execution AS (
+         SELECT execution.*
+           FROM executions AS execution
+           JOIN target ON target.id = execution.mandate_id
+                      AND target.current_version = execution.mandate_version
+          ORDER BY execution.started_at DESC
+          LIMIT 1
+       )
+       SELECT credential.principal_id,
+              credential.principal_type,
+              credential.tenant_id,
+              target.*,
+              execution.id AS execution_id,
+              execution.finished_at AS execution_finished_at,
+              execution.monetary_spent_micro_usd,
+              execution.tokens_used,
+              action.id AS action_id,
+              action.status AS action_status,
+              decision.decision,
+              decision.reasons,
+              decision.violated_rules,
+              effect.id AS effect_id,
+              effect.type AS effect_type,
+              effect.resources AS effect_resources,
+              effect.environment AS effect_environment,
+              effect.reversible AS effect_reversible,
+              effect.confidence AS effect_confidence,
+              (SELECT count(*)::integer FROM evidence
+                WHERE mandate_id = target.id AND mandate_version = target.current_version) AS evidence_count,
+              (SELECT count(*)::integer FROM evidence
+                WHERE mandate_id = target.id AND mandate_version = target.current_version AND verified) AS verified_evidence_count
+         FROM credential
+         LEFT JOIN target ON true
+         LEFT JOIN latest_execution AS execution ON true
+         LEFT JOIN execution_actions AS action ON action.execution_id = execution.id
+         LEFT JOIN authorization_decisions AS decision ON decision.action_id = action.id
+         LEFT JOIN execution_effects AS effect ON effect.action_id = action.id
+        ORDER BY action.proposed_at, action.id, effect.id`,
+      [mandateId, selectorValue],
+    );
+    const first = result.rows[0];
+    if (!first) {
+      return selector.kind === "token"
+        ? fail(401, "UNAUTHENTICATED", "Bearer credential is invalid or expired")
+        : fail(404, "MANDATE_NOT_FOUND", "Mandate was not found for this identity");
+    }
+    if (first.principal_type === "service") {
+      return fail(403, "CUSTOMER_PRINCIPAL_REQUIRED", "A customer principal is required");
+    }
+    const identity: Extract<AuthenticatedIdentity, { kind: "principal" }> = {
+      kind: "principal",
+      id: first.principal_id,
+      principalType: first.principal_type,
+      ...(first.tenant_id ? { tenantId: first.tenant_id } : {}),
+    };
+    if (!first.content) return { identity };
+    const actions = new Map<string, Record<string, unknown>>();
+    for (const row of result.rows) {
+      if (typeof row.action_id !== "string") continue;
+      let action = actions.get(row.action_id);
+      if (!action) {
+        action = {
+          status: row.action_status,
+          decision: row.decision,
+          reasons: row.reasons,
+          violatedRules: row.violated_rules,
+          effects: [],
+        };
+        actions.set(row.action_id, action);
+      }
+      if (typeof row.effect_id === "string") {
+        (action.effects as Record<string, unknown>[]).push({
+          type: row.effect_type,
+          resources: row.effect_resources,
+          environment: row.effect_environment ?? null,
+          reversible: row.effect_reversible,
+          confidence: Number(row.effect_confidence),
+        });
+      }
+    }
+    const evidenceCount = safeInteger(first.evidence_count, "evidence_count");
+    const verifiedEvidenceCount = safeInteger(first.verified_evidence_count, "verified_evidence_count");
+    return {
+      identity,
+      context: {
+        mandate: materializeMandate(first),
+        versionDigest: first.content_digest,
+        execution: first.execution_id
+          ? {
+              finishedAt: first.execution_finished_at ? iso(first.execution_finished_at) : null,
+              monetarySpentMicroUsd: safeInteger(first.monetary_spent_micro_usd, "monetary_spent_micro_usd"),
+              tokensUsed: safeInteger(first.tokens_used, "tokens_used"),
+              actions: [...actions.values()],
+            }
+          : null,
+        evidenceSummary: {
+          records: evidenceCount,
+          independentlyVerified: verifiedEvidenceCount,
+        },
+      },
+    };
+  }
+
+  async authenticateMcpMandateContext(
+    token: string,
+    mandateId: string,
+  ): Promise<{ identity: Extract<AuthenticatedIdentity, { kind: "principal" }>; context?: Record<string, unknown> }> {
+    return this.mcpMandateContext({ kind: "token", token }, mandateId);
+  }
+
+  async getMcpMandateContext(identity: AuthenticatedIdentity, mandateId: string): Promise<Record<string, unknown>> {
+    if (identity.kind !== "principal" || identity.principalType === "service") {
+      return fail(403, "CUSTOMER_PRINCIPAL_REQUIRED", "A customer principal is required");
+    }
+    const result = await this.mcpMandateContext({ kind: "principal", principalId: identity.id }, mandateId);
+    if (!result.context) return fail(404, "MANDATE_NOT_FOUND", "Mandate was not found for this identity");
+    return result.context;
   }
 
   async getMandateContext(identity: AuthenticatedIdentity, mandateId: string): Promise<Record<string, unknown>> {
