@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Narrow keyless intermediary role for testing Alexa toolkit access
+
+Parameters:
+  OperatorRoleArn:
+    Type: String
+    AllowedPattern: ^arn:aws:iam::[0-9]{12}:role/.+$
+Resources:
+  AlexaToolkitBootstrapRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: mandate-alexa-toolkit-bootstrap
+      Description: Keyless role limited to assuming Amazon's Alexa add-on toolkit role
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Ref OperatorRoleArn
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: assume-alexa-toolkit-role
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: sts:AssumeRole
+                Resource: arn:aws:iam::372468808636:role/AddOn3PDeveloperToolsRead
+      Tags:
+        - Key: Project
+          Value: mandate
+        - Key: Purpose
+          Value: alexa-toolkit-bootstrap
+
+Outputs:
+  AlexaToolkitBootstrapRoleArn:
+    Value: !GetAtt AlexaToolkitBootstrapRole.Arn
+  AmazonToolkitRoleArn:
+    Value: arn:aws:iam::372468808636:role/AddOn3PDeveloperToolsRead

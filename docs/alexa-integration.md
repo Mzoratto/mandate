@@ -73,7 +73,23 @@ The tests prove exact protocol negotiation, bounded work preparation, minimized 
 
 ## Alexa onboarding gate
 
-The Alexa AI CLI and account registration require interactive external authentication and may require US Preview access. Once available:
+The Alexa AI CLI and account registration require interactive external authentication and may require US Preview access. A direct attempt to assume Amazon's documented `AddOn3PDeveloperToolsRead` role from the existing Identity Center administrator session was locally authorized but rejected by the Amazon account's trust policy. Before creating Amazon's recommended IAM user or any long-lived key, `infra/aws/alexa-toolkit-bootstrap-role.yaml` provides a keyless intermediary role with only `sts:AssumeRole` permission to that exact Amazon role. Deploy it only through a separate AWS authorization, then configure role chaining:
+
+```ini
+[profile mandate-alexa-bootstrap]
+role_arn = arn:aws:iam::889568839972:role/mandate-alexa-toolkit-bootstrap
+source_profile = mandate
+region = us-west-2
+
+[profile alexa-ai]
+role_arn = arn:aws:iam::372468808636:role/AddOn3PDeveloperToolsRead
+source_profile = mandate-alexa-bootstrap
+region = us-west-2
+```
+
+A successful `aws sts get-caller-identity --profile alexa-ai` must resolve account `372468808636`. If Amazon rejects the intermediary too, stop and confirm Alexa+ onboarding/trust with Amazon before considering an IAM user.
+
+Once toolkit access is available:
 
 ```bash
 alexa-ai configure
