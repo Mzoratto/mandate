@@ -13,7 +13,8 @@ The protocol/runtime path is implemented and adversarially tested. The reference
 ## Live proof
 
 - Control-plane endpoint: `https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/`
-- Authenticated dashboard: `https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/`
+- Public guided demo: `https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/`
+- Authenticated operator record: `https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/dashboard`
 - Public failing fixture: [`Mzoratto/checkout-demo`](https://github.com/Mzoratto/checkout-demo) at `888784f`
 - Merged checksum-approved output: [`checkout-demo` PR #1](https://github.com/Mzoratto/checkout-demo/pull/1) at `7cd240f`
 - Isolated Neon completion test: [run 34791128902](https://github.com/Mzoratto/mandate/actions/runs/34791128902)

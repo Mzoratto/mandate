@@ -899,3 +899,26 @@ Poll `describe-image-scan-findings`, tolerate the initial not-found response, fa
 
 ### Suggested improvement
 Treat scan registration and scan completion as separate asynchronous states in deployment tooling.
+
+## FL-039
+
+### Task
+Run an automated axe accessibility scan against the production-mode public demonstration.
+
+### Expected
+The ephemeral axe CLI to discover a compatible local Chrome installation.
+
+### Actual
+The first run could not find Chrome. Pointing it at the existing Playwright browser then failed because the CLI's ChromeDriver supported version 153 while the browser was version 151.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Install a synchronized Chrome 153 and ChromeDriver pair with `browser-driver-manager`, pass both exact paths to axe, and disable GPU rendering for the WebGL page. The final scan completed with zero detected violations.
+
+### Suggested improvement
+Accessibility CLIs should resolve or provision a browser and driver as a synchronized pair rather than discovering them independently.

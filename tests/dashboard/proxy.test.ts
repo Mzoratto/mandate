@@ -1,6 +1,6 @@
 import { Buffer } from "node:buffer";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { proxy } from "../../apps/dashboard/src/proxy.js";
+import { config, proxy } from "../../apps/dashboard/src/proxy.js";
 
 const request = (authorization?: string) => ({
   headers: new Headers(authorization ? { authorization } : {}),
@@ -8,6 +8,10 @@ const request = (authorization?: string) => ({
 
 describe("dashboard viewer authentication", () => {
   afterEach(() => vi.unstubAllEnvs());
+
+  it("keeps the public demo outside the authenticated operator route", () => {
+    expect(config.matcher).toEqual(["/dashboard/:path*"]);
+  });
 
   it("fails closed when viewer authentication is not configured", () => {
     vi.stubEnv("MANDATE_DASHBOARD_MODE", "");

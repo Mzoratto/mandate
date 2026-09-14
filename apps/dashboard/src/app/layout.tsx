@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "@fontsource-variable/inter";
 import "./globals.css";
+import "./demo.css";
 export const metadata: Metadata = {
   title: "Mandate — Mission Control",
   description:
-    "Authenticated mission control for outcome-bound agent authority.",
+    "A guided demonstration of outcome-bound authority for autonomous agents.",
 };
 export default function RootLayout({
   children,

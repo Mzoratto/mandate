@@ -28,4 +28,4 @@ export function proxy(request: NextRequest): Response {
   return next;
 }
 
-export const config = { matcher: ["/", "/dashboard/:path*"] };
+export const config = { matcher: ["/dashboard/:path*"] };

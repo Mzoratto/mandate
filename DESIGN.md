@@ -113,7 +113,7 @@ The palette is restrained graphite with state colors used as emitted light. Most
 ### Secondary
 - **Review Amber:** Human-attention review and the authority orbit around a blocked request.
 - **Blocked Red:** Denied expansion, paused execution, and the dispersed boundary portrait only.
-- **Evidence Green:** Completed steps and healthy in-scope execution.
+- **Evidence Green:** Reserved for independently verified completion records.
 
 ### Neutral
 - **Void:** The page and fixed rail ground.
@@ -148,9 +148,11 @@ The palette is restrained graphite with state colors used as emitted light. Most
 
 ## Layout
 
-Desktop uses a fixed 210px rail and a fluid main canvas with 26–32px outer padding. The first surface is a two-column 480px hero: authority statement on the left, procedural portrait on the right. Execution and attention form the next row; evidence and demo controls close the dashboard.
+The public `/` route is a guided explanatory surface. Its first viewport pairs a plain-language thesis with a six-stage authority simulator. Subsequent sections use broad ruled regions for the outcome/authority/plan distinction, enforcement gate, reference architecture, proof ledger, and honest limits. It has no dashboard rail and never inherits the authenticated shell's `main` offsets.
 
-At 1000px the hero becomes one column and the portrait receives its own 440px stage. At 600px the rail becomes a 112px fixed header, the page starts below it, authority details reflow to two columns, and every operational panel stacks without dropping information. The layout uses a dense 4/8/12/16/20/26/32px rhythm; generous space is reserved for the portrait and outcome statement rather than distributed evenly across cards.
+The authenticated `/dashboard` route uses a fixed 210px rail and a fluid main canvas with 26–32px outer padding. Its first surface is a two-column 480px hero: authority statement on the left, procedural portrait on the right. Execution and attention form the next row; evidence and demo controls close the dashboard.
+
+Below 1180px the public hero stacks; below 760px its stage controls scroll horizontally and proof regions become one column. At 1000px the authenticated hero becomes one column and the portrait receives its own 440px stage. At 600px the rail becomes a 112px fixed header. Both routes preserve every decision and evidence field rather than dropping information.
 
 **The Mechanism-First Rule.** The mandate and living authority field share the first viewport; generic metrics never lead the page.
 
@@ -184,9 +186,10 @@ Broad panels use 16px corners, the hero uses 18px, controls use 9px, and small e
 - **Padding:** 17–23px for operational panels and 47px around the desktop mandate statement.
 
 ### Navigation
-- **Desktop:** A fixed matte rail with text destinations, tiny circular markers, and one tonal selected field.
-- **Mobile:** A fixed compact brand row above a horizontal destination row; connection truth remains visible.
-- **State:** Selection is communicated by fill, text contrast, a cyan point, and `aria-current`.
+- **Public desktop:** A compact top bar links to mechanism, architecture, proof, and the authenticated operator record.
+- **Authenticated desktop:** A fixed matte rail with text destinations, tiny circular markers, and one tonal selected field.
+- **Mobile:** A compact brand row sits above horizontal destinations; the operator record remains reachable.
+- **State:** Selection is communicated by fill, text contrast, a state point, and `aria-current`.
 
 ### Particle Portrait
 
@@ -201,7 +204,7 @@ Native modal dialogs hold the execution trace and authority delta. They use Pane
 ### Do:
 - **Do** make the authority boundary and current execution state readable without interpreting the portrait color.
 - **Do** preserve the portrait's ±4° interaction limit and reduced-motion behavior.
-- **Do** present live-service state only when it comes from the authenticated server boundary; label the explicit fixture mode illustrative.
+- **Do** present live-service state only when it comes from the authenticated server boundary; label the public simulation and explicit fixture mode as non-executing or illustrative.
 - **Do** use local assets with attribution and embedded provenance.
 - **Do** let one state transition carry the motion story, then keep the console quiet.
 
@@ -212,3 +215,4 @@ Native modal dialogs hold the execution trace and authority delta. They use Pane
 - **Don't** use red for review, warning, or urgency when no authority expansion was actually blocked.
 - **Don't** add promotional eyebrows; compact uppercase labels must identify a real operational field.
 - **Don't** present fixture timestamps, approvals, evidence, or AgentOS/Alexa+ status as live.
+- **Don't** let the public guided simulation execute tools or borrow the operator credential.
