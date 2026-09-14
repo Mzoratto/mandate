@@ -1227,3 +1227,26 @@ Invoke the same CLI with `npx --yes agent-browser`, then complete desktop/mobile
 
 ### Suggested improvement
 The browser skill should either provision its executable on `PATH` or document `npx --yes agent-browser` as the portable invocation.
+
+## FL-053
+
+### Task
+Verify the independently verified evidence count in the deployed simulator's server-rendered HTML.
+
+### Expected
+A literal `2 / 3` substring to appear in the response body.
+
+### Actual
+React inserted hydration comment nodes around the interpolated text, producing `2<!-- --> / <!-- -->3`; the page and semantic browser output were correct, but the brittle raw-HTML assertion failed.
+
+### Severity
+minor
+
+### Time lost
+About one minute.
+
+### Workaround
+Confirm the individual record markers and inspect parsed text or the browser accessibility tree rather than matching presentation text across React's hydration separators.
+
+### Suggested improvement
+Deployment probes should prefer stable data attributes or semantic text extraction for server-rendered dynamic values.
