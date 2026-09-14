@@ -1,11 +1,15 @@
 "use client";
+import type { DashboardSource } from "@/lib/mandate/types";
 export default function MandateSidebar({
   active,
   onNavigate,
+  source,
 }: {
   active: string;
   onNavigate: (id: string) => void;
+  source: DashboardSource;
 }) {
+  const live = source.kind === "live" ? source.mandate : undefined;
   return (
     <aside className="sidebar">
       <a
@@ -42,12 +46,12 @@ export default function MandateSidebar({
       <div className="sidebar-footer">
         <div className="connection">
           <i className="status-dot" />
-          Demo data · offline
+          {live ? "Authenticated · live" : source.kind === "unavailable" ? "Fail closed · offline" : "Demo data · offline"}
         </div>
-        <div className="eyebrow">ALEXA+ · ILLUSTRATIVE CHANNEL</div>
+        <div className="eyebrow">{live ? "AWS · NEON CONTROL PLANE" : "ALEXA+ · ILLUSTRATIVE CHANNEL"}</div>
         <div className="alexa-ready">
           <i className="alexa-icon" />
-          Not connected
+          {live ? live.subjectRuntime : "Not connected"}
         </div>
       </div>
     </aside>

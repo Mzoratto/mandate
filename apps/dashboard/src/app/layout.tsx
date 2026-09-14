@@ -4,7 +4,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Mandate — Mission Control",
   description:
-    "An illustrative mission-control dashboard for outcome-bound agent authority.",
+    "Authenticated mission control for outcome-bound agent authority.",
 };
 export default function RootLayout({
   children,

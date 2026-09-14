@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import AuthorityMeter from "./AuthorityMeter";
 import MandateDetails from "./MandateDetails";
-import type { MandateState } from "@/lib/mandate/types";
+import type { DashboardSource, MandateState } from "@/lib/mandate/types";
 import type { HeadShaders } from "@/components/agent/shaders";
 const AgentParticleScene = dynamic(
   () => import("@/components/agent/AgentParticleScene"),
@@ -20,10 +20,13 @@ const AgentParticleScene = dynamic(
 export default function MandateHero({
   state,
   shaders,
+  source,
 }: {
   state: MandateState;
   shaders: HeadShaders;
+  source: DashboardSource;
 }) {
+  const live = source.kind === "live" ? source.mandate : undefined;
   return (
     <section
       className="hero panel"
@@ -33,22 +36,27 @@ export default function MandateHero({
       <div className="hero-copy">
         <span className="approval">
           <i className="alexa-icon" />
-          Demo approval via Alexa+
+          {live ? `Authenticated approval · ${live.principalId}` : "Demo approval via Alexa+"}
         </span>
-        <div className="mandate-id eyebrow">DEMO MANDATE #024</div>
-        <h1 id="mandate-title">
-          <span>Restore checkout</span>
-          <span>without scope creep</span>
+        <div className="mandate-id eyebrow">{live ? `MANDATE ${live.id} · ${live.status}` : "DEMO MANDATE #024"}</div>
+        <h1 id="mandate-title" className={live ? "live-title" : undefined}>
+          {live ? <span>{live.goal}</span> : <><span>Restore checkout</span><span>without scope creep</span></>}
         </h1>
         <p className="mandate-description">
-          AgentOS may inspect the repository, create an isolated worktree,
-          implement a checkout repair and run tests. Database changes,
-          production writes and external deployment are not authorized.
+          {live
+            ? `${live.subjectId} operated only in ${live.includePaths.join(" and ")}. ${live.forbiddenEffects.join(", ")} remained forbidden.`
+            : "AgentOS may inspect the repository, create an isolated worktree, implement a checkout repair and run tests. Database changes, production writes and external deployment are not authorized."}
         </p>
-        <AuthorityMeter state={state} />
-        <MandateDetails />
+        <AuthorityMeter state={state} live={Boolean(live)} actionCount={live?.execution?.actions.length ?? 0} />
+        <MandateDetails mandate={live} />
       </div>
-      <AgentParticleScene state={state} shaders={shaders} />
+      <AgentParticleScene
+        state={state}
+        shaders={shaders}
+        agentLabel={live ? `${live.subjectRuntime} · LIVE RECORD` : undefined}
+        agentStatus={live?.status}
+        step={live?.status === "COMPLETED" ? "Outcome evidence verified" : undefined}
+      />
     </section>
   );
 }

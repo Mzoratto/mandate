@@ -4,11 +4,11 @@
 
 Mandate lets a human delegate an outcome to an agent inside a machine-readable authority envelope. The agent may change its plan, but it may not expand its authority without explicit approval.
 
-Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md). The current architecture and explicit security gaps are documented in [`docs/architecture.md`](docs/architecture.md) and [`docs/security-model.md`](docs/security-model.md); authenticated API routes are in [`docs/control-plane-api.md`](docs/control-plane-api.md), and the live AWS boundary is in [`docs/aws-deployment.md`](docs/aws-deployment.md).
+Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md). The current architecture and explicit security gaps are documented in [`docs/architecture.md`](docs/architecture.md) and [`docs/security-model.md`](docs/security-model.md); authenticated API routes are in [`docs/control-plane-api.md`](docs/control-plane-api.md), the live AWS boundary is in [`docs/aws-deployment.md`](docs/aws-deployment.md), and the server-only dashboard data boundary is in [`docs/dashboard-live-data.md`](docs/dashboard-live-data.md).
 
 ## Current status
 
-The protocol/runtime path is implemented and adversarially tested. The reference dashboard and authenticated transactional control-plane API are implemented. Migration 0002 is active on Neon, and the fail-closed API is live on AWS Lambda with CloudWatch request correlation. A checksum-approved AgentOS checkout rehearsal completed through the deployed control plane with action-bound trace evidence, independently authenticated test/review evidence, and an intact 16-event ledger. General autonomous AgentOS, Alexa+, and AgentCore enforcement remain fail-closed until their broader interception and identity boundaries are configured.
+The protocol/runtime path is implemented and adversarially tested. The reference dashboard now supports fail-closed, server-authenticated live records, and the transactional control-plane API is implemented. Migration 0002 is active on Neon, and the fail-closed API is live on AWS Lambda with CloudWatch request correlation. A checksum-approved AgentOS checkout rehearsal completed through the deployed control plane with action-bound trace evidence, independently authenticated test/review evidence, and an intact 16-event ledger. General autonomous AgentOS, Alexa+, and AgentCore enforcement remain fail-closed until their broader interception and identity boundaries are configured.
 
 ## Live proof
 

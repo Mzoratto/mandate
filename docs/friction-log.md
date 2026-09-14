@@ -646,3 +646,72 @@ Execute all completion-state reads serially on the locked transaction client. Qu
 
 ### Suggested improvement
 Treat one `PoolClient` as a serial resource and reserve `Promise.all` for independent pool acquisitions.
+
+## FL-028
+
+### Task
+Start the filtered dashboard workspace on a non-default port for live browser verification.
+
+### Expected
+A separator before `--port` to forward the option to Next.js.
+
+### Actual
+`pnpm --filter @mandate/dashboard dev -- --port 3010` preserved the extra separator, so Next.js interpreted `--port` as a project directory.
+
+### Severity
+minor
+
+### Time lost
+Less than a minute.
+
+### Workaround
+Use `pnpm --filter @mandate/dashboard dev --port 3010`.
+
+### Suggested improvement
+Document the workspace-filter argument-forwarding form beside the development command.
+
+## FL-029
+
+### Task
+Verify production dashboard response headers and credential non-disclosure.
+
+### Expected
+The selected local port to serve the new Mandate dashboard.
+
+### Actual
+Port 3012 was already occupied by an unrelated Next.js application. The new server failed with `EADDRINUSE`, while the first probe reached that unrelated app and returned misleading cache headers.
+
+### Severity
+minor
+
+### Time lost
+About one minute.
+
+### Workaround
+Check the listener and launched process before accepting an HTTP response, then repeat on unused port 31987. The actual dashboard returned `private, no-store`, the expected security headers, authenticated Mandate content, and no control-plane credential.
+
+### Suggested improvement
+Make local verification choose an unused port and assert both process health and a product-specific response marker.
+
+## FL-030
+
+### Task
+Exercise the Next.js server loader and proxy from the root Vitest suite.
+
+### Expected
+Mocking `next/server` and importing `NextRequest` from a root-level test to resolve through the dashboard workspace.
+
+### Actual
+The `connection()` mock did not replace Next.js's resolved request-scope implementation, and the root workspace does not directly expose the dashboard's `next/server` dependency.
+
+### Severity
+minor
+
+### Time lost
+About three minutes.
+
+### Workaround
+Keep the request-scope wrapper thin, test an exported framework-independent fetch boundary, and pass a structural request object to the proxy test instead of importing a dashboard-private dependency.
+
+### Suggested improvement
+Preserve narrow framework seams for root integration tests and avoid depending on transitive workspace package resolution.

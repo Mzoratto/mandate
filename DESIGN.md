@@ -201,7 +201,7 @@ Native modal dialogs hold the execution trace and authority delta. They use Pane
 ### Do:
 - **Do** make the authority boundary and current execution state readable without interpreting the portrait color.
 - **Do** preserve the portrait's ±4° interaction limit and reduced-motion behavior.
-- **Do** keep every live-service claim explicitly offline or illustrative until authenticated evidence exists.
+- **Do** present live-service state only when it comes from the authenticated server boundary; label the explicit fixture mode illustrative.
 - **Do** use local assets with attribution and embedded provenance.
 - **Do** let one state transition carry the motion story, then keep the console quiet.
 

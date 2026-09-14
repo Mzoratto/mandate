@@ -332,6 +332,14 @@ h1 span {
   display: block;
   white-space: nowrap;
 }
+h1.live-title {
+  font-size: clamp(36px, 3.1vw, 50px);
+  max-width: 680px;
+}
+h1.live-title span {
+  white-space: normal;
+  text-wrap: balance;
+}
 .mandate-description {
   font-size: 14px;
   line-height: 1.5;
@@ -414,6 +422,11 @@ h1 span {
   font-size: 9px;
   color: #77838e;
   white-space: nowrap;
+}
+.mandate-details.live-details dd,
+.mandate-details.live-details small {
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .agent-scene {
   position: relative;
@@ -752,6 +765,24 @@ h2 {
 .demo-panel p {
   margin-top: 7px;
 }
+.live-record-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  border-top: 1px solid var(--divider);
+  margin-top: 12px;
+  padding-top: 10px;
+}
+.live-record-meta dt {
+  font-size: 7px;
+  letter-spacing: 0.14em;
+}
+.live-record-meta dd {
+  color: #aab5be;
+  font: 8px/1.35 monospace;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
 .segmented-control {
   display: flex;
   border: 1px solid var(--border);
@@ -838,9 +869,17 @@ dialog::backdrop {
   font-size: 25px;
 }
 .dialog-heading button {
+  display: grid;
   height: 29px;
   width: 29px;
-  font-size: 21px;
+  place-items: center;
+}
+.dialog-heading button svg {
+  width: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 1.5;
 }
 dialog > p {
   font-size: 13px;

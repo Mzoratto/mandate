@@ -28,6 +28,21 @@ export const PARTICLE_STATE = {
     rotationResponse: 0.09,
   },
 } as const;
+export function stateForStatus(status: string): MandateState {
+  if (["SUSPENDED", "REVOKED", "EXPIRED", "REJECTED"].includes(status)) return "boundary";
+  if (["DRAFT", "PROPOSED", "AWAITING_APPROVAL", "AMENDMENT_PENDING"].includes(status)) return "attention";
+  return "within";
+}
+
+export function titleCase(value: string): string {
+  return value.toLowerCase().replaceAll("_", " ").replace(/(^|\s)\S/g, (letter) => letter.toUpperCase());
+}
+
+export function clockTime(value?: string): string {
+  if (!value) return "—";
+  return new Intl.DateTimeFormat("en", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date(value));
+}
+
 export const MANDATE_STATE: Record<
   MandateState,
   {

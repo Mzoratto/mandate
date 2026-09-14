@@ -59,7 +59,9 @@ Unlike plan-bound intent authorization, Mandate permits execution-strategy chang
 - Normative semantics: `docs/protocol-v0.1.md`.
 - Canonical protocol fixtures: `tests/fixtures/protocol-v0.1/`.
 - Local conformance, lifecycle, delegation, amendment, evidence, and adversarial tests.
-- No real Alexa+, AgentCore, CloudWatch, Neon, or live AgentOS execution evidence exists yet. Future interfaces must not present fixture data as live evidence.
+- The authenticated control plane is live on AWS Lambda with Neon persistence and CloudWatch request correlation.
+- A deterministic AgentOS checkout rehearsal completed through separate Mandate and checksum-bound human gates, with independently authenticated test/review evidence and a merged output PR.
+- Alexa+ and AgentCore remain unconfigured; interfaces must not imply those integrations are live.
 
 ## Product Principles
 
@@ -75,4 +77,4 @@ Authority decisions must work beyond voice alone. Material amendments require a 
 
 ## Open Decisions
 
-The authenticated control-plane data contract and final Alexa+ interaction surface remain open. The dashboard visual system is approved; fixture states must remain explicitly illustrative until those integrations exist.
+The final Alexa+ interaction surface, broad AgentOS interception boundary, and AgentCore policy integration remain open. The dashboard visual system is approved; live records require authenticated server retrieval, while fixture states remain available only in explicitly illustrative mode.

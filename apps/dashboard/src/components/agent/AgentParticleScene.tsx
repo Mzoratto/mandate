@@ -37,9 +37,15 @@ class SceneBoundary extends Component<
 export default function AgentParticleScene({
   state,
   shaders,
+  agentLabel,
+  agentStatus,
+  step,
 }: {
   state: MandateState;
   shaders: HeadShaders;
+  agentLabel?: string;
+  agentStatus?: string;
+  step?: string;
 }) {
   const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
@@ -55,7 +61,7 @@ export default function AgentParticleScene({
       title="Drag or use arrow keys for a gentle turn (up to 4° each side). Home centers the view."
       tabIndex={0}
       role="img"
-      aria-label={`Interactive 3D particle portrait. Drag or use arrow keys for a gentle turn, limited to four degrees each side; Home centers the view. AgentOS ${MANDATE_STATE[state].agent.toLowerCase()}.`}
+      aria-label={`Interactive 3D particle portrait. Drag or use arrow keys for a gentle turn, limited to four degrees each side; Home centers the view. AgentOS ${(agentStatus ?? MANDATE_STATE[state].agent).toLowerCase()}.`}
     >
       <HudRings />
       {state === "boundary" && (
@@ -122,16 +128,14 @@ export default function AgentParticleScene({
       <div className="agent-label">
         <span className="status-dot" />
         <div>
-          <div className="eyebrow">AGENTOS · DEMO</div>
-          <strong>{MANDATE_STATE[state].agent}</strong>
+          <div className="eyebrow">{agentLabel ?? "AGENTOS · DEMO"}</div>
+          <strong>{agentStatus ?? MANDATE_STATE[state].agent}</strong>
         </div>
       </div>
       <div className="agent-step">
         <div className="eyebrow">CURRENT STEP</div>
         <span>
-          {state === "boundary"
-            ? "Await Mandate amendment"
-            : "Run verification suite"}
+          {step ?? (state === "boundary" ? "Await Mandate amendment" : "Run verification suite")}
         </span>
       </div>
       <span className="particle-count">6,891 PARTICLES</span>

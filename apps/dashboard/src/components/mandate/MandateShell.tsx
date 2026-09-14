@@ -8,157 +8,95 @@ import ExecutionTimeline from "./ExecutionTimeline";
 import HumanAttention from "./HumanAttention";
 import EvidencePanel from "./EvidencePanel";
 import DemoStateControl from "./DemoStateControl";
-import { PARTICLE_STATE } from "@/lib/mandate/state";
-import type { MandateState } from "@/lib/mandate/types";
+import LiveRecordPanel from "./LiveRecordPanel";
+import { clockTime, PARTICLE_STATE, stateForStatus, titleCase } from "@/lib/mandate/state";
+import type { DashboardSource, MandateState } from "@/lib/mandate/types";
 import type { HeadShaders } from "@/components/agent/shaders";
-export default function MandateShell({ shaders }: { shaders: HeadShaders }) {
-  const [state, setState] = useState<MandateState>("within"),
-    [active, setActive] = useState("control"),
-    [modal, setModal] = useState<"audit" | "amendment" | null>(null);
+
+export default function MandateShell({ shaders, source }: { shaders: HeadShaders; source: DashboardSource }) {
+  const live = source.kind === "live" ? source.mandate : undefined;
+  const [demoState, setDemoState] = useState<MandateState>("within");
+  const state = live ? stateForStatus(live.status) : source.kind === "unavailable" ? "attention" : demoState;
+  const [active, setActive] = useState("control");
+  const [modal, setModal] = useState<"audit" | "amendment" | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (modal && !dialog.current?.open) dialog.current?.showModal();
     else if (!modal && dialog.current?.open) dialog.current.close();
   }, [modal]);
+  const shellStyle = {
+    "--state-color": PARTICLE_STATE[state].primary,
+    "--state-secondary": PARTICLE_STATE[state].secondary,
+  } as CSSProperties;
+
+  if (source.kind === "unavailable") {
+    return (
+      <div className="mandate-shell state-attention" style={shellStyle}>
+        <MandateSidebar active={active} onNavigate={setActive} source={source} />
+        <main id="control">
+          <MissionHeader onAudit={() => undefined} source={source} />
+          <section className="hero panel" aria-labelledby="unavailable-title">
+            <div className="hero-copy">
+              <div className="eyebrow">FAIL-CLOSED DATA BOUNDARY</div>
+              <h1 id="unavailable-title"><span>Authority records unavailable</span></h1>
+              <p className="mandate-description">Mission control will not substitute illustrative records when live authentication, configuration, or response validation fails.</p>
+            </div>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
+  const auditEvents = live?.events.slice(-6) ?? [];
   return (
-    <div
-      className={`mandate-shell state-${state}`}
-      style={
-        {
-          "--state-color": PARTICLE_STATE[state].primary,
-          "--state-secondary": PARTICLE_STATE[state].secondary,
-        } as CSSProperties
-      }
-    >
-      <MandateSidebar active={active} onNavigate={setActive} />
+    <div className={`mandate-shell state-${state}`} style={shellStyle}>
+      <MandateSidebar active={active} onNavigate={setActive} source={source} />
       <main id="control">
-        <MissionHeader onAudit={() => setModal("audit")} />
-        <MandateHero state={state} shaders={shaders} />
+        <MissionHeader onAudit={() => setModal("audit")} source={source} />
+        <MandateHero state={state} shaders={shaders} source={source} />
         <div className="execution-grid">
-          <ExecutionTimeline state={state} />
-          <HumanAttention
-            state={state}
-            onReview={() => setModal("amendment")}
-          />
+          <ExecutionTimeline state={state} mandate={live} />
+          <HumanAttention state={state} mandate={live} onReview={() => setModal("amendment")} />
         </div>
         <div className="evidence-grid">
-          <EvidencePanel state={state} onAudit={() => setModal("audit")} />
-          <DemoStateControl state={state} onChange={setState} />
+          <EvidencePanel state={state} mandate={live} onAudit={() => setModal("audit")} />
+          {live ? <LiveRecordPanel mandate={live} /> : <DemoStateControl state={state} onChange={setDemoState} />}
         </div>
         <EvidenceTrails enabled={state === "within"} />
       </main>
-      <dialog
-        ref={dialog}
-        onCancel={() => setModal(null)}
-        onClose={() => setModal(null)}
-        onClick={(e) => {
-          if (e.target === dialog.current) setModal(null);
-        }}
-        aria-labelledby="dialog-title"
-      >
+      <dialog ref={dialog} onCancel={() => setModal(null)} onClose={() => setModal(null)} onClick={(event) => { if (event.target === dialog.current) setModal(null); }} aria-labelledby="dialog-title">
         <div className="dialog-heading">
           <div>
-            <div className="eyebrow">MANDATE #024 · DEMO RECORD</div>
-            <h2 id="dialog-title">
-              {modal === "amendment"
-                ? "Review authority request"
-                : "Execution audit"}
-            </h2>
+            <div className="eyebrow">{live ? `${live.id} · AUTHENTICATED RECORD` : "MANDATE #024 · DEMO RECORD"}</div>
+            <h2 id="dialog-title">{modal === "amendment" ? "Review authority request" : "Execution audit"}</h2>
           </div>
           <button aria-label="Close dialog" onClick={() => setModal(null)}>
-            ×
+            <svg aria-hidden="true" viewBox="0 0 16 16"><path d="M3 3l10 10M13 3L3 13" /></svg>
           </button>
         </div>
         {modal === "amendment" ? (
           <>
-            <p>
-              AgentOS requested permission to change the checkout database
-              schema. The approved Mandate permits repository-local code and
-              tests only.
-            </p>
-            <dl className="request-details">
-              <div>
-                <dt>Requested action</dt>
-                <dd>Checkout database schema change</dd>
-              </div>
-              <div>
-                <dt>Current authority</dt>
-                <dd>Repository-local code + test</dd>
-              </div>
-              <div>
-                <dt>Decision</dt>
-                <dd className="boundary-text">
-                  Blocked · amendment not approved
-                </dd>
-              </div>
-            </dl>
-            <p className="dialog-note">
-              This is a demonstration. No database or external action is
-              performed. Rejecting expansion preserves the existing envelope.
-            </p>
-            <button className="dialog-action" onClick={() => setModal(null)}>
-              Reject expansion · keep authority
-            </button>
+            <p>{live ? "This record contains no approved authority expansion. A new immutable version would require a separate principal decision." : "AgentOS requested permission to change the checkout database schema. The approved Mandate permits repository-local code and tests only."}</p>
+            <p className="dialog-note">No external action is performed. Rejecting expansion preserves the existing envelope.</p>
+            <button className="dialog-action" onClick={() => setModal(null)}>Keep existing authority</button>
           </>
         ) : (
           <>
-            <p>
-              Illustrative evidence for the checkout-repair run. All actions
-              remain scoped to the approved repository.
-            </p>
+            <p>{live ? `Ordered events returned by the authenticated control plane. Request ${live.requestId}.` : "Illustrative evidence for the checkout-repair run. All actions remain scoped to the approved repository."}</p>
             <ol className="audit-list">
-              {[
-                [
-                  "14:12:00",
-                  "Mandate approved",
-                  "Demo principal · Alexa+ fixture · repository-local authority",
-                ],
-                [
-                  "14:14:12",
-                  "Repository inspected",
-                  "Working state captured before changes",
-                ],
-                [
-                  "14:16:03",
-                  "Isolated worktree created",
-                  "mandate/024-checkout · no external writes",
-                ],
-                [
-                  "14:24:41",
-                  "Independent review passed",
-                  "3 files changed · 0 high-severity findings",
-                ],
-                [
-                  "now",
-                  state === "boundary"
-                    ? "Boundary enforced"
-                    : "Verification in progress",
-                  state === "boundary"
-                    ? "Database schema change blocked. AgentOS paused."
-                    : "182 of 214 deterministic checks complete.",
-                ],
-              ].map(([time, title, detail]) => (
-                <li key={title}>
-                  <time>{time}</time>
-                  <div>
-                    <strong>{title}</strong>
-                    <small>{detail}</small>
-                  </div>
-                </li>
+              {(live ? auditEvents.map((event) => [clockTime(event.timestamp), titleCase(event.type), event.actor]) : [
+                ["14:12:00", "Mandate approved", "Demo principal · Alexa+ fixture"],
+                ["14:14:12", "Repository inspected", "Working state captured before changes"],
+                ["14:16:03", "Isolated worktree created", "mandate/024-checkout · no external writes"],
+                ["14:24:41", "Independent review passed", "0 high-severity findings"],
+                ["now", state === "boundary" ? "Boundary enforced" : "Verification in progress", state === "boundary" ? "Database schema change blocked" : "182 of 214 checks complete"],
+              ]).map(([time, title, detail], index) => (
+                <li key={`${title}-${index}`}><time>{time}</time><div><strong>{title}</strong><small>{detail}</small></div></li>
               ))}
             </ol>
             <p className="dialog-note">
-              Demo evidence · no live repository is connected.
-              <br />
-              Particle portrait combines the supplied reference with a CC0
-              MakeHuman head.{" "}
-              <a
-                href="/models/ATTRIBUTION.txt"
-                target="_blank"
-                rel="noreferrer"
-              >
-                CC BY 3.0 · credits
-              </a>
+              {live ? "Live record · credentials remain server-side · responses are not cached." : "Demo evidence · no live repository is connected."}<br />
+              Particle portrait combines the supplied reference with a CC0 MakeHuman head. <a href="/models/ATTRIBUTION.txt" target="_blank" rel="noreferrer">CC BY 3.0 · credits</a>
             </p>
           </>
         )}
