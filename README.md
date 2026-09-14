@@ -18,7 +18,7 @@ The protocol/runtime path is implemented and adversarially tested. The reference
 - Merged checksum-approved output: [`checkout-demo` PR #1](https://github.com/Mzoratto/checkout-demo/pull/1) at `7cd240f`
 - Isolated Neon completion test: [run 34791128902](https://github.com/Mzoratto/mandate/actions/runs/34791128902)
 - Control-plane deployment verification: [run 34791192125](https://github.com/Mzoratto/mandate/actions/runs/34791192125)
-- Dashboard deployment verification: [run 34812140220](https://github.com/Mzoratto/mandate/actions/runs/34812140220)
+- Dashboard deployment verification: [run 34813074224](https://github.com/Mzoratto/mandate/actions/runs/34813074224)
 - AgentOS accounting-order fix: [PR #118](https://github.com/Mzoratto/AgentOS/pull/118)
 
 The control-plane endpoint grants no authority without an identity-bound credential, and the dashboard requires a separate viewer credential while keeping its control-plane bearer server-only. Verification artifacts remain private, encrypted, versioned, and object-locked in AWS.

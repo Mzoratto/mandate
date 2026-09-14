@@ -41,4 +41,4 @@ The public URL grants no record access by itself: unauthenticated requests recei
 
 The protected `aws-dashboard-deploy.yml` workflow can publish an immutable commit-tagged image and update only `mandate-dashboard` through the scoped GitHub OIDC role. Runtime credentials are provisioned separately as CloudFormation `NoEcho` parameters and are not passed to that workflow. The protected image-deployment path is nevertheless trusted because deployed server code can access its runtime environment.
 
-The production endpoint has been browser-verified on desktop and mobile against `M-checkout-live-003`. Responses are private and non-cacheable, and the returned HTML contains no control-plane credential.
+The production endpoint has been browser-verified on desktop and mobile against `M-checkout-live-003`. Responses are private and non-cacheable, the returned HTML contains no control-plane credential, and the deployed image's ECR scan completed with no findings.
