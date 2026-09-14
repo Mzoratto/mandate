@@ -40,7 +40,7 @@ export function titleCase(value: string): string {
 
 export function clockTime(value?: string): string {
   if (!value) return "—";
-  return new Intl.DateTimeFormat("en", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date(value));
+  return new Date(value).toISOString().slice(11, 19);
 }
 
 export const MANDATE_STATE: Record<

@@ -1,11 +1,12 @@
 # AWS control-plane deployment
 
-The authenticated control plane is deployed in `us-east-1` as a Node.js 22 Lambda behind an API Gateway HTTP API. The public URL grants no authority: `/v1/*` still requires a high-entropy Mandate bearer credential, resolves identity from Lakebase Postgres, and fails closed before repository operations when authentication is absent or invalid.
+The authenticated control plane and mission-control dashboard are deployed in `us-east-1` behind separate API Gateway HTTP APIs. Their public URLs grant no authority: `/v1/*` requires a high-entropy Mandate bearer credential, while the dashboard requires a separate viewer credential and keeps its control-plane bearer server-only.
 
-Current endpoint:
+Current endpoints:
 
 ```text
-https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/
+Control plane: https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/
+Dashboard:     https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/
 ```
 
 ## Resources
@@ -20,6 +21,8 @@ https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/
 
 The Lambda runs outside a VPC so it can reach Neon over TLS. Its PostgreSQL pool is capped at two connections per warm execution environment. `DATABASE_URL` is injected as a CloudFormation `NoEcho` parameter by the protected deployment workflow; it is never committed or printed.
 
+`infra/aws/dashboard-registry.yaml` owns the immutable, encrypted, scan-on-push `mandate-dashboard` ECR repository. `infra/aws/dashboard.yaml` owns a Node.js 24 standalone Next.js image Lambda, a 14-day log group, and a separate HTTP API with a 25 request/second rate and burst limit of 50. The image uses digest-pinned Node and AWS Lambda Web Adapter bases; there is no direct Function URL. See [`dashboard-live-data.md`](dashboard-live-data.md) for its identity and data boundary.
+
 `infra/aws/github-deploy-role.yaml` bootstraps `mandate-github-control-plane-deploy`. Its trust policy requires:
 
 - GitHub's OIDC provider;
@@ -27,7 +30,7 @@ The Lambda runs outside a VPC so it can reach Neon over TLS. Its PostgreSQL pool
 - the exact immutable owner/repository IDs; and
 - the `Production` GitHub environment.
 
-Its permissions are scoped to the Mandate artifact bucket, control-plane stack, Lambda, execution role, and log group. It cannot deploy arbitrary named functions or roles.
+Its permissions are scoped to the Mandate artifact bucket, control-plane stack, named Lambdas and roles, and the dashboard ECR repository. Dashboard CI can update only the named function's image code and inspect deployment status; it cannot mutate function configuration or deploy arbitrary functions and roles. Image deployment remains a high-trust boundary because deployed server code can access runtime credentials.
 
 ## Deployment
 
@@ -40,6 +43,14 @@ gh workflow run aws-control-plane-deploy.yml --ref main -f confirm=DEPLOY
 It resolves the default Neon branch from the existing protected `NEON_API_KEY`, builds a single CommonJS Lambda artifact, uploads it to the private encrypted artifact bucket under the Git commit SHA, deploys CloudFormation, and verifies both public health and unauthenticated rejection.
 
 The first successful Lambda deployment is [workflow run 34787693288](https://github.com/Mzoratto/mandate/actions/runs/34787693288). The direct Function URL was then removed and the rate-limited HTTP API verified in [workflow run 34787920994](https://github.com/Mzoratto/mandate/actions/runs/34787920994). Authenticated verifier completion passed on an isolated Neon branch in [run 34791128902](https://github.com/Mzoratto/mandate/actions/runs/34791128902) and the corresponding Lambda plus Node.js 24 OIDC action was verified in [run 34791192125](https://github.com/Mzoratto/mandate/actions/runs/34791192125).
+
+Dashboard code deployment is independently manual and confirmation-gated:
+
+```bash
+gh workflow run aws-dashboard-deploy.yml --ref main -f confirm=DEPLOY
+```
+
+The workflow builds an amd64 single-manifest image, pushes it under the immutable commit SHA, updates only `mandate-dashboard`, and verifies that the public origin still rejects unauthenticated requests.
 
 ## Verification artifacts
 
@@ -57,4 +68,4 @@ This rehearsal proves the deployed path without implying that arbitrary Codex to
 
 ## Remaining production work
 
-The HTTP API has a global stage throttle but not per-client quotas or WAF rules. Before broader traffic, add those controls, rotate the temporary administrator bootstrap assignment into a narrower operator role, separate Neon migration and append-only application roles, and connect AgentCore policy enforcement. The dashboard remains explicitly offline until it consumes authenticated server-side records.
+The HTTP APIs have global stage throttles but not per-client quotas or WAF rules. Before broader traffic, add those controls, rotate the temporary administrator bootstrap assignment into a narrower operator role, separate Neon migration and append-only application roles, and connect AgentCore policy enforcement. Replace the dashboard's narrow Basic viewer boundary with principal OIDC sessions before multi-user access.

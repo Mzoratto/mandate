@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Immutable container registry for the Mandate dashboard
+
+Resources:
+  DashboardRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: mandate-dashboard
+      EncryptionConfiguration:
+        EncryptionType: AES256
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: IMMUTABLE
+      LifecyclePolicy:
+        LifecyclePolicyText: |
+          {
+            "rules": [{
+              "rulePriority": 1,
+              "description": "Retain the ten newest dashboard images",
+              "selection": {"tagStatus": "any", "countType": "imageCountMoreThan", "countNumber": 10},
+              "action": {"type": "expire"}
+            }]
+          }
+      RepositoryPolicyText:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: LambdaImageAccess
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - ecr:BatchGetImage
+              - ecr:GetDownloadUrlForLayer
+            Condition:
+              StringLike:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:mandate-dashboard
+
+Outputs:
+  RepositoryUri:
+    Value: !GetAtt DashboardRepository.RepositoryUri

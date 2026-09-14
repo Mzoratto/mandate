@@ -28,7 +28,7 @@ Packages remain runtime-neutral:
 | `@mandate/testing` | In-memory end-to-end governance harness; not production enforcement |
 | `@mandate/adapter-agentos` | Runtime-neutral bridge contract and fail-closed AgentOS capability gate |
 | `@mandate/api` | Authenticated Web request handler, transactional Lakebase Postgres repository, migrations, and schema verification |
-| `@mandate/dashboard` | Responsive illustrative authority console and amendment-review flow |
+| `@mandate/dashboard` | Responsive authenticated authority console with an explicit illustrative boundary-demo mode |
 
 ## Enforcement path
 

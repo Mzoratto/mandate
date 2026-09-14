@@ -715,3 +715,118 @@ Keep the request-scope wrapper thin, test an exported framework-independent fetc
 
 ### Suggested improvement
 Preserve narrow framework seams for root integration tests and avoid depending on transitive workspace package resolution.
+
+## FL-031
+
+### Task
+Create the immutable dashboard ECR repository through CloudFormation.
+
+### Expected
+`validate-template` to catch malformed embedded lifecycle-policy JSON before stack creation.
+
+### Actual
+The YAML was valid but the lifecycle-policy string was missing its final `}`. ECR rejected the resource, and the new stack entered `ROLLBACK_COMPLETE`, which cannot be updated.
+
+### Severity
+minor
+
+### Time lost
+About three minutes.
+
+### Workaround
+Close the JSON object, delete the rolled-back stack, and recreate it. The repository then reached `CREATE_COMPLETE`.
+
+### Suggested improvement
+Parse embedded JSON documents separately in CI instead of relying only on CloudFormation template validation.
+
+## FL-032
+
+### Task
+Bound dashboard Lambda cost with two reserved concurrent executions.
+
+### Expected
+The account to permit a reservation of two.
+
+### Actual
+Lambda rejected the reservation because it would reduce the account's unreserved concurrency below the required minimum of ten.
+
+### Severity
+minor
+
+### Time lost
+About three minutes.
+
+### Workaround
+Remove reserved concurrency and retain the API Gateway stage throttle. The stack then created successfully.
+
+### Suggested improvement
+Check account concurrency quotas before declaring a reservation in environment-specific infrastructure.
+
+## FL-033
+
+### Task
+Wait for a failed create stack to finish rolling back before deletion.
+
+### Expected
+`aws cloudformation wait stack-rollback-complete` to accept the create failure's `ROLLBACK_COMPLETE` state.
+
+### Actual
+The waiter did not terminate and consumed the full 20-minute command timeout even though the stack had already reached `ROLLBACK_COMPLETE`.
+
+### Severity
+minor
+
+### Time lost
+Twenty minutes.
+
+### Workaround
+Inspect `StackStatus` directly, then call `delete-stack` and `wait stack-delete-complete`.
+
+### Suggested improvement
+Use an explicit status poll for create rollback rather than the update-oriented rollback waiter.
+
+## FL-034
+
+### Task
+Publish a Lambda-compatible amd64 container image.
+
+### Expected
+A single-platform Docker build to push a single image manifest.
+
+### Actual
+BuildKit attached provenance and pushed an OCI image index even with `--platform linux/amd64`. Lambda container deployments require a single-architecture manifest.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Rebuild with `--provenance=false`; ECR then reported `application/vnd.oci.image.manifest.v1+json`.
+
+### Suggested improvement
+Assert ECR `imageManifestMediaType` before updating Lambda and keep provenance disabled for this deployment target.
+
+## FL-035
+
+### Task
+Verify the live dashboard in a browser after moving the server from the local timezone to AWS Lambda UTC.
+
+### Expected
+Server and browser text to hydrate identically.
+
+### Actual
+React reported minified error `#418` because `Intl.DateTimeFormat` rendered event times in the server timezone while the browser rendered the same timestamps in the operator timezone.
+
+### Severity
+medium
+
+### Time lost
+About five minutes.
+
+### Workaround
+Format the validated ISO timestamp as an explicit UTC clock value with `toISOString()`. A regression test now fixes the expected output independently of host timezone.
+
+### Suggested improvement
+Never use an implicit host timezone for server-rendered text; choose a fixed timezone or defer localized formatting until after hydration.

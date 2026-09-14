@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Mandate authenticated Next.js dashboard behind a throttled HTTP API
+
+Parameters:
+  ImageUri:
+    Type: String
+  ControlPlaneUrl:
+    Type: String
+    AllowedPattern: "^https://[^?#]+/$"
+  DashboardCredential:
+    Type: String
+    NoEcho: true
+  ViewerCredential:
+    Type: String
+    NoEcho: true
+  MandateId:
+    Type: String
+    Default: M-checkout-live-003
+
+Resources:
+  FunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: mandate-dashboard-lambda-us-east-1
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  Function:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: mandate-dashboard
+      Description: Authenticated mission control for outcome-bound agent authority
+      PackageType: Image
+      Architectures: [x86_64]
+      Role: !GetAtt FunctionRole.Arn
+      Timeout: 30
+      MemorySize: 1536
+      Code:
+        ImageUri: !Ref ImageUri
+      Environment:
+        Variables:
+          MANDATE_CONTROL_PLANE_URL: !Ref ControlPlaneUrl
+          MANDATE_DASHBOARD_CREDENTIAL: !Ref DashboardCredential
+          MANDATE_DASHBOARD_MANDATE_ID: !Ref MandateId
+          MANDATE_DASHBOARD_BASIC_CREDENTIAL: !Ref ViewerCredential
+
+  FunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Function}
+      RetentionInDays: 14
+
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: mandate-dashboard
+      ProtocolType: HTTP
+      DisableExecuteApiEndpoint: false
+
+  HttpApiIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt Function.Arn
+      PayloadFormatVersion: "2.0"
+
+  HttpApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: $default
+      Target: !Sub integrations/${HttpApiIntegration}
+
+  HttpApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref HttpApi
+      StageName: $default
+      AutoDeploy: true
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 50
+        ThrottlingRateLimit: 25
+
+  HttpApiPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref Function
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${HttpApi}/*
+
+Outputs:
+  DashboardUrl:
+    Description: HTTPS origin for authenticated Mandate mission control
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/
+  LogGroup:
+    Value: !Ref FunctionLogGroup

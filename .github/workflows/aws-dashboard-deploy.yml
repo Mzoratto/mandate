@@ -1,0 +1,79 @@
+name: AWS dashboard deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type DEPLOY to update the production dashboard
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: aws-dashboard-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'DEPLOY'
+    environment: Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      AWS_REGION: us-east-1
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5, Node.js 24
+
+      - name: Configure scoped AWS credentials
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          role-session-name: mandate-dashboard-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: image
+        name: Resolve immutable image
+        run: |
+          account_id="$(aws sts get-caller-identity --query Account --output text)"
+          repository_uri="${account_id}.dkr.ecr.${AWS_REGION}.amazonaws.com/mandate-dashboard"
+          if aws ecr describe-images --repository-name mandate-dashboard --image-ids "imageTag=${GITHUB_SHA}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "repository_uri=$repository_uri" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push dashboard image
+        if: steps.image.outputs.exists != 'true'
+        env:
+          REPOSITORY_URI: ${{ steps.image.outputs.repository_uri }}
+        run: |
+          aws ecr get-login-password | docker login --username AWS --password-stdin "${REPOSITORY_URI%/*}"
+          docker build --platform linux/amd64 --provenance=false -f apps/dashboard/Dockerfile -t "${REPOSITORY_URI}:${GITHUB_SHA}" .
+          docker push "${REPOSITORY_URI}:${GITHUB_SHA}"
+
+      - name: Deploy dashboard image
+        env:
+          REPOSITORY_URI: ${{ steps.image.outputs.repository_uri }}
+        run: |
+          digest="$(aws ecr describe-images \
+            --repository-name mandate-dashboard \
+            --image-ids "imageTag=${GITHUB_SHA}" \
+            --query 'imageDetails[0].imageDigest' \
+            --output text)"
+          aws lambda update-function-code \
+            --function-name mandate-dashboard \
+            --image-uri "${REPOSITORY_URI}@${digest}" >/dev/null
+          aws lambda wait function-updated-v2 --function-name mandate-dashboard
+
+      - name: Verify authentication boundary
+        run: |
+          url="$(aws cloudformation describe-stacks \
+            --stack-name mandate-dashboard \
+            --query 'Stacks[0].Outputs[?OutputKey==`DashboardUrl`].OutputValue' \
+            --output text)"
+          status="$(curl --silent --output /dev/null --write-out '%{http_code}' "$url")"
+          test "$status" = "401"
+          echo "Dashboard: $url" >> "$GITHUB_STEP_SUMMARY"

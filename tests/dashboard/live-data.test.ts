@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchDashboardSource, parseLiveMandate } from "../../apps/dashboard/src/lib/mandate/live.js";
+import { clockTime } from "../../apps/dashboard/src/lib/mandate/state.js";
 
 const context = {
   mandate: {
@@ -56,6 +57,10 @@ describe("dashboard live record boundary", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.unstubAllGlobals();
+  });
+
+  it("formats event times identically on servers and browsers", () => {
+    expect(clockTime("2026-09-13T23:52:06.210Z")).toBe("23:52:06");
   });
 
   it("minimizes a validated control-plane context for the client", () => {

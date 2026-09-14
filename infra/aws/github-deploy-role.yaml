@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Scoped GitHub Actions OIDC role for Mandate control-plane deployment
+Description: Scoped GitHub Actions OIDC role for Mandate production deployments
 
 Parameters:
   GitHubSubject:
@@ -63,6 +63,31 @@ Resources:
                 Effect: Allow
                 Action: lambda:*
                 Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:mandate-control-plane
+              - Sid: DashboardImageAuthentication
+                Effect: Allow
+                Action: ecr:GetAuthorizationToken
+                Resource: "*"
+              - Sid: DashboardImages
+                Effect: Allow
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:DescribeImages
+                  - ecr:GetDownloadUrlForLayer
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                Resource: !Sub arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/mandate-dashboard
+              - Sid: DashboardFunctionCode
+                Effect: Allow
+                Action:
+                  - lambda:GetFunctionConfiguration
+                  - lambda:UpdateFunctionCode
+                Resource: !Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:mandate-dashboard
+              - Sid: DashboardStackRead
+                Effect: Allow
+                Action: cloudformation:DescribeStacks
+                Resource: !Sub arn:${AWS::Partition}:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/mandate-dashboard/*
               - Sid: HttpApi
                 Effect: Allow
                 Action: apigateway:*

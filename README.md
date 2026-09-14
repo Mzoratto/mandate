@@ -13,13 +13,14 @@ The protocol/runtime path is implemented and adversarially tested. The reference
 ## Live proof
 
 - Control-plane endpoint: `https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/`
+- Authenticated dashboard: `https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/`
 - Public failing fixture: [`Mzoratto/checkout-demo`](https://github.com/Mzoratto/checkout-demo) at `888784f`
 - Merged checksum-approved output: [`checkout-demo` PR #1](https://github.com/Mzoratto/checkout-demo/pull/1) at `7cd240f`
 - Isolated Neon completion test: [run 34791128902](https://github.com/Mzoratto/mandate/actions/runs/34791128902)
 - AWS deployment verification: [run 34791192125](https://github.com/Mzoratto/mandate/actions/runs/34791192125)
 - AgentOS accounting-order fix: [PR #118](https://github.com/Mzoratto/AgentOS/pull/118)
 
-The public endpoint grants no authority without an identity-bound credential. Verification artifacts remain private, encrypted, versioned, and object-locked in AWS.
+The control-plane endpoint grants no authority without an identity-bound credential, and the dashboard requires a separate viewer credential while keeping its control-plane bearer server-only. Verification artifacts remain private, encrypted, versioned, and object-locked in AWS.
 
 ## Development
 
