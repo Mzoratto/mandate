@@ -1084,6 +1084,9 @@ Add a minimized MCP-specific context query, combine opaque-token authentication 
 ### Suggested improvement
 Benchmark the exact persistent transport used by the target client and design read models around bounded remote-database round trips rather than reusing an expansive operator projection.
 
+### Resolution
+The merged minimized projection and combined opaque-credential lookup were deployed in run 34843379804. After five warm-up calls, 30 persistent-client production status reads measured a `277 ms` median and `326 ms` p95, down from `751 ms` and `1.113 s` respectively. OAuth and Alexa-hosted latency remain separate unproven boundaries.
+
 ## FL-047
 
 ### Task
