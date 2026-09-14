@@ -1083,3 +1083,26 @@ Add a minimized MCP-specific context query, combine opaque-token authentication 
 
 ### Suggested improvement
 Benchmark the exact persistent transport used by the target client and design read models around bounded remote-database round trips rather than reusing an expansive operator projection.
+
+## FL-047
+
+### Task
+Run the expanded transactional control-plane integration suite against an ephemeral Neon CI branch.
+
+### Expected
+The comprehensive authorization-flow test to remain within its existing 30-second per-test bound.
+
+### Actual
+The new OAuth subject and minimized MCP read probes added five real remote database round trips to that already broad flow. Under the CI branch's observed latency, the test reached the 30-second timeout while sibling flows took about six and twenty-one seconds; the same full suite passed locally in under three seconds.
+
+### Severity
+minor
+
+### Time lost
+About two minutes.
+
+### Workaround
+Raise only the comprehensive flow's bounded timeout to 60 seconds while retaining the original limits on the smaller integration cases and keeping runtime MCP latency tests separate.
+
+### Suggested improvement
+Keep remote branch correctness suites tolerant of bounded network variance and enforce endpoint latency with dedicated warm-client measurements rather than a wall-clock limit on a multi-step lifecycle test.

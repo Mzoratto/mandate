@@ -219,7 +219,7 @@ integration("authenticated control plane", () => {
     } finally {
       await pool.end();
     }
-  }, 30_000);
+  }, 60_000);
 
   it("prepares one awaiting-approval Mandate per principal idempotency key", async () => {
     const suffix = randomUUID().replaceAll("-", "").slice(0, 12);
