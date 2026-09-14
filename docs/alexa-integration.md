@@ -87,7 +87,7 @@ source_profile = mandate-alexa-bootstrap
 region = us-west-2
 ```
 
-A successful `aws sts get-caller-identity --profile alexa-ai` must resolve account `372468808636`. If Amazon rejects the intermediary too, stop and confirm Alexa+ onboarding/trust with Amazon before considering an IAM user.
+A successful `aws sts get-caller-identity --profile alexa-ai` must resolve account `372468808636`. The September 14 trial reached the local intermediary but Amazon rejected its target-role assumption. The stack, role, and temporary profiles were then deleted. Do not redeploy the intermediary unless Amazon confirms role-based trust; confirm Alexa+ onboarding with Amazon or obtain separate approval for the documented narrow IAM-user fallback.
 
 Once toolkit access is available:
 
