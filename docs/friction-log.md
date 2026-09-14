@@ -1132,3 +1132,26 @@ Keep RFC 9728 metadata at the documented well-known paths, advertise only `mcp:t
 
 ### Suggested improvement
 Alexa+'s MCP documentation should clearly distinguish its discovery mechanism from the general MCP authorization challenge flow and publish exact protected-resource metadata examples for two-tier authentication.
+
+## FL-049
+
+### Task
+Access Amazon's private Alexa AI toolkit without introducing a long-lived IAM access key.
+
+### Expected
+The existing AWS Identity Center administrator session to assume Amazon's documented `AddOn3PDeveloperToolsRead` role directly.
+
+### Actual
+IAM policy simulation returned `allowed` for the exact `sts:AssumeRole` request, but STS returned `AccessDenied`, locating the rejection at Amazon's target-role trust/onboarding boundary rather than the local permission set. Amazon's setup guide recommends an IAM user with a programmatic access key instead.
+
+### Severity
+major
+
+### Time lost
+About five minutes.
+
+### Workaround
+First test a dedicated keyless intermediary role trusted only by the Identity Center operator and permitted to assume only the exact Amazon toolkit role. If Amazon rejects that role principal too, confirm account onboarding/trust with Amazon before considering its IAM-user fallback.
+
+### Suggested improvement
+Amazon should support IAM Identity Center or OIDC identities for toolkit onboarding and document the target role's trust requirements instead of requiring long-lived IAM user credentials.
