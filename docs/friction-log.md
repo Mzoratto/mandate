@@ -1250,3 +1250,26 @@ Confirm the individual record markers and inspect parsed text or the browser acc
 
 ### Suggested improvement
 Deployment probes should prefer stable data attributes or semantic text extraction for server-rendered dynamic values.
+
+## FL-054
+
+### Task
+Clear the dashboard portrait assets for public hackathon submission and video use.
+
+### Expected
+The user-supplied reference raster inherited from the pinned dashboard source to have documented ownership or a permissive license.
+
+### Actual
+Its attribution file explicitly asserted neither copyright ownership nor a third-party license. Keeping it would leave an avoidable submission and publicity-rights risk despite the surrounding MakeHuman mesh and shader noise having clear licenses.
+
+### Severity
+blocker
+
+### Time lost
+About fifteen minutes.
+
+### Workaround
+Delete the raster and all runtime sampling of it. Generate the portrait deterministically from the bundled CC0 MakeHuman geometry, code-owned coloring, and MIT-licensed shader noise; update visible credits and submission claims.
+
+### Suggested improvement
+Require source URL, author, license, permitted uses, and an immutable checksum before accepting any visual reference into a production asset pipeline.

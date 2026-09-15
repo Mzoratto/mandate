@@ -161,7 +161,7 @@ Keep the credential active and the project available free of charge through Nove
 
 ## Demo video plan — 2:50 maximum
 
-Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account identifiers, credentials, and unrelated tabs hidden. Use narration only or original/cleared audio. Do not use an Amazon/Alexa logo, copyrighted music, or the unresolved portrait-reference raster.
+Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account identifiers, credentials, and unrelated tabs hidden. Use narration only or original/cleared audio. Do not use an Amazon/Alexa logo or copyrighted music. The particle portrait uses only attributed CC0 geometry, deterministic code, and MIT-licensed shader noise.
 
 ### 0:00–0:16 — Problem and promise
 
@@ -215,7 +215,7 @@ Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account id
 - [ ] Do not imply that the public six-stage walkthrough executed actions.
 - [ ] Do not imply that the Alexa toolkit, OAuth, AgentCore, durable dispatch, deployment, or merge authority is connected.
 - [ ] Use no third-party logos or copyrighted music.
-- [ ] Replace or establish rights for `portrait-reference.png` before it appears in footage.
+- [x] Use only the bundled CC0 mesh and MIT-licensed procedural noise for the portrait; include attribution in the repository.
 - [ ] Upload publicly to YouTube or Vimeo and verify playback in a signed-out browser.
 
 ## Product feedback
@@ -327,7 +327,7 @@ Mandate is a new public Apache-2.0 repository created during the hackathon. PR #
 
 ## Remaining submission blockers
 
-- [ ] Replace `portrait-reference.png` with a clearly owned or permissively licensed source before video capture, or remove it from the rendered project.
+- [x] Remove `portrait-reference.png` and generate the portrait solely from attributed CC0 geometry and MIT-licensed noise.
 - [ ] Add public privacy and terms pages appropriate to the data actually processed.
 - [ ] Rotate the Basic viewer credential to a judging-period credential under separate deployment authorization; place it only in Devpost private testing instructions.
 - [ ] Set and verify the GitHub repository About description, homepage, and topics under separate publication authorization.
