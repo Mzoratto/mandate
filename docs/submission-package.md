@@ -16,6 +16,9 @@ This document is the claim lock and production script for the Devpost entry. Do 
 - **Mini challenges:** AWS Builder and Open Source
 - **Entrant GitHub username:** `Mzoratto`
 - **Project repository:** https://github.com/Mzoratto/mandate
+- **Repository description:** Outcome-bound authority for autonomous agents: immutable scope, fail-closed execution, and independently verified completion.
+- **Repository homepage:** https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/
+- **Repository topics:** `agent-governance`, `agentos`, `ai-agents`, `alexa`, `authorization`, `aws`, `mcp`, `neon-postgres`, `open-source`, `typescript`
 - **Open-source contribution URL:** https://github.com/Mzoratto/mandate/pull/8
 - **License:** Apache-2.0, detected from the repository `LICENSE` file
 
@@ -337,7 +340,7 @@ Mandate is a new public Apache-2.0 repository created during the hackathon. PR #
 - [x] Remove `portrait-reference.png` and generate the portrait solely from attributed CC0 geometry and MIT-licensed noise.
 - [x] Add and deploy public privacy and terms pages appropriate to the data actually processed.
 - [ ] Rotate the Basic viewer credential to a judging-period credential under separate deployment authorization; place it only in Devpost private testing instructions.
-- [ ] Set and verify the GitHub repository About description, homepage, and topics under separate publication authorization.
+- [x] Set and verify the GitHub repository About description, production homepage, and ten relevant topics under separate publication authorization.
 - [ ] Confirm entrant eligibility, representative status if applicable, and absence of conflicts of interest.
 - [x] Capture a claim-locked architecture diagram and final production screenshots without secrets, private evidence bodies, third-party logos, or unlicensed imagery.
 - [ ] Record and edit the final video to 2:50 or less.
