@@ -124,6 +124,7 @@ Do not claim any of the following:
 - Protected operator record: https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/dashboard
 - Privacy notice: https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/privacy
 - Terms of use: https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/terms
+- Claim-locked architecture and screenshot manifest: [`docs/submission-assets.md`](submission-assets.md)
 - Control plane: https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/
 - Source: https://github.com/Mzoratto/mandate
 - Checkout proof repository: https://github.com/Mzoratto/checkout-demo
@@ -336,7 +337,7 @@ Mandate is a new public Apache-2.0 repository created during the hackathon. PR #
 - [ ] Rotate the Basic viewer credential to a judging-period credential under separate deployment authorization; place it only in Devpost private testing instructions.
 - [ ] Set and verify the GitHub repository About description, homepage, and topics under separate publication authorization.
 - [ ] Confirm entrant eligibility, representative status if applicable, and absence of conflicts of interest.
-- [ ] Capture an architecture diagram and final screenshots without secrets or third-party logos.
+- [x] Capture a claim-locked architecture diagram and final production screenshots without secrets, private evidence bodies, third-party logos, or unlicensed imagery.
 - [ ] Record and edit the final video to 2:50 or less.
 - [ ] Upload the video publicly to YouTube or Vimeo and verify signed-out playback.
 - [ ] Paste the reviewed description, feedback, feature requests, contribution data, and selected friction entries into Devpost.
