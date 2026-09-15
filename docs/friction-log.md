@@ -1301,4 +1301,30 @@ Keep the denser mesh-derived particles, but render a faint state-colored anatomi
 Require a browser-level visual acceptance check for recognizable facial topology before promotion. Geometry statistics remain useful regression constraints but cannot substitute for reviewing the rendered output at its shipping size.
 
 ### Resolution
-Dashboard runs 34948633495 and 34950926307 promoted partial corrections that passed automated checks but did not satisfy the reported visual defect. Dashboard run 34953532344 deployed the replacement: the CC0 surface now renders beneath the particle field with a texture-free normal/depth shader. Exact-production delegate, denied, and completed-state captures show explicit anatomical relief at 1440 × 900, with the same result confirmed at 390 × 844. Tests assert that the surface shader has no texture sampler.
+Dashboard runs 34948633495 and 34950926307 promoted partial corrections that passed automated checks but did not satisfy the reported visual defect. Dashboard run 34953532344 deployed the replacement: the CC0 surface rendered beneath the particle field with a texture-free normal/depth shader. Although this exposed anatomical relief, subsequent full-size user review correctly rejected it because it rendered a different head rather than restoring the approved reference identity. See FL-056.
+
+## FL-056
+
+### Task
+Restore the approved portrait identity while keeping submission asset provenance explicit.
+
+### Expected
+The head approved at source commit `e88d1c7`—including the ±4° yaw boundary—to remain visually unchanged unless its actual identity source could not be cleared.
+
+### Actual
+The licensing audit treated the reference raster's missing attribution as proof that it could not be used, then replaced the raster-derived front particles with neutral mesh lighting. The MakeHuman mesh had only supplied depth and bounded rotation; `portrait-reference.png` supplied the approved eyes, nose, lips, shading, and identity. Three procedural corrections therefore changed the person instead of restoring the accepted head.
+
+### Severity
+major
+
+### Time lost
+About ninety minutes across repeated corrections and production reviews.
+
+### Workaround
+Ask the asset owner for provenance and authorization before replacing a visually binding source. The project owner subsequently stated that the image was generated with ChatGPT and explicitly authorized its public use in the repository, hackathon submission, and video.
+
+### Suggested improvement
+Distinguish “missing provenance” from “known unlicensed.” Block publication while provenance is unresolved, but preserve the accepted implementation until the owner can confirm rights. Visual regression must compare identity and composition—not only landmark contrast or bilateral luminance.
+
+### Resolution
+The exact approved reference-particle pipeline, fitted CC0 volume, and ±4° interaction bound were restored locally from commit `36a5c74`, which imported the pinned source state. The generated image digest and the owner's September 15, 2026 authorization are recorded in `apps/dashboard/public/models/ATTRIBUTION.txt`. The user confirmed the restored local head is perfect. Production promotion remains separately authorized.

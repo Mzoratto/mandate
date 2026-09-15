@@ -134,9 +134,9 @@ Do not claim any of the following:
 - Checkout output: https://github.com/Mzoratto/checkout-demo/pull/1
 - MCP/control-plane deployment: https://github.com/Mzoratto/mandate/actions/runs/34874824974
 - Initial simulator deployment: https://github.com/Mzoratto/mandate/actions/runs/34891787277
-- CC0-only dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34941966864
+- Historical CC0-only dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34941966864
 - Dashboard and public-policy deployment: https://github.com/Mzoratto/mandate/actions/runs/34943694024
-- Current corrected-portrait dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34948633495
+- Current anatomical-surface dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34953532344
 - Production migration: https://github.com/Mzoratto/mandate/actions/runs/34843291827
 
 ## Testing instructions for judges
@@ -172,7 +172,7 @@ Keep the credential active and the project available free of charge through Nove
 
 Follow the claim-locked [`demo-recording-runbook.md`](demo-recording-runbook.md) for preflight, operator actions, edit boundaries, and final acceptance.
 
-Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account identifiers, credentials, and unrelated tabs hidden. Use narration only or original/cleared audio. Do not use an Amazon/Alexa logo or copyrighted music. The particle portrait uses only attributed CC0 geometry, deterministic code, and MIT-licensed shader noise.
+Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account identifiers, credentials, and unrelated tabs hidden. Use narration only or original/cleared audio. Do not use an Amazon/Alexa logo or copyrighted music. The particle portrait samples a ChatGPT-generated reference image that the project owner explicitly authorized for the public repository, submission, and video; its anatomical volume is attributed CC0 geometry and its shader noise is MIT-licensed.
 
 ### 0:00–0:16 — Problem and promise
 
@@ -226,7 +226,7 @@ Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account id
 - [ ] Do not imply that the public six-stage walkthrough executed actions.
 - [ ] Do not imply that the Alexa toolkit, OAuth, AgentCore, durable dispatch, deployment, or merge authority is connected.
 - [ ] Use no third-party logos or copyrighted music.
-- [x] Use only the bundled CC0 mesh and MIT-licensed procedural noise for the portrait; include attribution in the repository.
+- [x] Record the project owner's public-use authorization for the ChatGPT-generated portrait reference and retain the CC0 mesh and MIT noise attribution.
 - [ ] Upload publicly to YouTube or Vimeo and verify playback in a signed-out browser.
 
 ## Product feedback
@@ -338,7 +338,7 @@ Mandate is a new public Apache-2.0 repository created during the hackathon. PR #
 
 ## Remaining submission blockers
 
-- [x] Remove `portrait-reference.png` and generate the portrait solely from attributed CC0 geometry and MIT-licensed noise.
+- [x] Document the project owner's authorization to use the ChatGPT-generated `portrait-reference.png` publicly in the repository, submission, and video; record its immutable digest alongside the CC0 geometry and MIT noise attribution.
 - [x] Add and deploy public privacy and terms pages appropriate to the data actually processed.
 - [ ] Rotate the Basic viewer credential to a judging-period credential under separate deployment authorization; place it only in Devpost private testing instructions.
 - [x] Set and verify the GitHub repository About description, production homepage, and ten relevant topics under separate publication authorization.

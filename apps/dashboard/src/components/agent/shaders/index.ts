@@ -2,6 +2,4 @@
 export type HeadShaders = {
   vertex: string;
   fragment: string;
-  surfaceVertex: string;
-  surfaceFragment: string;
 };
