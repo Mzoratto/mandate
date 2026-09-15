@@ -1273,3 +1273,6 @@ Delete the raster and all runtime sampling of it. Generate the portrait determin
 
 ### Suggested improvement
 Require source URL, author, license, permitted uses, and an immutable checksum before accepting any visual reference into a production asset pipeline.
+
+### Resolution
+PR #11 removed the raster and image-derived fitting. Dashboard deployment run 34941966864 promoted the CC0-only visualization; production now returns `404` for the deleted raster and serves attribution with the recorded mesh digest.
