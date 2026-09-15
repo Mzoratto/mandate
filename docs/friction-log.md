@@ -1276,3 +1276,29 @@ Require source URL, author, license, permitted uses, and an immutable checksum b
 
 ### Resolution
 PR #11 removed the raster and image-derived fitting. Dashboard deployment run 34941966864 promoted the CC0-only visualization; production now returns `404` for the deleted raster and serves attribution with the recorded mesh digest.
+
+## FL-055
+
+### Task
+Preserve a legible human face after replacing the unlicensed reference raster with procedural CC0 geometry.
+
+### Expected
+The bundled anatomical mesh to retain readable eye, nose, mouth, and cheek structure in every authority-state color.
+
+### Actual
+Uniform frontal lighting made the surface visually flat, while synthetic eye spheres and a bright rectangular eye-region mask overpowered the nose and mouth. The eye region averaged almost four times the nose-bridge intensity, producing the mask-like face visible in the production report.
+
+### Severity
+major
+
+### Time lost
+About twenty minutes.
+
+### Workaround
+Remove synthetic eye geometry, derive directional light from the CC0 mesh normals, darken the anatomical eye sockets and mouth, lift the nose bridge, and sample more—but smaller—particles for facial definition.
+
+### Suggested improvement
+Keep a deterministic geometry-level portrait test that asserts particle density and landmark contrast, then capture fixed desktop and mobile states before promoting any procedural portrait change.
+
+### Resolution
+A focused regression test first failed at 30,000 particles with the eye region brighter than the nose. The corrected mesh-only portrait uses 46,000 smaller particles and geometry-derived landmark contrast; the focused test, full suite, production build, and local production-render browser review pass. Production promotion remains separately authorized.
