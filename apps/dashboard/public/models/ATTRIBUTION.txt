@@ -1,14 +1,17 @@
-Particle portrait: generated at runtime from the bundled anatomical mesh and
-procedural shader noise. No portrait photograph, likeness, or reference raster
-is included or sampled.
+Portrait reference: generated with ChatGPT and supplied by the project owner.
+The project owner explicitly authorized public use in this repository, the
+Amazon Developer Hackathon submission, and the demonstration video on
+September 15, 2026. The image is included as portrait-reference.png and is
+sampled only into state-colored particles; its labels and frame are excluded.
+Bundled portrait-reference.png SHA-256: 787fe9c9568f3c166679a8baa87abb559076ce0f40fe1a9f98947e87876e803d
 
 Anatomical volume: MakeHuman community base mesh, CC0 1.0.
 https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/3dobjs/base.obj
 Source credits: Data Collection AB, Joel Palmius, Jonas Hauquier.
 Asset license included as MakeHuman_License.md.
 Bundled NeutralHead.obj SHA-256: f4c4a181c752bbed2cfe24652ddd89868b67fd58676775309e16671a785523e6
-Adaptations: cropped bust, normalized scale, procedural eye spheres, deterministic
-surface sampling, and state-bound particle coloring.
+Adaptations: cropped bust, two subdivisions, normalized scale, landmark fitting,
+tapered shoulders, procedural eye spheres, and particle sampling.
 MakeHuman application code is not included.
 
 Noise: Stefan Gustavson / Ashima Arts, webgl-noise, MIT license.

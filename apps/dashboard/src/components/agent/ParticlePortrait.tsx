@@ -4,7 +4,7 @@ import { useFrame, useLoader, useThree } from "@react-three/fiber";
 
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import * as THREE from "three";
-import { generateProceduralPortrait } from "./ProceduralPortrait";
+import { generateReferencePortrait } from "./ReferencePortrait";
 import { PARTICLE_STATE } from "@/lib/mandate/state";
 import type { MandateState } from "@/lib/mandate/types";
 import type { HeadShaders } from "./shaders";
@@ -73,15 +73,20 @@ export default function ParticlePortrait({
   }, [gl]);
   const group = useRef<THREE.Group>(null);
   const material = useRef<THREE.ShaderMaterial>(null);
-  const surfaceMaterial = useRef<THREE.ShaderMaterial>(null);
-  const portraitSurface = useRef<THREE.Mesh>(null);
+  const depthSurface = useRef<THREE.Mesh>(null);
   const entrance = useRef({ elapsed: 0, announced: false });
+  const reference = useLoader(
+    THREE.TextureLoader,
+    "/models/portrait-reference.png",
+  );
   const head = useLoader(OBJLoader, "/models/NeutralHead.obj");
   const model = useMemo(
-    () => generateProceduralPortrait(
-      (head.getObjectByProperty("isMesh", true) as THREE.Mesh).geometry,
-    ),
-    [head],
+    () =>
+      generateReferencePortrait(
+        reference.image,
+        (head.getObjectByProperty("isMesh", true) as THREE.Mesh).geometry,
+      ),
+    [reference, head],
   );
   const [diagnostic, setDiagnostic] = useState<{
     assembly: number | null;
@@ -117,13 +122,6 @@ export default function ParticlePortrait({
     [],
   );
 
-  const surfaceUniforms = useMemo(
-    () => ({
-      uSurfaceColor: { value: new THREE.Color("#6FEFFF") },
-    }),
-    [],
-  );
-
   const targets = useMemo(
     () => ({
       primary: new THREE.Color(PARTICLE_STATE[state].primary).lerp(
@@ -151,7 +149,7 @@ export default function ParticlePortrait({
     uniforms.uAssembly.value = assembly;
     uniforms.uThinking.value =
       !frozen && state === "within" && assembly === 1 ? 1 : 0;
-    if (portraitSurface.current) portraitSurface.current.visible = assembly === 1;
+    if (depthSurface.current) depthSurface.current.visible = assembly === 1;
     if (assembly === 1 && !entrance.current.announced) {
       entrance.current.announced = true;
       window.dispatchEvent(
@@ -172,10 +170,6 @@ export default function ParticlePortrait({
     uniforms.uPixelRatio.value = gl.getPixelRatio();
     uniforms.uViewportScale.value = size.height / 478;
     uniforms.uPrimary.value.lerp(targets.primary, damp);
-    surfaceMaterial.current?.uniforms.uSurfaceColor.value.lerp(
-      targets.primary,
-      damp,
-    );
     uniforms.uJitter.value = THREE.MathUtils.lerp(
       uniforms.uJitter.value,
       frozen ? 0 : config.jitter,
@@ -224,20 +218,16 @@ export default function ParticlePortrait({
   return (
     <group ref={group}>
       <mesh
-        ref={portraitSurface}
+        ref={depthSurface}
         geometry={model.surface}
         renderOrder={-1}
         visible={false}
       >
-        <shaderMaterial
-          ref={surfaceMaterial}
-          uniforms={surfaceUniforms}
-          vertexShader={shaders.surfaceVertex}
-          fragmentShader={shaders.surfaceFragment}
-          transparent
+        <meshBasicMaterial
+          colorWrite={false}
           depthWrite
           depthTest
-          side={THREE.FrontSide}
+          side={THREE.DoubleSide}
           polygonOffset
           polygonOffsetFactor={2}
           polygonOffsetUnits={2}

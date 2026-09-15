@@ -197,7 +197,7 @@ Broad panels use 16px corners, the hero uses 18px, controls use 9px, and small e
 
 ### Particle Portrait
 
-The signature component samples a bundled CC0 anatomical mesh with deterministic procedural coloring, custom vertex and fragment shaders, MIT-licensed noise, and post-processing bloom. No portrait photograph, likeness, or reference raster is loaded. It assembles once, accepts pointer and keyboard yaw within ±4°, shifts state without changing authority, and falls back to explanatory text when WebGL is unavailable. Reduced-motion mode disables assembly, drift, evidence trails, and decorative state animation while preserving the final portrait and all status language.
+The signature component samples a project-owner-authorized, ChatGPT-generated reference image into state-colored particles, fitted to a bundled CC0 anatomical volume with custom shaders, MIT-licensed noise, and post-processing bloom. The source image remains local, and its labels and frame are excluded from sampling. It assembles once, accepts pointer and keyboard yaw within ±4°, shifts state without changing authority, and falls back to explanatory text when WebGL is unavailable. Reduced-motion mode disables assembly, drift, evidence trails, and decorative state animation while preserving the final portrait and all status language.
 
 ### Simulated Alexa+ Client
 
