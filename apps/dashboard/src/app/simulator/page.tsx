@@ -173,7 +173,7 @@ export default async function SimulatorPage({ searchParams }: { searchParams: Pr
 
       <footer className="alexa-lab-footer">
         <span>SIMULATED ALEXA+ · NOT AMAZON-HOSTED · NO ACCOUNT LINKING</span>
-        <a href="https://github.com/Mzoratto/mandate" target="_blank" rel="noreferrer">Inspect source ↗</a>
+        <nav aria-label="Project and policy links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="https://github.com/Mzoratto/mandate" target="_blank" rel="noreferrer">Source ↗</a></nav>
       </footer>
     </div>
   );
