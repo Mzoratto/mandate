@@ -138,7 +138,7 @@ export default function AgentParticleScene({
           {step ?? (state === "boundary" ? "Await Mandate amendment" : "Run verification suite")}
         </span>
       </div>
-      <span className="particle-count">6,891 PARTICLES</span>
+      <span className="particle-count">CC0 MESH · PROCEDURAL</span>
     </div>
   );
 }

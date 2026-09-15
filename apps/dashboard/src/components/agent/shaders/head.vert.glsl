@@ -44,7 +44,7 @@ void main() {
     p.y-=loose*release*age*.18;
     vCoverage*=mix(1.0,smoothstep(0.0,.12,age)*(1.0-smoothstep(.72,1.0,age)),loose);
   }
-  // Each particle has a fixed scattered origin; staggered easing ends exactly on the approved face.
+  // Each particle has a fixed scattered origin; staggered easing ends on the CC0 mesh.
   float assembled=smoothstep(aSeed*.23,.72+aSeed*.28,uAssembly);
   float angle=aSeed*137.508;
   vec3 origin=vec3(sin(angle)*(1.5+aSeed*1.4), cos(angle*1.7)*2.1, sin(angle*.7)*1.5);

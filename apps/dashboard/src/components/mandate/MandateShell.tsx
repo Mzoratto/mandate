@@ -96,7 +96,7 @@ export default function MandateShell({ shaders, source }: { shaders: HeadShaders
             </ol>
             <p className="dialog-note">
               {live ? "Live record · credentials remain server-side · responses are not cached." : "Demo evidence · no live repository is connected."}<br />
-              Particle portrait combines the supplied reference with a CC0 MakeHuman head. <a href="/models/ATTRIBUTION.txt" target="_blank" rel="noreferrer">CC BY 3.0 · credits</a>
+              Particle portrait is generated from bundled CC0 geometry and MIT-licensed procedural noise. <a href="/models/ATTRIBUTION.txt" target="_blank" rel="noreferrer">CC0 + MIT · credits</a>
             </p>
           </>
         )}

@@ -4,7 +4,7 @@ import { useFrame, useLoader, useThree } from "@react-three/fiber";
 
 import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
 import * as THREE from "three";
-import { generateReferencePortrait } from "./ReferencePortrait";
+import { generateProceduralPortrait } from "./ProceduralPortrait";
 import { PARTICLE_STATE } from "@/lib/mandate/state";
 import type { MandateState } from "@/lib/mandate/types";
 import type { HeadShaders } from "./shaders";
@@ -75,18 +75,12 @@ export default function ParticlePortrait({
   const material = useRef<THREE.ShaderMaterial>(null);
   const depthSurface = useRef<THREE.Mesh>(null);
   const entrance = useRef({ elapsed: 0, announced: false });
-  const reference = useLoader(
-    THREE.TextureLoader,
-    "/models/portrait-reference.png",
-  );
   const head = useLoader(OBJLoader, "/models/NeutralHead.obj");
   const model = useMemo(
-    () =>
-      generateReferencePortrait(
-        reference.image,
-        (head.getObjectByProperty("isMesh", true) as THREE.Mesh).geometry,
-      ),
-    [reference, head],
+    () => generateProceduralPortrait(
+      (head.getObjectByProperty("isMesh", true) as THREE.Mesh).geometry,
+    ),
+    [head],
   );
   const [diagnostic, setDiagnostic] = useState<{
     assembly: number | null;
