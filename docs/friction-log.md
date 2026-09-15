@@ -1286,19 +1286,19 @@ Preserve a legible human face after replacing the unlicensed reference raster wi
 The bundled anatomical mesh to retain readable eye, nose, mouth, and cheek structure in every authority-state color.
 
 ### Actual
-Uniform frontal lighting made the surface visually flat, while synthetic eye spheres and a bright rectangular eye-region mask overpowered the nose and mouth. The eye region averaged almost four times the nose-bridge intensity, producing the mask-like face visible in the production report.
+Particles alone did not expose enough topology to read as a face. The first correction fixed an eye-to-nose contrast defect, and the second made the facial plane brighter than the scalp and ears, but both still rendered a generic point-cloud silhouette at the production URL. Those numeric checks were proxies for the wrong visible acceptance criterion.
 
 ### Severity
 major
 
 ### Time lost
-About twenty minutes.
+About forty minutes across two insufficient production corrections.
 
 ### Workaround
-Remove synthetic eye geometry, derive directional light from the CC0 mesh normals, darken the anatomical eye sockets and mouth, lift the nose bridge, and sample more—but smaller—particles for facial definition.
+Keep the denser mesh-derived particles, but render a faint state-colored anatomical surface from the same CC0 geometry underneath them. Compute relief directly from mesh normals and position in a texture-free shader so the eyes, nose, lips, cheeks, and jaw are structurally visible.
 
 ### Suggested improvement
-Keep a deterministic geometry-level portrait test that asserts particle density and landmark contrast, then capture fixed desktop and mobile states before promoting any procedural portrait change.
+Require a browser-level visual acceptance check for recognizable facial topology before promotion. Geometry statistics remain useful regression constraints but cannot substitute for reviewing the rendered output at its shipping size.
 
 ### Resolution
-A focused regression test first failed at 30,000 particles with the eye region brighter than the nose. Dashboard run 34948633495 promoted a first correction with 46,000 smaller particles and geometry-derived landmark contrast. Production feedback then showed that the uniformly bright scalp and ears still dominated the facial plane, so the reported mask-like silhouette remained. A second focused test now requires scalp and ear intensity to stay below the central face; directional depth lighting and mesh-derived crown/lateral fading pass locally without adding geometry or raster assets. The second production promotion remains separately authorized.
+Dashboard runs 34948633495 and 34950926307 promoted partial corrections that passed automated checks but did not satisfy the reported visual defect. The replacement fix now renders the CC0 surface beneath the particle field with a texture-free normal/depth shader; local delegate and completed-state captures show explicit anatomical relief. Tests assert that the surface shader has no texture sampler. Production promotion remains separately authorized.

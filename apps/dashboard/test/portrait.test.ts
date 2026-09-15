@@ -10,6 +10,21 @@ function average(values: number[]) {
 }
 
 describe("procedural portrait", () => {
+  it("renders anatomical relief without a texture sampler", () => {
+    const vertex = readFileSync(
+      new URL("../src/components/agent/shaders/surface.vert.glsl", import.meta.url),
+      "utf8",
+    );
+    const fragment = readFileSync(
+      new URL("../src/components/agent/shaders/surface.frag.glsl", import.meta.url),
+      "utf8",
+    );
+
+    expect(vertex).toContain("normalMatrix*normal");
+    expect(fragment).toContain("vSurfaceNormal");
+    expect(fragment).not.toMatch(/sampler2D|texture2D/);
+  });
+
   it("keeps dense facial detail while fading the scalp and ears", () => {
     const object = new OBJLoader().parse(
       readFileSync(new URL("../public/models/NeutralHead.obj", import.meta.url), "utf8"),
