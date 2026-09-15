@@ -4,7 +4,7 @@
 
 Mandate lets a human delegate an outcome to an agent inside a machine-readable authority envelope. The agent may change its plan, but it may not expand its authority without explicit approval.
 
-Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md). The current architecture and explicit security gaps are documented in [`docs/architecture.md`](docs/architecture.md) and [`docs/security-model.md`](docs/security-model.md); authenticated API routes are in [`docs/control-plane-api.md`](docs/control-plane-api.md), the live AWS boundary is in [`docs/aws-deployment.md`](docs/aws-deployment.md), and the server-only dashboard data boundary is in [`docs/dashboard-live-data.md`](docs/dashboard-live-data.md).
+Protocol semantics are frozen in [`docs/protocol-v0.1.md`](docs/protocol-v0.1.md). The current architecture and explicit security gaps are documented in [`docs/architecture.md`](docs/architecture.md) and [`docs/security-model.md`](docs/security-model.md); authenticated API routes are in [`docs/control-plane-api.md`](docs/control-plane-api.md), the live AWS boundary is in [`docs/aws-deployment.md`](docs/aws-deployment.md), and the server-only dashboard data boundary is in [`docs/dashboard-live-data.md`](docs/dashboard-live-data.md). The claim-locked Devpost copy, proof matrix, product feedback, testing instructions, and 2:50 video script are in [`docs/submission-package.md`](docs/submission-package.md).
 
 ## Current status
 
