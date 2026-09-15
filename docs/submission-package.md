@@ -122,13 +122,16 @@ Do not claim any of the following:
 - Public guided simulation: https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/
 - Protected simulated Alexa+ client: https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/simulator
 - Protected operator record: https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/dashboard
+- Privacy notice: https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/privacy
+- Terms of use: https://o2mjeuvaik.execute-api.us-east-1.amazonaws.com/terms
 - Control plane: https://l0fttxomzi.execute-api.us-east-1.amazonaws.com/
 - Source: https://github.com/Mzoratto/mandate
 - Checkout proof repository: https://github.com/Mzoratto/checkout-demo
 - Checkout output: https://github.com/Mzoratto/checkout-demo/pull/1
 - MCP/control-plane deployment: https://github.com/Mzoratto/mandate/actions/runs/34874824974
 - Initial simulator deployment: https://github.com/Mzoratto/mandate/actions/runs/34891787277
-- Current CC0-only dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34941966864
+- CC0-only dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34941966864
+- Current dashboard and public-policy deployment: https://github.com/Mzoratto/mandate/actions/runs/34943694024
 - Production migration: https://github.com/Mzoratto/mandate/actions/runs/34843291827
 
 ## Testing instructions for judges
@@ -329,7 +332,7 @@ Mandate is a new public Apache-2.0 repository created during the hackathon. PR #
 ## Remaining submission blockers
 
 - [x] Remove `portrait-reference.png` and generate the portrait solely from attributed CC0 geometry and MIT-licensed noise.
-- [ ] Add public privacy and terms pages appropriate to the data actually processed.
+- [x] Add and deploy public privacy and terms pages appropriate to the data actually processed.
 - [ ] Rotate the Basic viewer credential to a judging-period credential under separate deployment authorization; place it only in Devpost private testing instructions.
 - [ ] Set and verify the GitHub repository About description, homepage, and topics under separate publication authorization.
 - [ ] Confirm entrant eligibility, representative status if applicable, and absence of conflicts of interest.
