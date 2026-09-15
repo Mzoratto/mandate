@@ -73,7 +73,8 @@ export default function ParticlePortrait({
   }, [gl]);
   const group = useRef<THREE.Group>(null);
   const material = useRef<THREE.ShaderMaterial>(null);
-  const depthSurface = useRef<THREE.Mesh>(null);
+  const surfaceMaterial = useRef<THREE.ShaderMaterial>(null);
+  const portraitSurface = useRef<THREE.Mesh>(null);
   const entrance = useRef({ elapsed: 0, announced: false });
   const head = useLoader(OBJLoader, "/models/NeutralHead.obj");
   const model = useMemo(
@@ -116,6 +117,13 @@ export default function ParticlePortrait({
     [],
   );
 
+  const surfaceUniforms = useMemo(
+    () => ({
+      uSurfaceColor: { value: new THREE.Color("#6FEFFF") },
+    }),
+    [],
+  );
+
   const targets = useMemo(
     () => ({
       primary: new THREE.Color(PARTICLE_STATE[state].primary).lerp(
@@ -143,7 +151,7 @@ export default function ParticlePortrait({
     uniforms.uAssembly.value = assembly;
     uniforms.uThinking.value =
       !frozen && state === "within" && assembly === 1 ? 1 : 0;
-    if (depthSurface.current) depthSurface.current.visible = assembly === 1;
+    if (portraitSurface.current) portraitSurface.current.visible = assembly === 1;
     if (assembly === 1 && !entrance.current.announced) {
       entrance.current.announced = true;
       window.dispatchEvent(
@@ -164,6 +172,10 @@ export default function ParticlePortrait({
     uniforms.uPixelRatio.value = gl.getPixelRatio();
     uniforms.uViewportScale.value = size.height / 478;
     uniforms.uPrimary.value.lerp(targets.primary, damp);
+    surfaceMaterial.current?.uniforms.uSurfaceColor.value.lerp(
+      targets.primary,
+      damp,
+    );
     uniforms.uJitter.value = THREE.MathUtils.lerp(
       uniforms.uJitter.value,
       frozen ? 0 : config.jitter,
@@ -212,16 +224,20 @@ export default function ParticlePortrait({
   return (
     <group ref={group}>
       <mesh
-        ref={depthSurface}
+        ref={portraitSurface}
         geometry={model.surface}
         renderOrder={-1}
         visible={false}
       >
-        <meshBasicMaterial
-          colorWrite={false}
+        <shaderMaterial
+          ref={surfaceMaterial}
+          uniforms={surfaceUniforms}
+          vertexShader={shaders.surfaceVertex}
+          fragmentShader={shaders.surfaceFragment}
+          transparent
           depthWrite
           depthTest
-          side={THREE.DoubleSide}
+          side={THREE.FrontSide}
           polygonOffset
           polygonOffsetFactor={2}
           polygonOffsetUnits={2}
