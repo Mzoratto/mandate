@@ -136,7 +136,7 @@ Do not claim any of the following:
 - Initial simulator deployment: https://github.com/Mzoratto/mandate/actions/runs/34891787277
 - Historical CC0-only dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34941966864
 - Dashboard and public-policy deployment: https://github.com/Mzoratto/mandate/actions/runs/34943694024
-- Current anatomical-surface dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34953532344
+- Current approved-portrait dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34963190128
 - Production migration: https://github.com/Mzoratto/mandate/actions/runs/34843291827
 
 ## Testing instructions for judges
