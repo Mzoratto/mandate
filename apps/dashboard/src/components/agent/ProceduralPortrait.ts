@@ -27,7 +27,7 @@ export function generateProceduralPortrait(source: BufferGeometry) {
   for (const { position: p, normal: n } of volume.sample(random)) {
     const frontLight = Math.max(0, n.z);
     const keyLight = Math.pow(
-      Math.max(0, n.x * -0.5 + n.y * 0.24 + n.z * 0.82),
+      Math.max(0, n.y * 0.24 + n.z * 0.94),
       1.65,
     );
     const eyeSocket = p.z > 0.55

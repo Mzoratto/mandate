@@ -10,7 +10,7 @@ function average(values: number[]) {
 }
 
 describe("procedural portrait", () => {
-  it("renders anatomical relief without a texture sampler", () => {
+  it("renders anatomical relief with centered, texture-free lighting", () => {
     const vertex = readFileSync(
       new URL("../src/components/agent/shaders/surface.vert.glsl", import.meta.url),
       "utf8",
@@ -19,9 +19,14 @@ describe("procedural portrait", () => {
       new URL("../src/components/agent/shaders/surface.frag.glsl", import.meta.url),
       "utf8",
     );
+    const generator = readFileSync(
+      new URL("../src/components/agent/ProceduralPortrait.ts", import.meta.url),
+      "utf8",
+    );
 
     expect(vertex).toContain("normalMatrix*normal");
-    expect(fragment).toContain("vSurfaceNormal");
+    expect(fragment).toContain("vec3(0.0,0.24,0.94)");
+    expect(generator).toContain("n.y * 0.24 + n.z * 0.94");
     expect(fragment).not.toMatch(/sampler2D|texture2D/);
   });
 

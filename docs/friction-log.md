@@ -1302,3 +1302,29 @@ Require a browser-level visual acceptance check for recognizable facial topology
 
 ### Resolution
 Dashboard runs 34948633495 and 34950926307 promoted partial corrections that passed automated checks but did not satisfy the reported visual defect. Dashboard run 34953532344 deployed the replacement: the CC0 surface now renders beneath the particle field with a texture-free normal/depth shader. Exact-production delegate, denied, and completed-state captures show explicit anatomical relief at 1440 × 900, with the same result confirmed at 390 × 844. Tests assert that the surface shader has no texture sampler.
+
+## FL-056
+
+### Task
+Render the CC0 anatomical surface without a bilateral facial split.
+
+### Expected
+Both facial halves to remain continuously visible while preserving enough directional relief to read the eyes, nose, lips, cheeks, and jaw.
+
+### Actual
+The surface and particle generators used the same strongly lateral key light. On the mirrored face, the `-0.5` horizontal light component made the left half average 2.46 times brighter than the right at the fixed 1440 × 900 production composition, creating a hard center split. Prior visual review incorrectly accepted the lit half as a complete face.
+
+### Severity
+major
+
+### Time lost
+About twenty-five minutes.
+
+### Workaround
+Center the key light on the facial axis in both the surface shader and procedural particle generator. Keep vertical and frontal components for anatomical relief, but remove horizontal bias.
+
+### Suggested improvement
+Pair geometry-level checks with a deterministic browser crop that compares mirrored facial luminance. Review the full-resolution capture—not a scaled preview—before requesting deployment.
+
+### Resolution
+A fixed browser reproducer measured a left/right facial luminance ratio of `2.46` before the correction. Centered key lighting reduces the ratio to `1.00` and the mean mirrored difference from `48.17` to `6.97` while retaining visible landmarks. Production promotion remains separately authorized.
