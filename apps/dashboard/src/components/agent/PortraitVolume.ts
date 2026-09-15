@@ -1,15 +1,6 @@
-import {
-  BufferGeometry,
-  Mesh,
-  Vector3,
-  SphereGeometry,
-  MathUtils,
-} from "three";
+import { BufferGeometry, Mesh, Vector3, MathUtils } from "three";
 import { MeshSurfaceSampler } from "three/addons/math/MeshSurfaceSampler.js";
-import {
-  mergeVertices,
-  mergeGeometries,
-} from "three/addons/utils/BufferGeometryUtils.js";
+import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 
 /** Normalize the bundled CC0 head mesh into Mandate's portrait stage. */
 export function createPortraitVolume(source: BufferGeometry) {
@@ -19,15 +10,7 @@ export function createPortraitVolume(source: BufferGeometry) {
   const skin = mergeVertices(copy);
   copy.dispose();
   skin.computeVertexNormals();
-  const parts = [skin];
-  for (const side of [-1, 1]) {
-    const eye = new SphereGeometry(0.14, 32, 24);
-    eye.translate(side * 0.31, 0.24, 0.7);
-    eye.deleteAttribute("uv");
-    parts.push(eye);
-  }
-  const surface = mergeGeometries(parts)!;
-  parts.forEach((part) => part.dispose());
+  const surface = skin;
   const positions = surface.getAttribute("position");
   for (let i = 0; i < positions.count; i++) {
     const sourceY = positions.getY(i);
@@ -41,7 +24,7 @@ export function createPortraitVolume(source: BufferGeometry) {
 
   return {
     surface,
-    sample(random: () => number, count = 30000) {
+    sample(random: () => number, count = 46000) {
       const sampler = new MeshSurfaceSampler(new Mesh(surface));
       (
         sampler as MeshSurfaceSampler & {

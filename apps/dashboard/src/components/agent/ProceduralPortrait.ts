@@ -25,23 +25,37 @@ export function generateProceduralPortrait(source: BufferGeometry) {
     back: number[] = [];
 
   for (const { position: p, normal: n } of volume.sample(random)) {
-    const frontLight = Math.pow(Math.max(0, n.z), 1.7);
-    const eye = p.z > 0.55
-      && Math.abs(p.y - 0.31) < 0.16
-      && Math.abs(Math.abs(p.x) - 0.29) < 0.17;
-    const mouth = p.z > 0.48 && p.y > -0.31 && p.y < -0.12 && Math.abs(p.x) < 0.22;
-    const energy = 0.18 + 0.82 * frontLight;
+    const frontLight = Math.max(0, n.z);
+    const keyLight = Math.pow(
+      Math.max(0, n.x * -0.34 + n.y * 0.2 + n.z * 0.92),
+      1.25,
+    );
+    const eyeSocket = p.z > 0.55
+      && p.y > 0.16
+      && p.y < 0.43
+      && Math.abs(Math.abs(p.x) - 0.29) < 0.13;
+    const mouth = p.z > 0.48
+      && p.y > -0.31
+      && p.y < -0.12
+      && Math.abs(p.x) < 0.22;
+    const noseBridge = p.z > 0.7
+      && p.y > -0.06
+      && p.y < 0.42
+      && Math.abs(p.x) < 0.11;
+    let tone = 0.1
+      + 0.68 * keyLight
+      + 0.14 * Math.pow(frontLight, 3)
+      + 0.08 * Math.pow(Math.abs(n.x), 2);
+    if (eyeSocket) tone *= 0.2;
+    if (mouth) tone *= 0.32;
+    if (noseBridge) tone = Math.min(1, tone + 0.2);
     positions.push(p.x, p.y, p.z);
     normals.push(n.x, n.y, n.z);
-    colors.push(
-      eye ? 0.36 : mouth ? 0.11 * energy : 0.07 * energy,
-      eye ? 0.78 : mouth ? 0.38 * energy : 0.34 * energy,
-      eye ? 1 : mouth ? 0.5 * energy : 0.48 * energy,
-    );
+    colors.push(0.08 * tone, 0.42 * tone, 0.62 * tone);
     seeds.push(random());
     const isBack = n.z < 0.05;
     back.push(isBack ? 1 : 0);
-    sizes.push((isBack ? 0.72 : 0.96) + random() * (isBack ? 0.9 : 0.48));
+    sizes.push((isBack ? 0.58 : 0.78) + random() * (isBack ? 0.76 : 0.42));
     coverage.push(
       MathUtils.smoothstep(p.y, -1.65, -0.95) * (0.62 + 0.38 * frontLight),
     );
