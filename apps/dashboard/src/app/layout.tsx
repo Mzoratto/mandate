@@ -3,6 +3,7 @@ import "@fontsource-variable/inter";
 import "./globals.css";
 import "./demo.css";
 import "./simulator.css";
+import "./legal.css";
 export const metadata: Metadata = {
   title: "Mandate — Mission Control",
   description:

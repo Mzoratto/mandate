@@ -154,6 +154,8 @@ The authenticated `/dashboard` route uses a fixed 210px rail and a fluid main ca
 
 The protected `/simulator` route is a two-column conversation instrument rather than a dashboard. Human outcome capture and simulated Alexa+ readback occupy the left side; the real MCP response and immutable authority summary occupy the right. A separate connection-truth ledger states which boundaries are live, simulated, externally blocked, or intentionally absent.
 
+The public `/privacy` and `/terms` routes are quiet policy records. A large plain-language title leads into a narrow reading column with a sticky ruled index; they use no state color beyond the channel point because policy text is not an execution state.
+
 Below 1180px the public hero stacks; below 760px its stage controls scroll horizontally and proof regions become one column. At 1000px the authenticated hero becomes one column and the portrait receives its own 440px stage. The simulator stacks below 940px and condenses its transcript, envelope fields, and reference lookup below 660px. At 600px the dashboard rail becomes a 112px fixed header. Every route preserves decision and evidence fields rather than dropping information.
 
 **The Mechanism-First Rule.** The mandate and living authority field share the first viewport; generic metrics never lead the page.
@@ -201,6 +203,10 @@ The signature component samples a bundled CC0 anatomical mesh with deterministic
 
 The protected fallback uses a speech-shaped outline only as a channel marker, never as proof of Amazon hosting. Its form captures an outcome—not authority fields—and its result panel renders only validated MCP output. Connection truth appears above the interaction; an amber rule repeats that the surface cannot approve or execute. Empty, unavailable, pending, waiting-for-review, active, and independently verified states remain textually distinct.
 
+### Policy Records
+
+Privacy and terms pages reuse the public brand, document effective date, deep-linked section index, narrow readable measure, and persistent reciprocal policy links. Below 780px the index becomes a two-column static map and the document remains one uninterrupted reading flow.
+
 ### Dialogs
 
 Native modal dialogs hold the execution trace and authority delta. They use Panel Deep, a broad black focus shadow, Escape/backdrop dismissal, a named close control, and plain-language evidence. Demonstration status remains visible in the content.
@@ -214,6 +220,7 @@ Native modal dialogs hold the execution trace and authority delta. They use Pane
 - **Do** use local assets with attribution and embedded provenance.
 - **Do** let one state transition carry the motion story, then keep the console quiet.
 - **Do** label the fallback as simulated, not Amazon-hosted, and development-credential-backed next to the interaction itself.
+- **Do** link privacy and terms from every public or outcome-capture surface.
 
 ### Don't:
 - **Don't** use state colors for generic links, borders, or decorative emphasis.

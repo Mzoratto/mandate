@@ -264,7 +264,7 @@ export default function PublicDemo({ shaders }: { shaders: HeadShaders }) {
           <div><a href="#top">Replay the guided demo</a><a href="https://github.com/Mzoratto/mandate" target="_blank" rel="noreferrer">Build with Mandate</a></div>
         </section>
       </main>
-      <footer className="demo-footer"><span>MANDATE · APACHE-2.0</span><span>Outcome-bound authority for autonomous agents</span></footer>
+      <footer className="demo-footer"><span>MANDATE · APACHE-2.0</span><nav aria-label="Policy links"><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav><span>Outcome-bound authority for autonomous agents</span></footer>
     </div>
   );
 }

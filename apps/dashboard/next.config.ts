@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
       { source: "/", headers: securityHeaders },
       { source: "/dashboard", headers: securityHeaders },
       { source: "/simulator", headers: securityHeaders },
+      { source: "/privacy", headers: securityHeaders },
+      { source: "/terms", headers: securityHeaders },
     ];
   },
 };
