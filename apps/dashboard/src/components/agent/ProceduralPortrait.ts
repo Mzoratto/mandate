@@ -27,8 +27,8 @@ export function generateProceduralPortrait(source: BufferGeometry) {
   for (const { position: p, normal: n } of volume.sample(random)) {
     const frontLight = Math.max(0, n.z);
     const keyLight = Math.pow(
-      Math.max(0, n.x * -0.34 + n.y * 0.2 + n.z * 0.92),
-      1.25,
+      Math.max(0, n.x * -0.5 + n.y * 0.24 + n.z * 0.82),
+      1.65,
     );
     const eyeSocket = p.z > 0.55
       && p.y > 0.16
@@ -42,10 +42,13 @@ export function generateProceduralPortrait(source: BufferGeometry) {
       && p.y > -0.06
       && p.y < 0.42
       && Math.abs(p.x) < 0.11;
-    let tone = 0.1
-      + 0.68 * keyLight
-      + 0.14 * Math.pow(frontLight, 3)
-      + 0.08 * Math.pow(Math.abs(n.x), 2);
+    const faceFocus = 0.38 + 0.62 * MathUtils.smoothstep(p.z, 0.28, 0.82);
+    let tone = (
+      0.025
+      + 0.84 * keyLight
+      + 0.06 * Math.pow(frontLight, 4)
+      + 0.05 * Math.pow(Math.abs(n.x), 2)
+    ) * faceFocus;
     if (eyeSocket) tone *= 0.2;
     if (mouth) tone *= 0.32;
     if (noseBridge) tone = Math.min(1, tone + 0.2);
@@ -56,8 +59,13 @@ export function generateProceduralPortrait(source: BufferGeometry) {
     const isBack = n.z < 0.05;
     back.push(isBack ? 1 : 0);
     sizes.push((isBack ? 0.58 : 0.78) + random() * (isBack ? 0.76 : 0.42));
+    const crownFade = 1 - 0.88 * MathUtils.smoothstep(p.y, 0.4, 0.96);
+    const sideFade = 0.18 + 0.82 * MathUtils.smoothstep(frontLight, 0.08, 0.48);
     coverage.push(
-      MathUtils.smoothstep(p.y, -1.65, -0.95) * (0.62 + 0.38 * frontLight),
+      MathUtils.smoothstep(p.y, -1.65, -0.95)
+        * (0.62 + 0.38 * frontLight)
+        * crownFade
+        * sideFade,
     );
     regions.push(p.y < -0.65 ? 5 : isBack ? 2 : 0);
     directions.push(n.x * 0.3, -random() * 0.3, n.z * 0.3);
