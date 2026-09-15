@@ -50,7 +50,7 @@ Dashboard code deployment is independently manual and confirmation-gated:
 gh workflow run aws-dashboard-deploy.yml --ref main -f confirm=DEPLOY
 ```
 
-The workflow builds an amd64 single-manifest image, pushes it under the immutable commit SHA, requires the ECR scan to complete with zero critical findings, updates only `mandate-dashboard`, and verifies that the public origin still rejects unauthenticated requests. The scoped deployment and zero-critical-finding scan gate passed in [run 34813074224](https://github.com/Mzoratto/mandate/actions/runs/34813074224).
+The workflow builds an amd64 single-manifest image, pushes it under the immutable commit SHA, requires the ECR scan to complete with zero critical findings, updates only `mandate-dashboard`, and verifies that the public origin still rejects unauthenticated requests. The scoped deployment and zero-critical-finding scan gate passed in [run 34813074224](https://github.com/Mzoratto/mandate/actions/runs/34813074224). [Run 34941966864](https://github.com/Mzoratto/mandate/actions/runs/34941966864) promoted merge commit `6e53069a2f67d0ac7439b26762088bc2f52ac116`, removing the unlicensed portrait raster and generating the production visualization solely from digest-recorded CC0 geometry, code-owned coloring, and MIT-licensed shader noise.
 
 ## Verification artifacts
 

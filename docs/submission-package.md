@@ -127,7 +127,8 @@ Do not claim any of the following:
 - Checkout proof repository: https://github.com/Mzoratto/checkout-demo
 - Checkout output: https://github.com/Mzoratto/checkout-demo/pull/1
 - MCP/control-plane deployment: https://github.com/Mzoratto/mandate/actions/runs/34874824974
-- Simulator deployment: https://github.com/Mzoratto/mandate/actions/runs/34891787277
+- Initial simulator deployment: https://github.com/Mzoratto/mandate/actions/runs/34891787277
+- Current CC0-only dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34941966864
 - Production migration: https://github.com/Mzoratto/mandate/actions/runs/34843291827
 
 ## Testing instructions for judges
