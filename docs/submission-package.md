@@ -166,6 +166,8 @@ Keep the credential active and the project available free of charge through Nove
 
 ## Demo video plan — 2:50 maximum
 
+Follow the claim-locked [`demo-recording-runbook.md`](demo-recording-runbook.md) for preflight, operator actions, edit boundaries, and final acceptance.
+
 Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account identifiers, credentials, and unrelated tabs hidden. Use narration only or original/cleared audio. Do not use an Amazon/Alexa logo or copyrighted music. The particle portrait uses only attributed CC0 geometry, deterministic code, and MIT-licensed shader noise.
 
 ### 0:00–0:16 — Problem and promise
@@ -182,15 +184,15 @@ Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account id
 
 ### 0:42–1:12 — Show the working track artifact
 
-**Picture:** Open protected `/simulator`. Keep the connection-truth ledger visible. Enter a checkout outcome and prepare one bounded record during the final recording only after separate authorization.
+**Picture:** Open protected `/simulator`. Keep the connection-truth ledger and preparation form visible, but do not submit it during the default read-only recording.
 
 **Narration:** “This is our clearly labeled simulated Alexa+ client. The MCP endpoint is real and implements version 2025-11-25 over Streamable HTTP. Alexa supplies only the desired outcome and retry identity. The server resolves every identity, resource, effect, budget, assumption, and verifier.”
 
-### 1:12–1:34 — Stop at human review
+### 1:12–1:34 — Show the safe tool boundary
 
-**Picture:** Show the returned `AWAITING_APPROVAL` envelope and the absent approval controls.
+**Picture:** In “Read an existing work reference,” retrieve `M-checkout-live-003`. Show the live `COMPLETED` response and the absence of approval controls.
 
-**Narration:** “Preparation persists an immutable proposal, then stops. It does not approve, execute, deploy, or merge. Authentication is not approval, and there is intentionally no approval button on this model-visible surface.”
+**Narration:** “This status call is live and read-only. Preparation is available but intentionally not invoked in this recording. It can only persist an immutable proposal and stop at awaiting approval. Authentication is not approval, and there is no model-visible approval control.”
 
 ### 1:34–2:10 — Show real completed proof
 
@@ -215,7 +217,7 @@ Record at 1440×900 or 1920×1080, 100% browser zoom, with bookmarks, account id
 - [ ] Keep the duration at or below 2:50; judges need not watch beyond 3:00.
 - [ ] Say “simulated Alexa+ client” on screen and in narration.
 - [ ] Show the project functioning in a desktop web browser.
-- [ ] Make exactly one separately authorized preparation call during recording, or use a pre-authorized prepared record.
+- [ ] Keep the default recording read-only by retrieving `M-checkout-live-003`; make no preparation call unless separately authorized immediately before capture.
 - [ ] Never show a password, bearer, Keychain output, AWS account page, database URL, or private evidence URL.
 - [ ] Do not imply that the public six-stage walkthrough executed actions.
 - [ ] Do not imply that the Alexa toolkit, OAuth, AgentCore, durable dispatch, deployment, or merge authority is connected.
