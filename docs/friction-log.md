@@ -1301,4 +1301,4 @@ Remove synthetic eye geometry, derive directional light from the CC0 mesh normal
 Keep a deterministic geometry-level portrait test that asserts particle density and landmark contrast, then capture fixed desktop and mobile states before promoting any procedural portrait change.
 
 ### Resolution
-A focused regression test first failed at 30,000 particles with the eye region brighter than the nose. The corrected mesh-only portrait uses 46,000 smaller particles and geometry-derived landmark contrast; the focused test, full suite, production build, and local production-render browser review pass. Production promotion remains separately authorized.
+A focused regression test first failed at 30,000 particles with the eye region brighter than the nose. The corrected mesh-only portrait uses 46,000 smaller particles and geometry-derived landmark contrast; the focused test, full suite, and production build pass. Dashboard run 34948633495 promoted merge commit `54669b590f4475fe6e6186e02f7a7d610fba3e4b`; production browser review confirmed readable facial landmarks without errors, and the protected/live-data and CC0 asset boundaries remained intact.
