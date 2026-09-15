@@ -10,7 +10,7 @@ function average(values: number[]) {
 }
 
 describe("procedural portrait", () => {
-  it("keeps dense facial detail with darker eye sockets than the nose bridge", () => {
+  it("keeps dense facial detail while fading the scalp and ears", () => {
     const object = new OBJLoader().parse(
       readFileSync(new URL("../public/models/NeutralHead.obj", import.meta.url), "utf8"),
     );
@@ -20,6 +20,10 @@ describe("procedural portrait", () => {
     const colors = particles.getAttribute("aReferenceColor");
     const eyeSocket: number[] = [];
     const noseBridge: number[] = [];
+    const face: number[] = [];
+    const scalp: number[] = [];
+    const ears: number[] = [];
+    const coverage = particles.getAttribute("aCoverage");
 
     for (let index = 0; index < positions.count; index++) {
       const x = positions.getX(index);
@@ -33,11 +37,19 @@ describe("procedural portrait", () => {
       ) eyeSocket.push(colors.getZ(index));
       if (z > 0.7 && y > -0.06 && y < 0.42 && Math.abs(x) < 0.11)
         noseBridge.push(colors.getZ(index));
+      const visibleTone = colors.getZ(index) * coverage.getX(index);
+      if (z > 0.6 && y > -0.5 && y < 0.55 && Math.abs(x) < 0.55)
+        face.push(visibleTone);
+      if (z > 0.2 && y > 0.62) scalp.push(visibleTone);
+      if (Math.abs(x) > 0.62 && y > -0.15 && y < 0.45)
+        ears.push(visibleTone);
     }
 
     expect(positions.count).toBeGreaterThanOrEqual(42_000);
     expect(eyeSocket.length).toBeGreaterThan(400);
     expect(noseBridge.length).toBeGreaterThan(100);
     expect(average(eyeSocket)).toBeLessThan(average(noseBridge) * 0.65);
+    expect(average(scalp)).toBeLessThan(average(face) * 0.7);
+    expect(average(ears)).toBeLessThan(average(face) * 0.65);
   });
 });
