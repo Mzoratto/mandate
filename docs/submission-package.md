@@ -136,7 +136,8 @@ Do not claim any of the following:
 - Initial simulator deployment: https://github.com/Mzoratto/mandate/actions/runs/34891787277
 - CC0-only dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34941966864
 - Dashboard and public-policy deployment: https://github.com/Mzoratto/mandate/actions/runs/34943694024
-- Current corrected-portrait dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34948633495
+- Initial corrected-portrait dashboard deployment: https://github.com/Mzoratto/mandate/actions/runs/34948633495
+- Current facial-plane correction deployment: https://github.com/Mzoratto/mandate/actions/runs/34950926307
 - Production migration: https://github.com/Mzoratto/mandate/actions/runs/34843291827
 
 ## Testing instructions for judges
