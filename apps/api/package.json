@@ -12,7 +12,8 @@
     "demo:provision": "node scripts/provision-demo.mjs",
     "demo:rehearse-agentos": "node scripts/run-agentos-rehearsal.mjs",
     "verifiers:provision": "node scripts/provision-verifiers.mjs",
-    "build:aws": "node scripts/build-aws.mjs"
+    "build:aws": "node scripts/build-aws.mjs",
+    "mcp:serve": "node scripts/serve-mcp.mjs"
   },
   "dependencies": {
     "@mandate/agentos-reference-host": "workspace:*",

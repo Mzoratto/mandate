@@ -16,6 +16,18 @@ Alexa provides only the desired outcome and a retry key to preparation. Mandate 
 
 Customer tools require an authenticated human or organization principal. A service credential may initialize the server and discover tools, but it cannot read or prepare customer records. There are no model-visible approval, amendment, or execution tools.
 
+## Dedicated local server
+
+The same handler can run as its own process for local MCP clients such as an AgentOS host, without the control-plane REST routes:
+
+```bash
+MANDATE_MCP_RESOURCE_URL=https://127.0.0.1:3001/mcp \
+MANDATE_MCP_TLS_CERT_FILE=/path/to/cert.pem MANDATE_MCP_TLS_KEY_FILE=/path/to/key.pem \
+DATABASE_URL='postgresql://…' corepack pnpm --filter @mandate/api mcp:serve
+```
+
+It refuses to start unless the resource URL is HTTPS on a literal loopback address (`127.0.0.1` or `[::1]`) with an explicit port, and it listens only there over TLS 1.2+. Clients pin the certificate rather than relying on ambient trust. Only `/mcp` and the protected-resource metadata paths are served; everything else returns `404`, and request bodies are capped at 1 MiB before they reach the handler. Configuration gates are shared with the Lambda through `createMandateMcpHandlerFromEnv`, so `prepare_agent_work` stays unregistered unless `MANDATE_MCP_CHECKOUT_COMMIT_DIGEST` is set, and partial OAuth configuration fails closed with `503`.
+
 ## Request requirements
 
 `POST /mcp` requires:
